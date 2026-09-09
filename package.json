@@ -17,7 +17,7 @@
     "audit": "npm audit --audit-level=high",
     "quality": "npm run lint && npm run test:coverage && npm run build && npm run audit",
     "test:e2e": "playwright test",
-    "test:e2e:docker": "docker build -f Dockerfile.e2e -t frontend-e2e . && docker run --rm -e CI=true -v \"$(pwd)/playwright-report:/app/playwright-report\" -v \"$(pwd)/test-results:/app/test-results\" frontend-e2e",
+    "test:e2e:docker": "mkdir -p playwright-report test-results && docker build -f Dockerfile.e2e -t frontend-e2e . && docker run --rm -e CI=true -e HOME=/tmp --user \"$(id -u):$(id -g)\" -v \"$(pwd)/playwright-report:/app/playwright-report\" -v \"$(pwd)/test-results:/app/test-results\" frontend-e2e",
     "test:e2e:docker:build": "docker build -f Dockerfile.e2e -t frontend-e2e .",
     "test:e2e:ui": "playwright test --ui"
   },
