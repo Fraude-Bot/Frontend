@@ -2,7 +2,7 @@ import { KeyboardEvent, useEffect, useState } from "react";
 import reportIcons from "@presentation/pages/report/components/icons";
 import MonthlyReportsChart from "@presentation/pages/report/components/MonthlyReportsChart";
 import { ReportTab } from "@presentation/pages/report/components/types";
-import { useDependencies } from "@/presentation/providers/DependencyProvider";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
 import { isCanceledError } from "@/common/utils/http-error.util";
 
@@ -98,38 +98,58 @@ function GeneralTab({
   const today = formatLongDate(new Date());
   const { findMonthlyReportCountsUseCase } = useDependencies();
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
-  const [monthlyCounts, setMonthlyCounts] =
-    useState<MonthlyReportCountsEntity | null>(null);
-  const [chartState, setChartState] = useState<
-    "loading" | "ready" | "error"
-  >("loading");
   const [requestVersion, setRequestVersion] = useState(0);
+  const requestKey = `${partyId}:${partyType}:${selectedYear}:${requestVersion}`;
+  const [chart, setChart] = useState<{
+    key: string;
+    monthlyCounts: MonthlyReportCountsEntity | null;
+    status: "ready" | "error";
+  } | null>(null);
 
   useEffect(() => {
-    setMonthlyCounts(null);
-    setChartState("loading");
+    let ignore = false;
+
     findMonthlyReportCountsUseCase
       .execute(partyId, partyType, selectedYear)
       .then((counts) => {
-        setMonthlyCounts(counts);
-        setChartState("ready");
+        if (ignore) {
+          return;
+        }
+
+        setChart({
+          key: requestKey,
+          monthlyCounts: counts,
+          status: "ready",
+        });
       })
       .catch((error: unknown) => {
-        if (!isCanceledError(error)) {
-          setChartState("error");
+        if (ignore || isCanceledError(error)) {
+          return;
         }
+
+        setChart({
+          key: requestKey,
+          monthlyCounts: null,
+          status: "error",
+        });
       });
 
     return () => {
+      ignore = true;
       findMonthlyReportCountsUseCase.cancel();
     };
   }, [
     findMonthlyReportCountsUseCase,
     partyId,
     partyType,
+    requestKey,
     requestVersion,
     selectedYear,
   ]);
+
+  const chartState: "loading" | "ready" | "error" =
+    chart?.key !== requestKey ? "loading" : chart.status;
+  const monthlyCounts = chartState === "ready" ? chart?.monthlyCounts : null;
 
   return (
     <div className="divide-y divide-gray-200 border border-gray-200 bg-white">

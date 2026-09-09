@@ -43,14 +43,17 @@ function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
       aria-label={`Vista ampliada: ${alt}`}
       tabIndex={-1}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 focus:outline-none"
-      onClick={onClose}
     >
-      <div className="absolute inset-0 bg-black/80" aria-hidden />
+      <button
+        type="button"
+        aria-label="Cerrar vista ampliada"
+        className="absolute inset-0 bg-black/80"
+        onClick={onClose}
+      />
       <img
         src={src}
         alt={alt}
         className="relative z-10 max-h-[85vh] max-w-[90vw] object-contain"
-        onClick={(event) => event.stopPropagation()}
       />
     </div>
   );

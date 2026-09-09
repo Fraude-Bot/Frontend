@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useDependencies } from "@/presentation/providers/DependencyProvider";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import Header from "@presentation/shared/components/Header";
 import Footer from "@presentation/shared/components/Footer";
 import SearchContainer from "@presentation/pages/search/components/SearchContainer";
@@ -17,76 +17,76 @@ import PaginationNav from "@/presentation/shared/components/PaginationNav";
 
 function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isSearching, setIsSearching] = useState(false);
-  const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalResults, setTotalResults] = useState(0);
-  const [pageSize, setPageSize] = useState(0);
-  const [reports, setReports] = useState<ReportSummaryEntity[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const urlQuery = searchParams.get("q") || "";
+  const formattedUrlQuery = Formatter.FormatInput(urlQuery);
+  const [query, setQuery] = useState(formattedUrlQuery);
+  const [syncedUrlQuery, setSyncedUrlQuery] = useState(urlQuery);
   const [requestVersion, setRequestVersion] = useState(0);
+  const [fetched, setFetched] = useState<{
+    key: string;
+    reports: ReportSummaryEntity[];
+    currentPage: number;
+    totalResults: number;
+    pageSize: number;
+    errorMessage: string | null;
+  } | null>(null);
 
   const activeSearchId = useRef(0);
   const { searchReportUseCase, searchReportStubUseCase } = useDependencies();
-  const urlQuery = searchParams.get("q") || "";
   const requestedPage = getValidPage(
     searchParams.get("p") || searchParams.get("page"),
   );
   const hasSubmittedSearch = urlQuery.trim().length > 0;
-  const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
+  const hasQuery = formattedUrlQuery.trim().length > 0;
+  const requestKey = `${formattedUrlQuery}:${requestedPage}:${requestVersion}`;
+
+  if (urlQuery !== syncedUrlQuery) {
+    setSyncedUrlQuery(urlQuery);
+    setQuery(formattedUrlQuery);
+  }
+
+  const cachedResult = hasQuery
+    ? searchReportCache.get(formattedUrlQuery, requestedPage)
+    : null;
 
   useEffect(() => {
-    const formattedQuery = Formatter.FormatInput(urlQuery);
-    setQuery(formattedQuery);
-    setErrorMessage(null);
-
-    if (!formattedQuery.trim()) {
+    if (!hasQuery) {
       activeSearchId.current += 1;
-      setIsSearching(false);
-      setReports([]);
-      setCurrentPage(1);
-      setTotalResults(0);
-      setPageSize(0);
       return;
     }
 
-    const cachedResult = searchReportCache.get(formattedQuery, requestedPage);
-
-    if (cachedResult) {
-      setReports(cachedResult.data);
-      setCurrentPage(cachedResult.page);
-      setTotalResults(cachedResult.total);
-      setPageSize(cachedResult.count);
-
+    if (searchReportCache.get(formattedUrlQuery, requestedPage)) {
       return;
     }
 
     const searchId = ++activeSearchId.current;
     const useStub =
-      import.meta.env.DEV && formattedQuery.includes("[TEST]");
+      import.meta.env.DEV && formattedUrlQuery.includes("[TEST]");
     const useCase = useStub ? searchReportStubUseCase : searchReportUseCase;
 
-    setIsSearching(true);
-
     void useCase
-      .execute(Formatter.toSearchQuery(formattedQuery), requestedPage)
+      .execute(Formatter.toSearchQuery(formattedUrlQuery), requestedPage)
       .then((result) => {
         if (searchId !== activeSearchId.current) {
           return;
         }
 
-        setReports(result.data);
-        setCurrentPage(result.page);
-        setTotalResults(result.total);
-        setPageSize(result.count);
-
         if (!useStub) {
-          searchReportCache.set(formattedQuery, result);
+          searchReportCache.set(formattedUrlQuery, result);
         }
+
+        setFetched({
+          key: requestKey,
+          reports: result.data,
+          currentPage: result.page,
+          totalResults: result.total,
+          pageSize: result.count,
+          errorMessage: null,
+        });
 
         if (result.page !== requestedPage) {
           setSearchParams(
-            `?${Formatter.buildSearchQueryString(formattedQuery, result.page)}`,
+            `?${Formatter.buildSearchQueryString(formattedUrlQuery, result.page)}`,
             { replace: true },
           );
         }
@@ -99,27 +99,51 @@ function Search() {
           return;
         }
 
-        setErrorMessage(
-          "No pudimos completar la búsqueda. Revisa tu conexión e inténtalo de nuevo.",
-        );
-      })
-      .finally(() => {
-        if (searchId === activeSearchId.current) {
-          setIsSearching(false);
-        }
+        setFetched({
+          key: requestKey,
+          reports: [],
+          currentPage: 1,
+          totalResults: 0,
+          pageSize: 0,
+          errorMessage:
+            "No pudimos completar la búsqueda. Revisa tu conexión e inténtalo de nuevo.",
+        });
       });
 
     return () => {
       useCase.cancel();
     };
   }, [
+    formattedUrlQuery,
+    hasQuery,
+    requestKey,
     requestVersion,
     requestedPage,
     searchReportStubUseCase,
     searchReportUseCase,
     setSearchParams,
-    urlQuery,
   ]);
+
+  const activeResult = !hasQuery
+    ? null
+    : cachedResult
+      ? {
+          reports: cachedResult.data,
+          currentPage: cachedResult.page,
+          totalResults: cachedResult.total,
+          pageSize: cachedResult.count,
+          errorMessage: null as string | null,
+        }
+      : fetched?.key === requestKey
+        ? fetched
+        : null;
+  const isSearching = hasQuery && !cachedResult && fetched?.key !== requestKey;
+  const reports = activeResult?.reports ?? [];
+  const currentPage = activeResult?.currentPage ?? 1;
+  const totalResults = activeResult?.totalResults ?? 0;
+  const pageSize = activeResult?.pageSize ?? 0;
+  const errorMessage = activeResult?.errorMessage ?? null;
+  const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
 
   const handleInputChange = (event: React.InputEvent<HTMLInputElement>) => {
     const formattedQuery = Formatter.FormatInput(event.currentTarget.value);
@@ -128,7 +152,6 @@ function Search() {
   };
 
   const handleSubmit = () => {
-    setPageSize(0);
     const formattedQuery = Formatter.FormatInput(query);
     const nextSearch = formattedQuery.trim()
       ? `?${Formatter.buildSearchQueryString(formattedQuery, 1)}`

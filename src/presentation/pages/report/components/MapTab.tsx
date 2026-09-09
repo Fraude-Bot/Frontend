@@ -16,7 +16,7 @@ import {
 } from "@presentation/pages/report/components/map-graph";
 import { exportRelationshipMap } from "@presentation/pages/report/components/map-export";
 import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-relationship-map.model";
-import { useDependencies } from "@/presentation/providers/DependencyProvider";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import { isCanceledError } from "@/common/utils/http-error.util";
 
 const nodeTypes = {
@@ -134,16 +134,17 @@ function MapTab({ partyId, partyType }: MapTabProps) {
     nodes: [],
     edges: [],
   });
-  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
+  const requestKey = `${partyId}:${partyType}:${requestVersion}`;
+  const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
+    null,
+  );
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const isLoading = loadedRequestKey !== requestKey;
 
   useEffect(() => {
     let ignore = false;
-
-    setIsLoading(true);
-    setErrorMessage(null);
 
     findRelationshipMapByPartyUseCase
       .execute(partyId, partyType)
@@ -153,6 +154,8 @@ function MapTab({ partyId, partyType }: MapTabProps) {
         }
 
         setMap(result);
+        setErrorMessage(null);
+        setLoadedRequestKey(requestKey);
       })
       .catch((error) => {
         if (ignore || isCanceledError(error)) {
@@ -163,18 +166,20 @@ function MapTab({ partyId, partyType }: MapTabProps) {
         setErrorMessage(
           "No pudimos cargar el mapa de relaciones. Revisa tu conexión e inténtalo de nuevo.",
         );
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoading(false);
-        }
+        setLoadedRequestKey(requestKey);
       });
 
     return () => {
       ignore = true;
       findRelationshipMapByPartyUseCase.cancel();
     };
-  }, [findRelationshipMapByPartyUseCase, partyId, partyType, requestVersion]);
+  }, [
+    findRelationshipMapByPartyUseCase,
+    partyId,
+    partyType,
+    requestKey,
+    requestVersion,
+  ]);
 
   const hasGraph = map.nodes.length > 0;
 

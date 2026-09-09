@@ -13,7 +13,7 @@ import ReportsTab from "@presentation/pages/report/components/ReportsTab";
 import ReportTabNavigation from "@presentation/pages/report/components/ReportTabNavigation";
 import { ReportTab } from "@presentation/pages/report/components/types";
 import defaultAvatar from "@presentation/assets/default-avatar.png";
-import { useDependencies } from "@/presentation/providers/DependencyProvider";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import ScammerSummaryEntity from "@/core/domain/scammer/entities/scammer-summary.entity";
 import OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
 import {
@@ -66,41 +66,46 @@ function Report({ type }: { type: "scammer" | "organization" }) {
   const { findScammerSummaryByIdUseCase, findOrganizationSummaryByIdUseCase } =
     useDependencies();
   const [activeTab, setActiveTab] = useState<ReportTab>("General");
-  const [loadState, setLoadState] = useState<
-    "loading" | "ready" | "not-found" | "error"
-  >("loading");
   const [requestVersion, setRequestVersion] = useState(0);
-
-  const [party, setParty] = useState<
-    ScammerSummaryEntity | OrganizationSummaryEntity | null
-  >(null);
+  const requestKey = `${type}:${id ?? ""}:${requestVersion}`;
+  const [result, setResult] = useState<{
+    key: string;
+    party: ScammerSummaryEntity | OrganizationSummaryEntity | null;
+    status: "ready" | "not-found" | "error";
+  } | null>(null);
 
   useEffect(() => {
     if (!id) {
-      setLoadState("not-found");
       return;
     }
 
-    setParty(null);
-    setLoadState("loading");
+    let ignore = false;
     const handleError = (error: unknown) => {
-      if (isCanceledError(error)) {
+      if (ignore || isCanceledError(error)) {
         return;
       }
 
-      setLoadState(getHttpStatus(error) === 404 ? "not-found" : "error");
+      setResult({
+        key: requestKey,
+        party: null,
+        status: getHttpStatus(error) === 404 ? "not-found" : "error",
+      });
     };
 
     if (type === "scammer") {
       findScammerSummaryByIdUseCase
         .execute(id)
         .then((scammer) => {
-          setParty(scammer);
-          setLoadState("ready");
+          if (ignore) {
+            return;
+          }
+
+          setResult({ key: requestKey, party: scammer, status: "ready" });
         })
         .catch(handleError);
 
       return () => {
+        ignore = true;
         findScammerSummaryByIdUseCase.cancel();
       };
     }
@@ -108,21 +113,33 @@ function Report({ type }: { type: "scammer" | "organization" }) {
     findOrganizationSummaryByIdUseCase
       .execute(id)
       .then((organization) => {
-        setParty(organization);
-        setLoadState("ready");
+        if (ignore) {
+          return;
+        }
+
+        setResult({ key: requestKey, party: organization, status: "ready" });
       })
       .catch(handleError);
 
     return () => {
+      ignore = true;
       findOrganizationSummaryByIdUseCase.cancel();
     };
   }, [
     findOrganizationSummaryByIdUseCase,
     findScammerSummaryByIdUseCase,
     id,
+    requestKey,
     requestVersion,
     type,
   ]);
+
+  const loadState: "loading" | "ready" | "not-found" | "error" = !id
+    ? "not-found"
+    : result?.key !== requestKey
+      ? "loading"
+      : result.status;
+  const party = loadState === "ready" ? result?.party : null;
 
   const title = party
     ? `FraudeBot - ${party.name}`
