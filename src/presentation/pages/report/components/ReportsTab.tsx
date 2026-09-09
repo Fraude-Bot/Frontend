@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
-import { useDependencies } from "@/presentation/providers/DependencyProvider";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import PartyReportCard from "@presentation/pages/report/components/PartyReportCard";
 import { isCanceledError } from "@/common/utils/http-error.util";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
@@ -20,17 +20,18 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
   const [reports, setReports] = useState<PartyReportEntity[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [pageSize, setPageSize] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
+  const requestKey = `${partyId}:${partyType}:${currentPage}:${requestVersion}`;
+  const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
+    null,
+  );
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
+  const isLoading = loadedRequestKey !== requestKey;
 
   useEffect(() => {
     let ignore = false;
-
-    setIsLoading(true);
-    setErrorMessage(null);
 
     findReportsByPartyUseCase
       .execute(partyId, partyType, currentPage)
@@ -43,6 +44,8 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
         setCurrentPage(result.page);
         setTotalResults(result.total);
         setPageSize(result.count);
+        setErrorMessage(null);
+        setLoadedRequestKey(requestKey);
       })
       .catch((error) => {
         if (ignore || isCanceledError(error)) {
@@ -55,11 +58,7 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
         setErrorMessage(
           "No pudimos cargar los reportes. Revisa tu conexión e inténtalo de nuevo.",
         );
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoading(false);
-        }
+        setLoadedRequestKey(requestKey);
       });
 
     return () => {
@@ -71,6 +70,7 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
     findReportsByPartyUseCase,
     partyId,
     partyType,
+    requestKey,
     requestVersion,
   ]);
 

@@ -3,8 +3,8 @@ import { formatContactDate } from "@presentation/pages/report/components/contact
 import {
   getContactHref,
   getPlatformLabel,
-  PlatformIcon,
 } from "@presentation/pages/report/components/contact-platform";
+import { PlatformIcon } from "@presentation/pages/report/components/PlatformIcon";
 
 function ExternalLinkIcon() {
   return (

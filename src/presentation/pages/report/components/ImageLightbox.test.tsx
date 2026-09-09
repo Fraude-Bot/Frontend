@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ImageLightbox from "@presentation/pages/report/components/ImageLightbox";
 
@@ -15,13 +15,13 @@ function renderLightbox(onClose = vi.fn()) {
 }
 
 describe("ImageLightbox", () => {
-  it("closes when the area outside the picture is clicked", () => {
+  it("closes when the area outside the picture is clicked", async () => {
+    const user = userEvent.setup();
     const { onClose } = renderLightbox();
-    const dialog = screen.getByRole("dialog", { name: "Vista ampliada: Ada Lovelace" });
-    const backdrop = dialog.querySelector("[aria-hidden]");
 
-    expect(backdrop).toBeTruthy();
-    fireEvent.click(backdrop as Element);
+    await user.click(
+      screen.getByRole("button", { name: "Cerrar vista ampliada" }),
+    );
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -44,12 +44,15 @@ describe("ImageLightbox", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("does not render a close button", () => {
+  it("keeps a backdrop dismiss control instead of a visible close button", () => {
     renderLightbox();
 
     expect(
       screen.queryByRole("button", { name: "Cerrar vista de foto" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cerrar" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Cerrar vista ampliada" }),
+    ).toBeInTheDocument();
   });
 });

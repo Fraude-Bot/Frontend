@@ -41,7 +41,7 @@ function buildPaymentSearchHref(reference: string): string {
   return `${APP_ROUTES.search}?${Formatter.buildSearchQueryString(value)}`;
 }
 
-function getPaymentHref(reference: string, paymentType?: number): string {
+function getPaymentHref(reference: string, _paymentType?: number): string {
   const value = reference.trim();
   if (!value) {
     return "#";

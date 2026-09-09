@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  PlatformIcon,
-  SOCIAL_FILTERS,
-} from "@presentation/pages/report/components/contact-platform";
+import { SOCIAL_FILTERS } from "@presentation/pages/report/components/contact-platform";
+import { PlatformIcon } from "@presentation/pages/report/components/PlatformIcon";
 
 function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   return (

@@ -1,18 +1,9 @@
-import React, { createContext, useContext, ReactNode, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import {
   createDependencies,
   Dependencies,
 } from "@/infrastructure/di/container";
-
-const DependencyContext = createContext<Dependencies | null>(null);
-
-export const useDependencies = (): Dependencies => {
-  const context = useContext(DependencyContext);
-  if (!context) {
-    throw new Error("useDependencies must be used within a DependencyProvider");
-  }
-  return context;
-};
+import { DependencyContext } from "@/presentation/providers/useDependencies";
 
 interface DependencyProviderProps {
   children: ReactNode;

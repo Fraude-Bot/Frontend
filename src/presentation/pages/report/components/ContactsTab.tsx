@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
-import { useDependencies } from "@/presentation/providers/DependencyProvider";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import ContactCard from "@presentation/pages/report/components/ContactCard";
 import PlatformFilterRow from "@presentation/pages/report/components/PlatformFilterRow";
 import { isCanceledError } from "@/common/utils/http-error.util";
@@ -18,17 +18,18 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
   const [contacts, setContacts] = useState<ContactSummaryEntity[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [pageSize, setPageSize] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
+  const requestKey = `${partyId}:${partyType}:${currentPage}:${platform ?? ""}:${requestVersion}`;
+  const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
+    null,
+  );
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
+  const isLoading = loadedRequestKey !== requestKey;
 
   useEffect(() => {
     let ignore = false;
-
-    setIsLoading(true);
-    setErrorMessage(null);
 
     findContactsByPartyUseCase
       .execute(partyId, partyType, currentPage, platform)
@@ -41,6 +42,8 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
         setCurrentPage(result.page);
         setTotalResults(result.total);
         setPageSize(result.count);
+        setErrorMessage(null);
+        setLoadedRequestKey(requestKey);
       })
       .catch((error) => {
         if (ignore || isCanceledError(error)) {
@@ -53,11 +56,7 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
         setErrorMessage(
           "No pudimos cargar los contactos. Revisa tu conexión e inténtalo de nuevo.",
         );
-      })
-      .finally(() => {
-        if (!ignore) {
-          setIsLoading(false);
-        }
+        setLoadedRequestKey(requestKey);
       });
 
     return () => {
@@ -70,6 +69,7 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
     partyId,
     partyType,
     platform,
+    requestKey,
     requestVersion,
   ]);
 

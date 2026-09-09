@@ -4,8 +4,8 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 import {
   getContactHref,
   getPlatformLabel,
-  PlatformIcon,
 } from "@presentation/pages/report/components/contact-platform";
+import { PlatformIcon } from "@presentation/pages/report/components/PlatformIcon";
 import type { MapSatelliteNode } from "@presentation/pages/report/components/map-graph";
 import {
   getPaymentHref,
