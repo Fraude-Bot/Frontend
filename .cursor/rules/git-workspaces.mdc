@@ -1,0 +1,45 @@
+---
+description: Git worktree workflow — never edit the main workspace on main
+alwaysApply: true
+---
+
+# Git Workspaces
+
+This repo uses **git worktrees**. The root checkout is the **main workspace** and must stay clean on `main`. All code changes happen in a **feature workspace** under `workspaces/`.
+
+## Main workspace (read-only for code changes)
+
+- Path: `/home/cedano/projects/fraudebot/frontend`
+- Branch: `main`
+- **Do not** create, edit, or delete source files here.
+- Allowed: read files, inspect git state, run read-only commands.
+
+## Feature workspaces (where work happens)
+
+- Path pattern: `workspaces/<feature-name>/`
+- Example: `workspaces/support-tab` → branch `feature/support-tab` or `fix/support-tab` or `wip/support-tab`
+- Before editing, confirm you are **not** in the main workspace:
+
+```bash
+git branch --show-current   # must NOT be `main`
+pwd                         # must be under workspaces/
+```
+
+## Starting new work
+
+1. Check for an existing workspace: `git worktree list`
+2. If a workspace exists ask to the user to use it or recreate it.
+3. Otherwise create one from the repo root:
+
+```bash
+git worktree add workspaces/<feature-name> -b feature/<feature-name>
+cd workspaces/<feature-name>
+```
+
+Use kebab-case for `<feature-name>` (e.g. `support-tab` → `feature/support-tab`).
+
+## Agent behavior
+
+- If the active path is the main workspace on `main`, **stop** and switch to an existing feature workspace or create a new one before making changes.
+- Never commit from the main workspace.
+- When suggesting git commands, run them from the relevant feature workspace directory.
