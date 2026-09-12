@@ -76,9 +76,6 @@ const panelClassName =
 const panelGridClassName =
   "grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto] lg:divide-x lg:divide-gray-200";
 
-const disabledPanelClassName =
-  "grid h-full w-full text-left lg:row-span-4 lg:grid-rows-subgrid";
-
 function activatePanel(
   event: KeyboardEvent<HTMLDivElement>,
   onActivate: () => void,
@@ -266,9 +263,17 @@ function GeneralTab({
             </p>
           </div>
 
-          <div className={`${disabledPanelClassName} lg:col-start-2`}>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onNavigateTab("Soporte")}
+            onKeyDown={(event) =>
+              activatePanel(event, () => onNavigateTab("Soporte"))
+            }
+            className={`${panelClassName} lg:col-start-2`}
+          >
             <div className="px-6 pt-6 sm:px-8 sm:pt-8">
-              <PanelHeader title="Soporte:" />
+              <PanelHeader title="Soporte:" showExternalLink />
             </div>
             <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
               Obtén ayuda y recursos para reportar o consultar sobre este
@@ -280,7 +285,7 @@ function GeneralTab({
                   src={reportIcons.soporte}
                   alt=""
                   aria-hidden
-                  className="h-32 w-32 object-contain opacity-60"
+                  className="h-32 w-32 object-contain"
                 />
               ) : (
                 <div className="flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
@@ -289,7 +294,7 @@ function GeneralTab({
               )}
             </div>
             <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
-              Sección disponible próximamente.
+              Encuentra ayuda jurídica y canales para contactar a especialistas.
             </p>
           </div>
         </div>

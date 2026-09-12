@@ -172,4 +172,65 @@ describe("Report page", () => {
 
     expect(execute).toHaveBeenCalledTimes(2);
   });
+
+  it("opens the Soporte tab from the profile navigation", async () => {
+    const user = userEvent.setup();
+
+    renderScammerReport(
+      vi.fn().mockResolvedValue(
+        new ScammerSummaryEntity(
+          "20",
+          "Joseph Nacchio",
+          "DM",
+          null,
+          3,
+          ["Stocks"],
+          false,
+          new Date("2026-08-10"),
+          new Date("2026-08-10"),
+        ),
+      ),
+    );
+
+    await user.click(await screen.findByRole("tab", { name: "Soporte" }));
+
+    expect(
+      screen.getByRole("heading", { name: "¿Eres tú el reportado?" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "reportes@fraudebot.com" }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens Soporte from the General tab shortcut panel", async () => {
+    const user = userEvent.setup();
+
+    renderScammerReport(
+      vi.fn().mockResolvedValue(
+        new ScammerSummaryEntity(
+          "20",
+          "Joseph Nacchio",
+          "DM",
+          null,
+          3,
+          ["Stocks"],
+          false,
+          new Date("2026-08-10"),
+          new Date("2026-08-10"),
+        ),
+      ),
+    );
+
+    await user.click(
+      await screen.findByRole("button", { name: /Soporte:/ }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "¿Eres tú el reportado?" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Soporte" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
 });
