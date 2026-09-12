@@ -41,6 +41,71 @@
       "problemMatcher": []
     },
     {
+      "label": "[Backend] Stop Service",
+      "type": "shell",
+      "command": "docker compose stop backend",
+      "options": {
+        "cwd": "${workspaceFolder}/../docker/"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Web] Stop Service",
+      "type": "shell",
+      "command": "docker compose stop web",
+      "options": {
+        "cwd": "${workspaceFolder}/../docker/"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Frontend] Stop Service",
+      "type": "shell",
+      "command": "docker compose stop frontend",
+      "options": {
+        "cwd": "${workspaceFolder}/../docker/"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[DB] Stop Service",
+      "type": "shell",
+      "command": "docker compose stop db",
+      "options": {
+        "cwd": "${workspaceFolder}/../docker/"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Cache] Stop Service",
+      "type": "shell",
+      "command": "docker compose stop cache",
+      "options": {
+        "cwd": "${workspaceFolder}/../docker/"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "[Backend] Run PHPUnit Tests",
       "type": "shell",
       "command": "docker compose run --rm --no-deps backend ./vendor/bin/phpunit tests",
@@ -157,6 +222,20 @@
       },
       "problemMatcher": []
     },
+    {
+      "label": "[Workspace] Create Workspace",
+      "type": "shell",
+      "command": "REPO_ROOT=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\") && WORKTREE_PATH=\"$REPO_ROOT/workspaces/${input:workspaceName}\" && git worktree add \"$WORKTREE_PATH\" main -b \"${input:workspaceBranch}\" && docker run -d --name \"fraudebot-frontend-${input:workspaceName}\" --network fraudebot_default -p \"${input:worktreePort}:80\" -v \"$WORKTREE_PATH:/app\" -v \"fraudebot-worktree-${input:workspaceName}-node-modules:/app/node_modules\" -w /app -e HOME=/tmp -e NPM_CONFIG_CACHE=/tmp/.npm -e VITE_API_PROXY_TARGET=http://web:80 node:20-alpine sh -c \"if [ -f package.json ]; then npm install && npm run dev; else tail -f /dev/null; fi\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
   ],
   "inputs": [
     {
@@ -212,6 +291,24 @@
       "type": "promptString",
       "description": "SEED_PRODUCTS — number of products to create",
       "default": "1"
+    },
+    {
+      "id": "workspaceBranch",
+      "type": "promptString",
+      "description": "Workspace branch name (e.g. feature/feature-name)",
+      "default": "feature/"
+    },
+    {
+      "id": "workspaceName",
+      "type": "promptString",
+      "description": "Workspace location (e.g. feature-name)",
+      "default": "feature-name"
+    },
+    {
+      "id": "worktreePort",
+      "type": "promptString",
+      "description": "Worktree port (e.g. 8081)",
+      "default": "8081"
     }
   ]
 }
