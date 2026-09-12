@@ -5,7 +5,7 @@ import Header from "@presentation/shared/components/Header";
 import ContactsTab from "@presentation/pages/report/components/ContactsTab";
 import GeneralTab from "@presentation/pages/report/components/GeneralTab";
 import MapTab from "@presentation/pages/report/components/MapTab";
-import PlaceholderTab from "@presentation/pages/report/components/PlaceholderTab";
+import SupportTab from "@presentation/pages/report/components/SupportTab";
 import ReportHero, {
   ReportHeroSkeleton,
 } from "@presentation/pages/report/components/ReportHero";
@@ -242,7 +242,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
               {activeTab === "Mapa" && (
                 <MapTab partyId={party.id} partyType={type} />
               )}
-              {activeTab === "Soporte" && <PlaceholderTab tab="Soporte" />}
+              {activeTab === "Soporte" && <SupportTab />}
             </div>
           ) : loadState === "loading" ? (
             activeTab === "General" && <GeneralPanelsSkeleton />

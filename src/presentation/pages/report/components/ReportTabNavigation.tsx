@@ -23,24 +23,22 @@ function ReportTabNavigation({
   onTabChange,
 }: ReportTabNavigationProps) {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const availableTabs = reportTabs.filter((tab) => tab !== "Soporte");
 
   function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>, tab: ReportTab) {
-    if (tab === "Soporte") return;
-    const currentIndex = availableTabs.indexOf(tab);
+    const currentIndex = reportTabs.indexOf(tab);
     let nextIndex: number | undefined;
 
-    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % availableTabs.length;
-    if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + availableTabs.length) % availableTabs.length;
+    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % reportTabs.length;
+    if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + reportTabs.length) % reportTabs.length;
     if (event.key === "Home") nextIndex = 0;
-    if (event.key === "End") nextIndex = availableTabs.length - 1;
+    if (event.key === "End") nextIndex = reportTabs.length - 1;
 
     if (nextIndex === undefined) return;
     event.preventDefault();
-    const nextTab = availableTabs[nextIndex];
+    const nextTab = reportTabs[nextIndex];
     if (!nextTab) return;
     onTabChange(nextTab);
-    tabRefs.current[reportTabs.indexOf(nextTab)]?.focus();
+    tabRefs.current[nextIndex]?.focus();
   }
 
   return (
@@ -53,7 +51,6 @@ function ReportTabNavigation({
         {reportTabs.map((tab, index) => {
           const isActive = activeTab === tab;
           const iconSrc = tabIcons[tab];
-          const isUnavailable = tab === "Soporte";
 
           return (
             <button
@@ -65,10 +62,9 @@ function ReportTabNavigation({
               aria-controls={`report-panel-${tab.toLowerCase()}`}
               aria-selected={isActive}
               tabIndex={isActive ? 0 : -1}
-              disabled={isUnavailable}
               onClick={() => onTabChange(tab)}
               onKeyDown={(event) => handleKeyDown(event, tab)}
-              className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-5 py-3.5 text-sm font-extrabold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:text-gray-400 sm:px-6 ${
+              className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-5 py-3.5 text-sm font-extrabold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-red-600 ${
                 isActive
                   ? "bg-gray-950 text-white"
                   : "cursor-pointer text-gray-600 hover:bg-gray-200 hover:text-gray-950"
@@ -84,7 +80,7 @@ function ReportTabNavigation({
                   }`}
                 />
               )}
-              {tab}{isUnavailable ? " (próximamente)" : ""}
+              {tab}
             </button>
           );
         })}
