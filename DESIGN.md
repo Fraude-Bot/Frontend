@@ -229,6 +229,8 @@ Copy the closest existing variant. Do not introduce a new radius/padding combo f
 | Icon / chevron | `inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200` | Platform filter |
 | Disabled coming-soon | `cursor-not-allowed border border-gray-300 bg-gray-100 text-gray-500` | Home features |
 | Dropdown default | `rounded-md bg-sky-500 px-4 py-2 text-xs font-extrabold text-white hover:bg-sky-600` | Report share |
+| Continue button | `min-w-40 cursor-pointer rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600` | Report Form |
+| Back button | `min-w-40 cursor-pointer rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600` | Report Form |
 
 Disabled controls keep visible text (`próximamente`) rather than being omitted.
 
