@@ -95,9 +95,14 @@ describe("Report page", () => {
 
     expect(await screen.findByText("Fecha del Reporte")).toBeInTheDocument();
     expect(screen.getByText("10-ago-2026")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Reportar" })).toHaveAttribute(
-      "href",
-      "/reportar/estafadores/20",
+    expect(
+      screen
+        .getAllByRole("link", { name: "Reportar" })
+        .find(
+          (link) =>
+            link.getAttribute("href") === "/reportar/estafadores/20",
+        ),
+    ).toBeDefined(
     );
   });
 
