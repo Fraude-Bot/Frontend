@@ -6,6 +6,8 @@ export type ReportFormDraft = {
   partyType: PartyType | null;
   organizationId: string | null;
   companyName: string;
+  scammerId: string | null;
+  individualName: string;
   products: string[];
   reportTitle: string;
   reportDescription: string;
@@ -29,6 +31,8 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
   partyType: null,
   organizationId: null,
   companyName: "",
+  scammerId: null,
+  individualName: "",
   products: [],
   reportTitle: "",
   reportDescription: "",
@@ -38,6 +42,7 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
 export function isReportFormDraftDirty(draft: ReportFormDraft) {
   return (
     draft.companyName.trim() !== "" ||
+    draft.individualName.trim() !== "" ||
     draft.products.length > 0 ||
     draft.reportTitle.trim() !== "" ||
     draft.reportDescription.trim() !== "" ||

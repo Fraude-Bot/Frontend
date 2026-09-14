@@ -1,5 +1,4 @@
-import IndividualIcon from "@presentation/assets/report-individual.webp";
-import CompanyIcon from "@presentation/assets/report-company.webp";
+import reportIcons from "@presentation/pages/report/components/icons";
 import type {
   PartyType,
   ReportFormStepProps,
@@ -16,14 +15,14 @@ const PARTY_TYPE_OPTIONS: {
     title: "Un individuo",
     description:
       "Persona particular, vendedor informal, perfil de red social o particular sin registro formal.",
-    imageSrc: IndividualIcon,
+    imageSrc: reportIcons.individual,
   },
   {
     value: "company",
     title: "Una empresa",
     description:
       "Negocio, tienda en línea, plataforma web, marca o entidad registrada.",
-    imageSrc: CompanyIcon,
+    imageSrc: reportIcons.company,
   },
 ];
 
@@ -40,7 +39,7 @@ function PartyTypeOption({
 }) {
   return (
     <label
-      className={`flex flex-1 cursor-pointer flex-col items-center rounded-xl px-4 py-6 text-center transition-colors hover:bg-orange-50/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-orange-600 ${
+      className={`flex flex-1 cursor-pointer select-none flex-col items-center rounded-xl px-4 py-6 text-center transition-colors hover:bg-orange-50/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-orange-600 ${
         selected ? "bg-orange-50 ring-2 ring-orange-400" : ""
       }`}
     >
@@ -57,8 +56,10 @@ function PartyTypeOption({
         alt=""
         className="pointer-events-none h-28 w-28 object-contain sm:h-32 sm:w-32"
       />
-      <span className="mt-6 text-xl font-extrabold text-gray-900">{title}</span>
-      <span className="mt-3 max-w-xs text-sm leading-relaxed text-gray-600 sm:text-base">
+      <span className="pointer-events-none mt-6 text-xl font-extrabold text-gray-900">
+        {title}
+      </span>
+      <span className="pointer-events-none mt-3 max-w-xs text-sm leading-relaxed text-gray-600 sm:text-base">
         {description}
       </span>
     </label>

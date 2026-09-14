@@ -1,5 +1,5 @@
 import PartyTypeStep from "@/presentation/pages/report-form/components/PartyTypeStep";
-import CompanyDetailsStep from "@/presentation/pages/report-form/components/CompanyDetailsStep";
+import ReportDetailsStep from "@/presentation/pages/report-form/components/ReportDetailsStep";
 import type { ReportFormStep } from "@/presentation/pages/report-form/components/types";
 
 /**
@@ -15,7 +15,7 @@ export const REPORT_FORM_STEPS: ReportFormStep[] = [
   {
     id: "company-details",
     title: "Información del reporte",
-    Component: CompanyDetailsStep,
+    Component: ReportDetailsStep,
   },
 ];
 

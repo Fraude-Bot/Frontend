@@ -15,6 +15,8 @@ import mapIllustrationIcon from "@presentation/assets/knowledge-graph.webp";
 import legalHelpIcon from "@presentation/assets/auction.webp";
 import customerServiceIcon from "@presentation/assets/customer-service.webp";
 import agreementIcon from "@presentation/assets/agreement.webp";
+import individualIcon from "@presentation/assets/report-individual.webp";
+import companyIcon from "@presentation/assets/report-company.webp";
 
 const reportIcons = {
   warning: warningIcon,
@@ -35,6 +37,8 @@ const reportIcons = {
   legalHelp: legalHelpIcon,
   customerService: customerServiceIcon,
   agreement: agreementIcon,
+  individual: individualIcon,
+  company: companyIcon,
 };
 
 export default reportIcons;

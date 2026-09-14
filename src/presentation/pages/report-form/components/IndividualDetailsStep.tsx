@@ -5,7 +5,7 @@ import {
   type ReactTagsAPI,
   type Tag,
 } from "react-tag-autocomplete";
-import CompanyNameInput from "@/presentation/pages/report-form/components/CompanyNameInput";
+import PartyNameInput from "@/presentation/pages/report-form/components/PartyNameInput";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import "@/presentation/pages/report-form/components/report-tags.css";
 
@@ -27,6 +27,15 @@ const PRODUCT_TAG_CLASS_NAMES: ClassNames = {
   highlight: "report-product-tags__highlight",
 };
 
+const EXAMPLE_INDIVIDUALS = [
+  { id: "example:carlos-ponzi", name: "Carlos Ponzi" },
+  { id: "example:ruja-ignatova", name: "Ruja Ignatova" },
+  { id: "example:bernard-madoff", name: "Bernard Madoff" },
+];
+
+const FIELD_CLASS =
+  "h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
+
 function AddTile({ label }: { label: string }) {
   return (
     <button
@@ -39,7 +48,7 @@ function AddTile({ label }: { label: string }) {
   );
 }
 
-function CompanyDetailsStep({
+function IndividualDetailsStep({
   draft,
   updateDraft,
   goNext,
@@ -47,7 +56,7 @@ function CompanyDetailsStep({
 }: ReportFormStepProps) {
   const productTagsRef = useRef<ReactTagsAPI>(null);
 
-  if (draft.partyType !== "company") {
+  if (draft.partyType !== "individual") {
     return null;
   }
 
@@ -111,32 +120,37 @@ function CompanyDetailsStep({
 
   return (
     <section className="mx-auto mt-10 w-full max-w-2xl pb-10">
-      <h2 className="sr-only">Información de la empresa y del reporte</h2>
+      <h2 className="sr-only">Información del individuo y del reporte</h2>
 
       <div className="space-y-5">
         <div>
           <label
-            htmlFor="company-name"
+            htmlFor="individual-name"
             className="mb-2 block font-extrabold text-gray-900"
           >
-            Nombre de la empresa
+            Nombre del individuo
           </label>
-          <CompanyNameInput
-            value={draft.companyName}
-            onChange={(companyName, organizationId) =>
-              updateDraft({ companyName, organizationId })
+          <PartyNameInput
+            id="individual-name"
+            value={draft.individualName}
+            onChange={(individualName, scammerId) =>
+              updateDraft({ individualName, scammerId })
             }
+            placeholder="E.g. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)"
+            listLabel="Individuos reportados"
+            resultType="scammer"
+            examples={EXAMPLE_INDIVIDUALS}
           />
         </div>
 
         <div>
           <p className="mb-2 font-extrabold text-gray-900">
-            Productos que ofrecen
+            Productos que ofrece
           </p>
           <div onKeyDownCapture={addProductOnEnter}>
             <ReactTags
               ref={productTagsRef}
-              id="company-products"
+              id="individual-products"
               selected={selectedProducts}
               suggestions={[]}
               onAdd={addProduct}
@@ -148,8 +162,8 @@ function CompanyDetailsStep({
               noOptionsText="Escribe un producto"
               collapseOnSelect
               delimiterKeys={["Enter"]}
-              labelText="Productos que ofrece la empresa"
-              placeholderText="Ej. (Préstamos, Ponzi, Inversiones, Electrónicos...)"
+              labelText="Productos que ofrece el individuo"
+              placeholderText="E.g. (Prestamos, Venta de Automóvil, Inversiones, Electrónicos...)"
               deleteButtonText="Eliminar %value%"
               ariaAddedText="Producto %value% agregado"
               ariaDeletedText="Producto %value% eliminado"
@@ -160,32 +174,32 @@ function CompanyDetailsStep({
 
         <div>
           <label
-            htmlFor="report-title"
+            htmlFor="individual-report-title"
             className="mb-2 block font-extrabold text-gray-900"
           >
             Título de tu reporte
           </label>
           <input
-            id="report-title"
+            id="individual-report-title"
             type="text"
             value={draft.reportTitle}
             onChange={(event) =>
               updateDraft({ reportTitle: event.currentTarget.value })
             }
-            placeholder="Ej. (Me estafó $2,000 MXN, me estafó esta empresa...)"
-            className="h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+            placeholder="E.g. (Me estafó $2,000 MXN, me estafó este tipo...)"
+            className={FIELD_CLASS}
           />
         </div>
 
         <div>
           <label
-            htmlFor="report-description"
+            htmlFor="individual-report-description"
             className="mb-2 block font-extrabold text-gray-900"
           >
             Descripción de tu reporte
           </label>
           <textarea
-            id="report-description"
+            id="individual-report-description"
             value={draft.reportDescription}
             onChange={(event) =>
               updateDraft({ reportDescription: event.currentTarget.value })
@@ -199,7 +213,7 @@ function CompanyDetailsStep({
         <div>
           <p className="mb-2 font-extrabold text-gray-900">
             Capturas de pantalla de pruebas{" "}
-            <span className="uppercase">(Opcional)</span>
+            <span className="uppercase">(OPCIONAL)</span>
           </p>
           <div className="flex flex-wrap gap-3">
             {draft.evidenceFiles.map((file, index) => (
@@ -239,7 +253,7 @@ function CompanyDetailsStep({
         <div className="pt-1">
           <h3 className="font-extrabold text-gray-900">Contactos</h3>
           <p className="mt-1 text-sm text-gray-600">
-            Los perfiles/números que haya utilizado la empresa para contactarte
+            Los perfiles/números que haya utilizado el individuo para contactarte
           </p>
           <div className="mt-4 flex flex-wrap gap-4">
             <AddTile label="Agregar contacto" />
@@ -249,7 +263,7 @@ function CompanyDetailsStep({
         <div className="pt-1">
           <h3 className="font-extrabold text-gray-900">Métodos de pagos</h3>
           <p className="mt-1 text-sm text-gray-600">
-            Los números de cuenta/bancos/wallets que esté utilizando la empresa
+            Los números de cuenta/bancos/wallets que esté utilizando el individuo
             para captar fondos
           </p>
           <div className="mt-4 flex flex-wrap gap-4">
@@ -278,4 +292,4 @@ function CompanyDetailsStep({
   );
 }
 
-export default CompanyDetailsStep;
+export default IndividualDetailsStep;

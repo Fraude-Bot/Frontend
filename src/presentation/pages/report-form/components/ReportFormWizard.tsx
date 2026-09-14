@@ -1,4 +1,10 @@
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import DiscardChangesModal from "@/presentation/pages/report-form/components/DiscardChangesModal";
 import ReportFormStepper from "@/presentation/pages/report-form/components/ReportFormStepper";
@@ -22,6 +28,12 @@ type ReportFormWizardProps = {
   plannedStepCount?: number;
 };
 
+function scrollFormToTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 function ReportFormWizard({
   steps = REPORT_FORM_STEPS,
   plannedStepCount = REPORT_FORM_PLANNED_STEPS,
@@ -38,12 +50,34 @@ function ReportFormWizard({
   const StepComponent = steps[currentStepIndex].Component;
   const totalSteps = getReportFormStepCount(steps.length, plannedStepCount);
   const wizardHistoryDepthRef = useRef(0);
-  const lastStepIndexRef = useRef(currentStepIndex);
+  const lastStepIndexRef = useRef(0);
+  const farthestStepIndexRef = useRef(0);
   const draftRef = useRef(draft);
   const restoringDirtyBackRef = useRef(false);
   const allowDirtyReturnRef = useRef(false);
 
   draftRef.current = draft;
+
+  useEffect(() => {
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    const timeoutIds: number[] = [];
+
+    function handlePopState() {
+      scrollFormToTop();
+      requestAnimationFrame(scrollFormToTop);
+      timeoutIds.push(window.setTimeout(scrollFormToTop, 0));
+      timeoutIds.push(window.setTimeout(scrollFormToTop, 50));
+    }
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.history.scrollRestoration = previousRestoration;
+      window.removeEventListener("popstate", handlePopState);
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const rawStep = searchParams.get(REPORT_FORM_STEP_PARAM);
@@ -59,6 +93,15 @@ function ReportFormWizard({
   }, [currentStepIndex, searchParams, setSearchParams]);
 
   useLayoutEffect(() => {
+    if (currentStepIndex > farthestStepIndexRef.current) {
+      setSearchParams(
+        (current) =>
+          getReportFormStepSearchParams(farthestStepIndexRef.current, current),
+        { replace: true },
+      );
+      return;
+    }
+
     const previousStepIndex = lastStepIndexRef.current;
     const returningToFirstStep =
       currentStepIndex === 0 && previousStepIndex > 0;
@@ -88,6 +131,7 @@ function ReportFormWizard({
     }
 
     if (returningToFirstStep) {
+      farthestStepIndexRef.current = 0;
       setDraft(EMPTY_REPORT_FORM_DRAFT);
     }
 
@@ -103,8 +147,18 @@ function ReportFormWizard({
     }
 
     lastStepIndexRef.current = currentStepIndex;
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    scrollFormToTop();
   }, [currentStepIndex, setSearchParams]);
+
+  useEffect(() => {
+    scrollFormToTop();
+    const frameId = requestAnimationFrame(() => {
+      scrollFormToTop();
+      requestAnimationFrame(scrollFormToTop);
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [currentStepIndex]);
 
   function updateDraft(patch: Partial<ReportFormDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
@@ -142,7 +196,7 @@ function ReportFormWizard({
   }
 
   function goToStep(index: number) {
-    if (index === currentStepIndex) {
+    if (index === currentStepIndex || index > currentStepIndex) {
       return;
     }
 
@@ -156,23 +210,33 @@ function ReportFormWizard({
     navigateToStep(index);
   }
 
+  function goNext() {
+    const nextIndex = currentStepIndex + 1;
+    if (nextIndex >= steps.length) {
+      return;
+    }
+
+    farthestStepIndexRef.current = Math.max(
+      farthestStepIndexRef.current,
+      nextIndex,
+    );
+    navigateToStep(nextIndex);
+  }
+
+  function goBack() {
+    goToStep(currentStepIndex - 1);
+  }
+
   function cancelDiscard() {
     setIsDiscardConfirmOpen(false);
   }
 
   function confirmDiscard() {
     allowDirtyReturnRef.current = true;
+    farthestStepIndexRef.current = 0;
     setIsDiscardConfirmOpen(false);
     setDraft(EMPTY_REPORT_FORM_DRAFT);
     navigateToStep(0);
-  }
-
-  function goNext() {
-    goToStep(currentStepIndex + 1);
-  }
-
-  function goBack() {
-    goToStep(currentStepIndex - 1);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
