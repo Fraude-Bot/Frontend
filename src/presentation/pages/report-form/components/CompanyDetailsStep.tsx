@@ -32,7 +32,7 @@ function AddTile({ label }: { label: string }) {
     <button
       type="button"
       aria-label={label}
-      className="flex h-20 min-w-40 items-center justify-center border border-gray-300 bg-white text-4xl font-light text-gray-900 transition-colors hover:border-orange-400 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+      className="flex h-20 min-w-40 cursor-pointer items-center justify-center border border-gray-300 bg-white text-4xl font-light text-gray-900 transition-colors hover:border-orange-400 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
     >
       <span aria-hidden="true">+</span>
     </button>
@@ -262,14 +262,14 @@ function CompanyDetailsStep({
         <button
           type="button"
           onClick={goBack}
-          className="min-w-40 rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          className="min-w-40 cursor-pointer rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
         >
           Regresar
         </button>
         <button
           type="button"
           onClick={goNext}
-          className="min-w-40 rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          className="min-w-40 cursor-pointer rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
         >
           Continuar
         </button>

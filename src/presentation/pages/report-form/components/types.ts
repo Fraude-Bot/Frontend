@@ -34,3 +34,13 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
   reportDescription: "",
   evidenceFiles: [],
 };
+
+export function isReportFormDraftDirty(draft: ReportFormDraft) {
+  return (
+    draft.companyName.trim() !== "" ||
+    draft.products.length > 0 ||
+    draft.reportTitle.trim() !== "" ||
+    draft.reportDescription.trim() !== "" ||
+    draft.evidenceFiles.length > 0
+  );
+}
