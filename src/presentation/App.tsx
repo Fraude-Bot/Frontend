@@ -9,6 +9,7 @@ const Contact = lazy(() => import("@presentation/pages/contact/Contact"));
 const Search = lazy(() => import("@presentation/pages/search/Search"));
 const NotFound = lazy(() => import("@presentation/pages/404/NotFound"));
 const Report = lazy(() => import("@presentation/pages/report/Report"));
+const ReportForm = lazy(() => import("@presentation/pages/report-form/ReportForm"));
 
 function RouteLoadingFallback() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path={APP_ROUTES.home} element={<Home />} />
             <Route path={APP_ROUTES.contact} element={<Contact />} />
             <Route path={APP_ROUTES.search} element={<Search />} />
+            <Route path={APP_ROUTES.report} element={<ReportForm />} />
             <Route
               path={APP_ROUTES.organization}
               element={<Report type="organization" />}

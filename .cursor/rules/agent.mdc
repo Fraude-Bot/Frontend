@@ -1,0 +1,50 @@
+---
+description: Agent workflow for feature worktrees — Docker-first dev, no unsolicited tests
+alwaysApply: true
+---
+
+# Agent Guide
+
+Follow these rules in every agent session for this workspace.
+
+## Tests
+
+- Do **not** add or extend component tests (Vitest) or E2E tests (Playwright) unless the user explicitly asks.
+- You may still **run** existing tests to verify changes.
+- If the user asks for tests, that overrides this rule.
+
+## Dev servers
+
+- Do **not** start new local dev servers (e.g. `npm run dev`, `vite`, extra Playwright web servers).
+- Assume a Docker container is already serving the app.
+- Use the running container URL (worktree port or main compose) for manual checks.
+
+## Installing npm packages
+
+When adding a dependency, install it in **both** places:
+
+1. **Worktree Docker container** — `fraudebot-frontend-<workspace-name>`, mounted at `/app`:
+
+   ```bash
+   docker exec -w /app fraudebot-frontend-report-page npm install <package>
+   ```
+
+   If that container is not running, use the main compose frontend service from `docker/`:
+
+   ```bash
+   cd ../docker && docker compose exec -T -w /app frontend npm install <package>
+   ```
+
+   Note: the main `frontend` service mounts the **main** checkout (`../frontend`), not feature worktrees. Prefer the worktree container when developing in `workspaces/<name>/`.
+
+2. **Active feature worktree directory** — the folder you are editing (e.g. `workspaces/report-page/`):
+
+   ```bash
+   npm install <package>
+   ```
+
+Both installs are required so the container volume (`node_modules`) and the local worktree stay in sync.
+
+## Related rules
+
+- `git-workspaces.mdc` — edit only in feature worktrees, never on `main`.

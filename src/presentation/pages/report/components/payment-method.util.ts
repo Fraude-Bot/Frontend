@@ -15,6 +15,14 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
   other: "Otro",
 };
 
+export const PAYMENT_TYPE_OPTIONS = [
+  { value: "1", label: "Tarjeta" },
+  { value: "2", label: "CLABE" },
+  { value: "3", label: "Número de cuenta" },
+  { value: "4", label: "Wallet" },
+  { value: "5", label: "Otro" },
+] as const;
+
 function normalizePaymentTypeKey(value: string | number): string {
   return String(value).trim().toLowerCase();
 }

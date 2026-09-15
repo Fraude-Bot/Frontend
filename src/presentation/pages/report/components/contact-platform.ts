@@ -3,12 +3,12 @@ export const SOCIAL_FILTERS = [
   { platform: "Facebook", label: "Facebook" },
   { platform: "Youtube", label: "YouTube" },
   { platform: "TikTok", label: "TikTok" },
-  { platform: "Email", label: "Email" },
-  { platform: "Cellphone", label: "Cellphone" },
+  { platform: "Email", label: "Correo electrónico" },
+  { platform: "Cellphone", label: "Celular" },
   { platform: "Telegram", label: "Telegram" },
   { platform: "Instagram", label: "Instagram" },
-  { platform: "Webpage", label: "Webpage" },
-  { platform: "Other", label: "Other" },
+  { platform: "Webpage", label: "Sitio Web" },
+  { platform: "Other", label: "Otro" },
 ] as const;
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -21,8 +21,8 @@ const PLATFORM_LABELS: Record<string, string> = {
   telegram: "Telegram",
   instagram: "Instagram",
   webpage: "Webpage",
-  url: "Webpage",
-  other: "Other",
+  url: "Webpage", 
+  other: "Otro",
 };
 
 export function getPlatformLabel(platform: string): string {
