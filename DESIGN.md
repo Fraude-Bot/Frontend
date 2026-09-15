@@ -1,6 +1,6 @@
 # DESIGN.md
 
-Visual reference for the FraudeBot frontend as it exists today. This is not a tokenized design system: there is no `@theme` block, no CSS custom properties, and no shared `Button` / `Input` / `Modal` primitives. UI is Tailwind CSS v4 utilities written inline in React components.
+Visual reference for the FraudeBot frontend as it exists today. This is not a tokenized design system: there is no `@theme` block, no CSS custom properties, and no shared `Button` / `Input` primitives. There is a shared `Modal` shell. UI is Tailwind CSS v4 utilities written inline in React components.
 
 Read this file before changing layout, color, typography, or shared presentation components. Prefer existing patterns over new visual values.
 
@@ -30,7 +30,7 @@ Two visual contexts coexist. Keep them; do not unify orange and red unless a lat
 
 | Context | Pages | Accent | Typical focus ring |
 | --- | --- | --- | --- |
-| Marketing | Home, Contact, 404 | Orange | `outline-orange-600` / `outline-orange-700` |
+| Marketing | Home, Contact, 404, report form (`/reportar`) | Orange | `outline-orange-600` / `outline-orange-700` |
 | Investigation | Search, report/profile | Red | `outline-red-600` |
 
 Header and footer are shared on every page and always use the marketing (orange) treatment, including on search and report pages.
@@ -67,6 +67,8 @@ Used for most surfaces, type, and borders.
 | Soft border | `border-orange-100` |
 | Nav hover | `hover:text-orange-700`, `hover:bg-orange-50` |
 | Primary CTA | `bg-orange-700 hover:bg-orange-800 text-white` |
+| Report form / modal primary | `bg-orange-600 hover:bg-orange-700 text-white` |
+| Modal / report-form outline | `border-orange-500` on white, `hover:bg-orange-50` |
 | Eyebrow label | `text-orange-700` |
 | Footer “Próximamente” | `text-orange-300` |
 | Feature primary (custom) | `#c95f28` / hover `#a94c1e` |
@@ -100,6 +102,7 @@ These are real, not leftovers to ignore:
 | Status “Activo” | `bg-amber-100 text-amber-800` |
 | Status “Inactivo” | `bg-slate-100 text-slate-600` |
 | Lightbox overlay | `bg-black/80` |
+| Modal overlay | `bg-black/50` |
 | Resource tile overlay | `bg-gray-900` image at `opacity-60`, badge `bg-black/70` |
 
 Do not add new hue families (green success, purple, etc.) for product chrome. Platform brand colors on icons are an exception.
@@ -170,7 +173,7 @@ Pages are a vertical stack: **Header → main → Footer**. Header is overlayed,
 | --- | --- |
 | Radius | `rounded-sm` (search cards, resource tiles, pagination), `rounded` / `rounded-md` (most controls), `rounded-lg` (marketing CTAs, 404 art frame), `rounded-xl` (home search card, empty profile), `rounded-2xl` (contact card, review cards, report hero, avatars), `rounded-full` (coming-soon pill, avatars) |
 | Shadow | `shadow-sm` (header, cards, pagination), `shadow-lg` (home search, reviews, dropdown), `shadow-xl` (report hero), `shadow-md` on search-card hover |
-| Overlay | Lightbox `bg-black/80`; resource tiles `opacity-60` image + `bg-black/70` pill |
+| Overlay | Shared modal backdrop `bg-black/50`; lightbox `bg-black/80`; resource tiles `opacity-60` image + `bg-black/70` pill |
 | Motion | Color/shadow `transition-colors` or `transition-all duration-200 ease-in-out`; skeletons `animate-pulse` / `motion-safe:animate-pulse` |
 | Report tabs | No rounding on the tab strip |
 
@@ -187,10 +190,60 @@ Reuse these before adding new ones. New shared UI belongs in `src/presentation/s
 | `SearchInput` | Composite text field + **Buscar**. `accent="orange"` (default, home) or `"red"` (search). Border `border-gray-400`, `rounded-md`, stacks on small screens. |
 | `PaginationNav` | Anterior / pages / Siguiente. White buttons, active page red. Hidden when `totalPages < 1`. |
 | `DropdownButton` | Menu button; default sky fill, overridable `className`. Menu: `rounded-md border-gray-100 bg-white shadow-lg`. Escape and outside click close it. |
+| `Modal` | Base dialog for confirmations and forms. Native `<dialog showModal()>`. See **Modal** below. |
+| `SearchableSelect` | Combobox for a closed option list with type-to-filter. Orange chevron on the left; list `border-gray-300 bg-white shadow-lg`, active row `bg-orange-50`. Use inside `Modal` forms (and elsewhere) instead of Select2 / react-select. |
 | `ErrorBoundary` | Full-screen gray-50 fallback, red **Actualizar página**. |
 | `LottieAnimation` | Wrapper for `.lottie` assets. |
 
-There is **no** shared Button, Input, Badge, Card, Modal, or icon set. Those patterns are duplicated in page components.
+There is **no** shared Button, Input, Badge, Card, or icon set. Those patterns are duplicated in page components. New overlay dialogs should use `Modal`, not a one-off `role="dialog"` panel — except `ImageLightbox`, which stays a full-screen photo viewer.
+
+### Modal
+
+`src/presentation/shared/components/Modal.tsx` is the shell for every product dialog except the report image lightbox.
+
+**Chrome**
+
+| Part | Treatment |
+| --- | --- |
+| Backdrop | `backdrop:bg-black/50`; click outside calls `onClose` |
+| Panel | White, `rounded-lg`, `shadow-lg`, `font-[Nunito]`, `max-h-[90vh]` |
+| Width | `size="md"` (default) `42rem`; `size="lg"` `48rem`. Both use `min(calc(100%-2rem), …)` |
+| Title | Left-aligned `text-xl sm:text-2xl font-extrabold text-gray-900` |
+| Header divider | Off by default. Set `headerDivider` for form dialogs (`border-b border-gray-200`) |
+| Body | Slot (`children`). Confirmation copy is centered in a tall block (`min-h-48`). Forms use a padded grid. |
+| Footer | `border-t border-gray-200`, `gap-3`, `px-6 py-4 sm:px-8` |
+
+**Actions**
+
+| Layout | Footer | Buttons |
+| --- | --- | --- |
+| One action | Centered | Always the orange filled (primary) style |
+| Two or more | Right-aligned | `variant="secondary"` outline, then `variant="primary"` fill. Typical pair: **Cerrar** / **Crear**, or **Regresar** / **Continuar** |
+
+| Variant | Classes (representative) |
+| --- | --- |
+| Primary | `rounded-md bg-orange-600 px-5 py-1.5 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600` |
+| Secondary | `rounded-md border border-orange-500 bg-white px-5 py-1.5 font-bold text-gray-900 hover:bg-orange-50` + the same orange focus ring |
+| Disabled | `disabled:cursor-not-allowed disabled:opacity-50` |
+
+Do not put a gray or red footer button on this shell. Single-button dialogs stay orange fill and centered, even if the label is dismissive.
+
+**Behavior**
+
+- Escape and backdrop click close the dialog (`onClose`).
+- If a `SearchableSelect` (or any `role="combobox"`) is expanded, Escape closes the list first, not the modal.
+- `autoFocusAction` defaults to `true` (focus the primary footer button — confirmations). Form modals set it `false` so the first field can take focus.
+- Page-specific dialogs compose this shell; they do not restyle the panel or footer.
+
+**Current consumers**
+
+| Dialog | File | Notes |
+| --- | --- | --- |
+| Leave step 1 | `DiscardChangesModal` | `md`, no header divider, centered body copy, **Regresar** (leave) + **Continuar** (stay) |
+| Add contact | `AddContactModal` | `lg`, `headerDivider`, form fields, **Cerrar** + **Crear** |
+| Add payment method | `AddPaymentModal` | `lg`, `headerDivider`, form fields, **Cerrar** + **Crear**. Type list uses `SearchableSelect` with `PAYMENT_TYPE_OPTIONS` |
+
+Future similar dialogs should reuse this shell. `ImageLightbox` is **not** this pattern: darker overlay (`bg-black/80`), no title/footer chrome.
 
 ### Page-level patterns to copy
 
@@ -206,7 +259,8 @@ There is **no** shared Button, Input, Badge, Card, Modal, or icon set. Those pat
 | Profile panels | General / Support | White, `border-gray-200`, `divide-y` / `lg:divide-x`, hover `bg-gray-50` |
 | List row card | `ContactCard`, `PartyReportCard` | `rounded-md border-gray-200 px-4 py-3 hover:bg-gray-50` |
 | Platform chips | `PlatformFilterRow` | Unselected white + gray border; selected blue fill |
-| Lightbox | `ImageLightbox` | `role="dialog"`, Escape, restore focus, lock body scroll |
+| Report form wizard | `report-form/` | 3-step stepper, orange Continue / Back, party cards, circular party photo upload, product tags. Confirm leave + add-contact use shared `Modal`. |
+| Lightbox | `ImageLightbox` | Full-screen photo `role="dialog"`, Escape, restore focus, lock body scroll. Not the shared `Modal` shell. |
 | Map nodes | `MapPartyNode`, `MapSatelliteNode` | `w-52 rounded-md border-gray-200 bg-white shadow-sm`; current party uses `border-gray-950` |
 | Chart | `MonthlyReportsChart` | Chart.js bars `#111827`, Nunito ticks, `sr-only` data table |
 | Empty / loading illustration | Search `NotFound` / `Loader`, page `404` | 16rem frame `bg-gray-50 rounded-lg` + Lottie + gray-500 message |
@@ -231,16 +285,21 @@ Copy the closest existing variant. Do not introduce a new radius/padding combo f
 | Dropdown default | `rounded-md bg-sky-500 px-4 py-2 text-xs font-extrabold text-white hover:bg-sky-600` | Report share |
 | Continue button | `min-w-40 cursor-pointer rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600` | Report Form |
 | Back button | `min-w-40 cursor-pointer rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600` | Report Form |
+| Modal primary | `rounded-md bg-orange-600 px-5 py-1.5 font-bold text-white hover:bg-orange-700` + orange focus ring | Shared `Modal` footer |
+| Modal secondary | `rounded-md border border-orange-500 bg-white px-5 py-1.5 font-bold text-gray-900 hover:bg-orange-50` + orange focus ring | Shared `Modal` footer |
 
 Disabled controls keep visible text (`próximamente`) rather than being omitted.
 
 ## Forms and inputs
 
-- Search is the only production form. Placeholder: `Número de cuenta, tarjeta, teléfono o URL`.
+- Search remains the public lookup form. Placeholder: `Número de cuenta, tarjeta, teléfono o URL`.
 - Composite field: white fill, `border-gray-400`, `rounded-md`, `focus-within:outline-2 focus-within:outline-offset-2` in the page accent.
 - Standalone text inside the composite: `px-4 py-4 text-lg text-gray-900 outline-none`.
 - Visible `<label>` on home; `sr-only` label on the search page (the page has an `sr-only` `h1`).
 - Year selector and other native controls in report General follow nearby gray borders; do not restyle them as a new component.
+- **Report form** (`/reportar`) uses square-ish fields on the page (`h-11`, `border-gray-300`, orange focus ring) and **rounded-md** fields inside `Modal` forms (`h-11 rounded-md border-gray-300 px-3`, `focus:border-orange-500 focus:ring-1 focus:ring-orange-500`). Labels over modal fields are `font-bold text-gray-900`.
+- Party photo on Individual / Organization details is a centered `h-28 w-28 rounded-full` dashed circle with a plus (`PartyPhotoInput`). A selected image previews inside the same control; click replaces it, and a small × removes it.
+- Closed lists with search use `SearchableSelect`, not a native `<select>` restyle or a third-party select widget.
 
 ## Cards, badges, tabs
 
@@ -272,7 +331,8 @@ Follow these when adding UI; they are already used in production components.
 - Visible `focus-visible` rings (`outline-2`, usually `outline-offset-4`; tighter offset inside dense chrome).
 - Marketing focus: orange. Investigation focus: red. Footer links: white. Support email: sky.
 - Header mobile toggle meets `min-h-11 min-w-11`.
-- Dialogs (`ImageLightbox`) use `role="dialog"`, Escape to close, focus restore, `aria-modal`.
+- Product dialogs use shared `Modal` (`<dialog>`, `showModal()`, `aria-labelledby` on the title). Escape and backdrop click close; an open combobox eats Escape first.
+- The photo lightbox (`ImageLightbox`) is a separate `role="dialog"`: Escape, restore focus, lock body scroll, `aria-modal`. Do not restyle it to match `Modal`.
 - Tabs use `role="tablist"` / `tab` / `tabpanel`, `aria-selected`, and arrow / Home / End keys.
 - Pagination uses `aria-current="page"` and an `aria-label` on the nav.
 - Loading and empty search results use `role="status"`; errors use `role="alert"`.
@@ -291,8 +351,9 @@ Follow these when adding UI; they are already used in production components.
 
 ## Do
 
-- Match the page context: orange on marketing pages, red on search/report actions.
-- Reuse `Header`, `Footer`, `SearchInput`, `PaginationNav`, `DropdownButton`, `ImageLightbox`, and `PlatformIcon` instead of restyling from scratch.
+- Match the page context: orange on marketing pages and the report form, red on search/report **profile** actions.
+- Reuse `Header`, `Footer`, `SearchInput`, `PaginationNav`, `DropdownButton`, `Modal`, `SearchableSelect`, `ImageLightbox`, and `PlatformIcon` instead of restyling from scratch.
+- New confirmations and form dialogs compose `Modal`. One footer button is centered and orange; two or more are right-aligned (outline + fill).
 - Keep Nunito, Spanish copy, and the existing type scale.
 - Keep white content cards on photographic heroes.
 - Prefer Tailwind utilities already used nearby over arbitrary new hex values.
@@ -303,22 +364,24 @@ Follow these when adding UI; they are already used in production components.
 - Do not invent CSS variables, a Tailwind `@theme`, or a component library in passing UI work. Document-only file first; tokenization is a separate change.
 - Do not introduce dark mode.
 - Do not replace Nunito or mix in a second display font.
-- Do not use red CTAs on home/contact/404, or orange primary actions on search/report bodies (header/footer remain orange everywhere).
+- Do not use red CTAs on home/contact/404, or orange primary actions on search/report **profile** bodies (header/footer remain orange everywhere). The **report form** (`/reportar`) and shared `Modal` are marketing-orange by design.
 - Do not add a third primary brand color.
-- Do not build new buttons, inputs, or modals as one-off styles when a page already has a close variant.
+- Do not build new buttons, inputs, or dialogs as one-off styles when a page already has a close variant. Do not fork `Modal` chrome for a new overlay.
 - Do not drop accessibility attributes from the components that already have them.
 
 ## Known inconsistencies (document, don’t “fix” silently)
 
 These are part of the current product. Change them only with an explicit design pass.
 
-1. Two oranges for primary actions: Tailwind `orange-700` vs hex `#c95f28`.
+1. Several oranges for primary actions: Tailwind `orange-700` (marketing CTAs), `orange-600` (report form + `Modal`), hex `#c95f28` (home features).
 2. Share dropdown defaults to sky, not red or orange.
 3. Platform filter selection is blue, not red.
 4. Support mailto is sky, not orange or red.
 5. `font-[Nunito]` is repeated on many nodes even though `body` already sets it.
 6. Border radius is inconsistent across similar cards (`rounded-sm` vs `rounded-md` vs `rounded-2xl`).
 7. Search `accent` exists, but pagination is always red.
-8. No shared primitives, so the same button is re-specified in several files.
+8. No shared Button/Input primitives, so the same button is re-specified in several files. `Modal` and `SearchableSelect` are the exceptions for dialogs and searchable closed lists.
+9. Modal overlay is `bg-black/50`; the photo lightbox is `bg-black/80`.
+10. Report-form page fields are unrounded; fields inside `Modal` are `rounded-md`.
 
 When in doubt, copy the closest screen in `src/presentation/pages/` rather than averaging these values into a new one.

@@ -6,6 +6,9 @@ import {
   type Tag,
 } from "react-tag-autocomplete";
 import PartyNameInput from "@/presentation/pages/report-form/components/PartyNameInput";
+import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
+import ReportContactsSection from "@/presentation/pages/report-form/components/ReportContactsSection";
+import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import "@/presentation/pages/report-form/components/report-tags.css";
 
@@ -35,18 +38,6 @@ const EXAMPLE_INDIVIDUALS = [
 
 const FIELD_CLASS =
   "h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
-
-function AddTile({ label }: { label: string }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className="flex h-20 min-w-40 cursor-pointer items-center justify-center border border-gray-300 bg-white text-4xl font-light text-gray-900 transition-colors hover:border-orange-400 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-    >
-      <span aria-hidden="true">+</span>
-    </button>
-  );
-}
 
 function IndividualDetailsStep({
   draft,
@@ -123,6 +114,14 @@ function IndividualDetailsStep({
       <h2 className="sr-only">Información del individuo y del reporte</h2>
 
       <div className="space-y-5">
+        <PartyPhotoInput
+          id="individual-photo"
+          file={draft.avatarFile}
+          onChange={(avatarFile) => updateDraft({ avatarFile })}
+          addLabel="Agregar foto del individuo"
+          changeLabel="Cambiar foto del individuo"
+        />
+
         <div>
           <label
             htmlFor="individual-name"
@@ -136,7 +135,7 @@ function IndividualDetailsStep({
             onChange={(individualName, scammerId) =>
               updateDraft({ individualName, scammerId })
             }
-            placeholder="E.g. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)"
+            placeholder="Ej. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)"
             listLabel="Individuos reportados"
             resultType="scammer"
             examples={EXAMPLE_INDIVIDUALS}
@@ -163,7 +162,7 @@ function IndividualDetailsStep({
               collapseOnSelect
               delimiterKeys={["Enter"]}
               labelText="Productos que ofrece el individuo"
-              placeholderText="E.g. (Prestamos, Venta de Automóvil, Inversiones, Electrónicos...)"
+              placeholderText="Ej. (Prestamos, Venta de Automóvil, Inversiones, Electrónicos...)"
               deleteButtonText="Eliminar %value%"
               ariaAddedText="Producto %value% agregado"
               ariaDeletedText="Producto %value% eliminado"
@@ -186,7 +185,7 @@ function IndividualDetailsStep({
             onChange={(event) =>
               updateDraft({ reportTitle: event.currentTarget.value })
             }
-            placeholder="E.g. (Me estafó $2,000 MXN, me estafó este tipo...)"
+            placeholder="Ej. (Me estafó $2,000 MXN, me estafó este tipo...)"
             className={FIELD_CLASS}
           />
         </div>
@@ -250,26 +249,17 @@ function IndividualDetailsStep({
           </div>
         </div>
 
-        <div className="pt-1">
-          <h3 className="font-extrabold text-gray-900">Contactos</h3>
-          <p className="mt-1 text-sm text-gray-600">
-            Los perfiles/números que haya utilizado el individuo para contactarte
-          </p>
-          <div className="mt-4 flex flex-wrap gap-4">
-            <AddTile label="Agregar contacto" />
-          </div>
-        </div>
+        <ReportContactsSection
+          description="Los perfiles/números que haya utilizado el individuo para contactarte"
+          contacts={draft.contacts}
+          onChange={(contacts) => updateDraft({ contacts })}
+        />
 
-        <div className="pt-1">
-          <h3 className="font-extrabold text-gray-900">Métodos de pagos</h3>
-          <p className="mt-1 text-sm text-gray-600">
-            Los números de cuenta/bancos/wallets que esté utilizando el individuo
-            para captar fondos
-          </p>
-          <div className="mt-4 flex flex-wrap gap-4">
-            <AddTile label="Agregar método de pago" />
-          </div>
-        </div>
+        <ReportPaymentsSection
+          description="Los números de cuenta/bancos/wallets que esté utilizando el individuo para captar fondos"
+          payments={draft.payments}
+          onChange={(payments) => updateDraft({ payments })}
+        />
       </div>
 
       <div className="mt-12 flex flex-col-reverse justify-center gap-4 sm:flex-row sm:gap-20">

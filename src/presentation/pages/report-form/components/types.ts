@@ -2,6 +2,20 @@ import type { ComponentType } from "react";
 
 export type PartyType = "individual" | "company";
 
+export type ReportFormContactDraft = {
+  id: string;
+  name: string;
+  platform: string;
+  url: string;
+};
+
+export type ReportFormPaymentDraft = {
+  id: string;
+  reference: string;
+  holder: string;
+  type: string;
+};
+
 export type ReportFormDraft = {
   partyType: PartyType | null;
   organizationId: string | null;
@@ -11,7 +25,10 @@ export type ReportFormDraft = {
   products: string[];
   reportTitle: string;
   reportDescription: string;
+  avatarFile: File | null;
   evidenceFiles: File[];
+  contacts: ReportFormContactDraft[];
+  payments: ReportFormPaymentDraft[];
 };
 
 export type ReportFormStepProps = {
@@ -36,7 +53,10 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
   products: [],
   reportTitle: "",
   reportDescription: "",
+  avatarFile: null,
   evidenceFiles: [],
+  contacts: [],
+  payments: [],
 };
 
 export function isReportFormDraftDirty(draft: ReportFormDraft) {
@@ -46,6 +66,9 @@ export function isReportFormDraftDirty(draft: ReportFormDraft) {
     draft.products.length > 0 ||
     draft.reportTitle.trim() !== "" ||
     draft.reportDescription.trim() !== "" ||
-    draft.evidenceFiles.length > 0
+    draft.avatarFile !== null ||
+    draft.evidenceFiles.length > 0 ||
+    draft.contacts.length > 0 ||
+    draft.payments.length > 0
   );
 }

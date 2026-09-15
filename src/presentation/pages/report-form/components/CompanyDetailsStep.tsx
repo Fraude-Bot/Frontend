@@ -6,6 +6,9 @@ import {
   type Tag,
 } from "react-tag-autocomplete";
 import CompanyNameInput from "@/presentation/pages/report-form/components/CompanyNameInput";
+import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
+import ReportContactsSection from "@/presentation/pages/report-form/components/ReportContactsSection";
+import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import "@/presentation/pages/report-form/components/report-tags.css";
 
@@ -26,18 +29,6 @@ const PRODUCT_TAG_CLASS_NAMES: ClassNames = {
   optionIsActive: "is-active",
   highlight: "report-product-tags__highlight",
 };
-
-function AddTile({ label }: { label: string }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className="flex h-20 min-w-40 cursor-pointer items-center justify-center border border-gray-300 bg-white text-4xl font-light text-gray-900 transition-colors hover:border-orange-400 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-    >
-      <span aria-hidden="true">+</span>
-    </button>
-  );
-}
 
 function CompanyDetailsStep({
   draft,
@@ -114,6 +105,14 @@ function CompanyDetailsStep({
       <h2 className="sr-only">Información de la empresa y del reporte</h2>
 
       <div className="space-y-5">
+        <PartyPhotoInput
+          id="company-photo"
+          file={draft.avatarFile}
+          onChange={(avatarFile) => updateDraft({ avatarFile })}
+          addLabel="Agregar foto de la empresa"
+          changeLabel="Cambiar foto de la empresa"
+        />
+
         <div>
           <label
             htmlFor="company-name"
@@ -236,26 +235,17 @@ function CompanyDetailsStep({
           </div>
         </div>
 
-        <div className="pt-1">
-          <h3 className="font-extrabold text-gray-900">Contactos</h3>
-          <p className="mt-1 text-sm text-gray-600">
-            Los perfiles/números que haya utilizado la empresa para contactarte
-          </p>
-          <div className="mt-4 flex flex-wrap gap-4">
-            <AddTile label="Agregar contacto" />
-          </div>
-        </div>
+        <ReportContactsSection
+          description="Los perfiles/números que haya utilizado la empresa para contactarte"
+          contacts={draft.contacts}
+          onChange={(contacts) => updateDraft({ contacts })}
+        />
 
-        <div className="pt-1">
-          <h3 className="font-extrabold text-gray-900">Métodos de pagos</h3>
-          <p className="mt-1 text-sm text-gray-600">
-            Los números de cuenta/bancos/wallets que esté utilizando la empresa
-            para captar fondos
-          </p>
-          <div className="mt-4 flex flex-wrap gap-4">
-            <AddTile label="Agregar método de pago" />
-          </div>
-        </div>
+        <ReportPaymentsSection
+          description="Los números de cuenta/bancos/wallets que esté utilizando la empresa para captar fondos"
+          payments={draft.payments}
+          onChange={(payments) => updateDraft({ payments })}
+        />
       </div>
 
       <div className="mt-12 flex flex-col-reverse justify-center gap-4 sm:flex-row sm:gap-20">

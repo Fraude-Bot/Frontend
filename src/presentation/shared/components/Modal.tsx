@@ -2,6 +2,7 @@ import {
   useEffect,
   useId,
   useRef,
+  type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
 } from "react";
@@ -16,6 +17,7 @@ type ModalAction = {
   label: string;
   onClick: () => void;
   variant?: "primary" | "secondary";
+  disabled?: boolean;
 };
 
 type ModalProps = {
@@ -23,6 +25,9 @@ type ModalProps = {
   children: ReactNode;
   onClose: () => void;
   actions: ModalAction[];
+  size?: "md" | "lg";
+  headerDivider?: boolean;
+  autoFocusAction?: boolean;
 };
 
 function actionClassName(action: ModalAction, isSingleAction: boolean) {
@@ -33,10 +38,23 @@ function actionClassName(action: ModalAction, isSingleAction: boolean) {
   return SECONDARY_BUTTON_CLASS;
 }
 
-function Modal({ title, children, onClose, actions }: ModalProps) {
+function Modal({
+  title,
+  children,
+  onClose,
+  actions,
+  size = "md",
+  headerDivider = false,
+  autoFocusAction = true,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const actionFocusRef = useRef<HTMLButtonElement | null>(null);
   const titleId = useId();
   const isSingleAction = actions.length === 1;
+  const widthClass =
+    size === "lg"
+      ? "w-[min(calc(100%-2rem),48rem)]"
+      : "w-[min(calc(100%-2rem),42rem)]";
   const focusedActionIndex = (() => {
     const primaryIndex = actions.findIndex(
       (action) => action.variant === "primary",
@@ -57,24 +75,77 @@ function Modal({ title, children, onClose, actions }: ModalProps) {
       dialog.showModal();
     }
 
+    if (autoFocusAction) {
+      actionFocusRef.current?.focus();
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    function isInsideModalScrollable(target: EventTarget | null) {
+      return (
+        target instanceof Element &&
+        Boolean(target.closest("[data-modal-panel] [role='listbox']"))
+      );
+    }
+
+    function preventBackgroundScroll(event: WheelEvent | TouchEvent) {
+      if (!isInsideModalScrollable(event.target)) {
+        event.preventDefault();
+      }
+    }
+
+    document.addEventListener("wheel", preventBackgroundScroll, {
+      passive: false,
+    });
+    document.addEventListener("touchmove", preventBackgroundScroll, {
+      passive: false,
+    });
+
     function handleCancel(event: Event) {
       event.preventDefault();
+      if (
+        dialog.querySelector('[role="combobox"][aria-expanded="true"]')
+      ) {
+        return;
+      }
+
       onClose();
     }
 
     dialog.addEventListener("cancel", handleCancel);
 
     return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.removeEventListener("wheel", preventBackgroundScroll);
+      document.removeEventListener("touchmove", preventBackgroundScroll);
       dialog.removeEventListener("cancel", handleCancel);
       if (dialog.open) {
         dialog.close();
       }
     };
-  }, [onClose]);
+  }, [autoFocusAction, onClose]);
 
   function handleBackdropClick(event: MouseEvent<HTMLDialogElement>) {
     if (event.target === dialogRef.current) {
       onClose();
+    }
+  }
+
+  function handleKeyDownCapture(event: KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== "Escape") {
+      return;
+    }
+
+    if (
+      event.currentTarget.querySelector(
+        '[role="combobox"][aria-expanded="true"]',
+      )
+    ) {
+      event.preventDefault();
     }
   }
 
@@ -83,10 +154,18 @@ function Modal({ title, children, onClose, actions }: ModalProps) {
       ref={dialogRef}
       aria-labelledby={titleId}
       onClick={handleBackdropClick}
-      className="m-auto w-[min(calc(100%-2rem),42rem)] border-0 bg-transparent p-0 backdrop:bg-black/50"
+      onKeyDownCapture={handleKeyDownCapture}
+      className={`m-auto ${widthClass} overflow-visible border-0 bg-transparent p-0 backdrop:bg-black/50`}
     >
-      <div className="flex max-h-[90vh] flex-col overflow-hidden rounded-lg bg-white font-[Nunito] shadow-lg">
-        <header className="px-6 py-4 sm:px-8">
+      <div
+        data-modal-panel
+        className="flex max-h-[90vh] flex-col overflow-hidden rounded-lg bg-white font-[Nunito] shadow-lg"
+      >
+        <header
+          className={`px-6 py-4 sm:px-8 ${
+            headerDivider ? "border-b border-gray-200" : ""
+          }`}
+        >
           <h2
             id={titleId}
             className="text-left text-xl font-extrabold text-gray-900 sm:text-2xl"
@@ -95,12 +174,13 @@ function Modal({ title, children, onClose, actions }: ModalProps) {
           </h2>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 sm:px-8">
+        <div className="min-h-0 flex-1 overflow-hidden px-6 sm:px-8">
           {children}
         </div>
 
         {actions.length > 0 ? (
           <footer
+            data-modal-footer
             className={`flex gap-3 border-t border-gray-200 px-6 py-4 sm:px-8 ${
               isSingleAction ? "justify-center" : "justify-end"
             }`}
@@ -109,9 +189,14 @@ function Modal({ title, children, onClose, actions }: ModalProps) {
               <button
                 key={action.label}
                 type="button"
-                autoFocus={index === focusedActionIndex}
+                ref={(element) => {
+                  if (index === focusedActionIndex) {
+                    actionFocusRef.current = element;
+                  }
+                }}
+                disabled={action.disabled}
                 onClick={action.onClick}
-                className={actionClassName(action, isSingleAction)}
+                className={`${actionClassName(action, isSingleAction)} disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {action.label}
               </button>
