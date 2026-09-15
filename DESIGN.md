@@ -191,7 +191,7 @@ Reuse these before adding new ones. New shared UI belongs in `src/presentation/s
 | `PaginationNav` | Anterior / pages / Siguiente. White buttons, active page red. Hidden when `totalPages < 1`. |
 | `DropdownButton` | Menu button; default sky fill, overridable `className`. Menu: `rounded-md border-gray-100 bg-white shadow-lg`. Escape and outside click close it. |
 | `Modal` | Base dialog for confirmations and forms. Native `<dialog showModal()>`. See **Modal** below. |
-| `SearchableSelect` | Combobox for a closed option list with type-to-filter. Orange chevron on the left; list `border-gray-300 bg-white shadow-lg`, active row `bg-orange-50`. Use inside `Modal` forms (and elsewhere) instead of Select2 / react-select. |
+| `SearchableSelect` | Combobox for a closed option list with type-to-filter. Orange chevron on the left; list `border-gray-300 bg-white shadow-lg`, active row `bg-orange-50`. Inside a `Modal`, the list is portaled onto the `<dialog>` so it overlays the footer and other chrome. Use instead of Select2 / react-select. |
 | `ErrorBoundary` | Full-screen gray-50 fallback, red **Actualizar página**. |
 | `LottieAnimation` | Wrapper for `.lottie` assets. |
 
@@ -320,6 +320,7 @@ Disabled controls keep visible text (`próximamente`) rather than being omitted.
 - Favicons and apple-touch icon live under `src/presentation/assets/`.
 - Report chrome icons: raster files via `pages/report/components/icons`.
 - Platform and many list icons: inline SVG in the component file. There is no shared icon package.
+- Report-form contact platforms use raster files in `assets/platforms/` via `getPlatformIconSrc`. Payment types use `assets/payments/` via `getPaymentIconSrc`. **Otro** has no icon.
 - Decorative Lottie: `404.lottie`, `not-found.lottie`, `robot.lottie`.
 - Default profile photo: `default-avatar.png`.
 - Hero photographs are full-bleed background images, not CSS gradients.

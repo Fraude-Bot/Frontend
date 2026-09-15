@@ -87,7 +87,7 @@ function Modal({
     function isInsideModalScrollable(target: EventTarget | null) {
       return (
         target instanceof Element &&
-        Boolean(target.closest("[data-modal-panel] [role='listbox']"))
+        Boolean(target.closest("[data-searchable-select-list]"))
       );
     }
 

@@ -4,8 +4,10 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent,
 } from "react";
+import { createPortal } from "react-dom";
 
 type SearchableSelectOption = {
   value: string;
@@ -21,6 +23,13 @@ type SearchableSelectProps = {
   placeholder: string;
   noResultsText?: string;
   listLabel?: string;
+};
+
+type ListPosition = {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
 };
 
 function ChevronDownIcon({ className }: { className?: string }) {
@@ -40,18 +49,16 @@ function ChevronDownIcon({ className }: { className?: string }) {
   );
 }
 
-function measureListMaxHeight(anchor: HTMLElement): number {
-  const panel = anchor.closest("[data-modal-panel]");
-  const footer = panel?.querySelector("[data-modal-footer]");
-  const limitBottom =
-    footer?.getBoundingClientRect().top ??
-    panel?.getBoundingClientRect().bottom ??
-    anchor.getBoundingClientRect().bottom + 160;
+function measureListPosition(anchor: HTMLElement): ListPosition {
+  const rect = anchor.getBoundingClientRect();
+  const gap = 4;
 
-  return Math.max(
-    96,
-    Math.floor(limitBottom - anchor.getBoundingClientRect().bottom - 4),
-  );
+  return {
+    top: rect.bottom + gap,
+    left: rect.left,
+    width: rect.width,
+    maxHeight: 240,
+  };
 }
 
 function SearchableSelect({
@@ -69,7 +76,8 @@ function SearchableSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [explicitIndex, setExplicitIndex] = useState<number | null>(null);
-  const [listMaxHeight, setListMaxHeight] = useState(160);
+  const [listPosition, setListPosition] = useState<ListPosition | null>(null);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const selected = options.find((option) => option.value === value) ?? null;
   const filteredOptions = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -91,20 +99,19 @@ function SearchableSelect({
   );
 
   useLayoutEffect(() => {
-    if (!isOpen || !rootRef.current) {
+    if (!isOpen) {
+      setPortalRoot(null);
+      setListPosition(null);
       return;
     }
 
-    function updateMaxHeight() {
-      if (rootRef.current) {
-        setListMaxHeight(measureListMaxHeight(rootRef.current));
-      }
+    const anchor = inputRef.current ?? rootRef.current;
+    if (!anchor) {
+      return;
     }
 
-    updateMaxHeight();
-    window.addEventListener("resize", updateMaxHeight);
-
-    return () => window.removeEventListener("resize", updateMaxHeight);
+    setPortalRoot(anchor.closest("dialog") ?? document.body);
+    setListPosition(measureListPosition(anchor));
   }, [isOpen]);
 
   function openList() {
@@ -176,9 +183,68 @@ function SearchableSelect({
   const highlightedOption = filteredOptions[highlightedIndex];
   const showSelectedIcon = Boolean(selected?.iconSrc) && !isOpen;
   const hasOptionIcons = options.some((option) => option.iconSrc);
+  const listStyle: CSSProperties | undefined = listPosition
+    ? {
+        position: "fixed",
+        top: listPosition.top,
+        left: listPosition.left,
+        width: listPosition.width,
+        maxHeight: listPosition.maxHeight,
+      }
+    : undefined;
+  const listbox =
+    isOpen && portalRoot && listStyle ? (
+      <ul
+        id={listId}
+        role="listbox"
+        aria-label={listLabel}
+        data-searchable-select-list
+        style={listStyle}
+        className="z-[100] overflow-y-auto overscroll-contain rounded-md border border-gray-300 bg-white shadow-lg"
+      >
+        {filteredOptions.length === 0 ? (
+          <li className="px-3 py-2 text-sm text-gray-500" role="presentation">
+            {noResultsText}
+          </li>
+        ) : (
+          filteredOptions.map((option, index) => {
+            const isHighlighted = index === highlightedIndex;
+            const isSelected = option.value === value;
+
+            return (
+              <li key={option.value} role="presentation">
+                <button
+                  type="button"
+                  id={`${listId}-option-${option.value}`}
+                  role="option"
+                  aria-selected={isSelected}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onMouseEnter={() => setExplicitIndex(index)}
+                  onClick={() => chooseOption(option)}
+                  className={`flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-sm text-gray-800 ${
+                    isHighlighted ? "bg-orange-50" : "bg-white"
+                  }`}
+                >
+                  {option.iconSrc ? (
+                    <img
+                      src={option.iconSrc}
+                      alt=""
+                      className="h-5 w-5 shrink-0 object-contain"
+                    />
+                  ) : hasOptionIcons ? (
+                    <span className="h-5 w-5 shrink-0" aria-hidden />
+                  ) : null}
+                  {option.label}
+                </button>
+              </li>
+            );
+          })
+        )}
+      </ul>
+    ) : null;
 
   return (
-    <div ref={rootRef} className={`relative ${isOpen ? "z-20" : ""}`}>
+    <div ref={rootRef} className="relative">
       <div className="relative">
         <span
           className={`pointer-events-none absolute inset-y-0 left-3 flex items-center ${
@@ -236,54 +302,7 @@ function SearchableSelect({
         />
       </div>
 
-      {isOpen ? (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-label={listLabel}
-          style={{ maxHeight: listMaxHeight }}
-          className="absolute z-30 mt-1 w-full overflow-y-auto overscroll-contain rounded-md border border-gray-300 bg-white shadow-lg"
-        >
-          {filteredOptions.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-500" role="presentation">
-              {noResultsText}
-            </li>
-          ) : (
-            filteredOptions.map((option, index) => {
-              const isHighlighted = index === highlightedIndex;
-              const isSelected = option.value === value;
-
-              return (
-                <li key={option.value} role="presentation">
-                  <button
-                    type="button"
-                    id={`${listId}-option-${option.value}`}
-                    role="option"
-                    aria-selected={isSelected}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onMouseEnter={() => setExplicitIndex(index)}
-                    onClick={() => chooseOption(option)}
-                    className={`flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-sm text-gray-800 ${
-                      isHighlighted ? "bg-orange-50" : "bg-white"
-                    }`}
-                  >
-                    {option.iconSrc ? (
-                      <img
-                        src={option.iconSrc}
-                        alt=""
-                        className="h-5 w-5 shrink-0 object-contain"
-                      />
-                    ) : hasOptionIcons ? (
-                      <span className="h-5 w-5 shrink-0" aria-hidden />
-                    ) : null}
-                    {option.label}
-                  </button>
-                </li>
-              );
-            })
-          )}
-        </ul>
-      ) : null}
+      {listbox && portalRoot ? createPortal(listbox, portalRoot) : null}
     </div>
   );
 }

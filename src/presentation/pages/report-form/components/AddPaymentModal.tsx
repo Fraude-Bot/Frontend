@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { PAYMENT_TYPE_OPTIONS } from "@/presentation/pages/report/components/payment-method.util";
+import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
 import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
 import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
@@ -12,6 +13,7 @@ const LABEL_CLASS = "mb-2 block font-bold text-gray-900";
 const TYPE_OPTIONS = PAYMENT_TYPE_OPTIONS.map((option) => ({
   value: option.value,
   label: option.label,
+  iconSrc: getPaymentIconSrc(option.value),
 }));
 
 type AddPaymentModalProps = {
