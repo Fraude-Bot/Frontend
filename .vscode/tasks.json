@@ -225,7 +225,21 @@
     {
       "label": "[Workspace] Create Workspace",
       "type": "shell",
-      "command": "REPO_ROOT=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\") && WORKTREE_PATH=\"$REPO_ROOT/workspaces/${input:workspaceName}\" && BRANCH=\"${input:workspaceBranch}\" && if [ ! -f \"$WORKTREE_PATH/.git\" ]; then docker run --rm -v \"$REPO_ROOT/workspaces:/workspaces\" alpine rm -rf \"/workspaces/${input:workspaceName}\" && { git show-ref --verify --quiet \"refs/heads/$BRANCH\" && git worktree add \"$WORKTREE_PATH\" \"$BRANCH\" || git worktree add -b \"$BRANCH\" \"$WORKTREE_PATH\" main; }; fi && rm -rf \"$WORKTREE_PATH/.vscode\" && test -f \"$WORKTREE_PATH/package.json\" && (docker rm -f \"fraudebot-frontend-${input:workspaceName}\" || true) && docker run --detach --name \"fraudebot-frontend-${input:workspaceName}\" --network fraudebot_default -p \"${input:worktreePort}:80\" -v \"$WORKTREE_PATH:/app\" -v \"fraudebot-worktree-${input:workspaceName}-node-modules:/app/node_modules\" -w /app -e HOME=/tmp -e NPM_CONFIG_CACHE=/tmp/.npm -e VITE_API_PROXY_TARGET=http://web:80 node:20-alpine sh -c \"if [ -f package.json ]; then npm install && npm run dev; else tail -f /dev/null; fi\"",
+      "command": "REPO_ROOT=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\") && WORKTREE_PATH=\"$REPO_ROOT/worktrees/${input:workspaceName}\" && BRANCH=\"${input:workspaceBranch}\" && if [ ! -f \"$WORKTREE_PATH/.git\" ]; then docker run --rm -v \"$REPO_ROOT/worktrees:/worktrees\" alpine rm -rf \"/worktrees/${input:workspaceName}\" && { git show-ref --verify --quiet \"refs/heads/$BRANCH\" && git worktree add \"$WORKTREE_PATH\" \"$BRANCH\" || git worktree add -b \"$BRANCH\" \"$WORKTREE_PATH\" main; }; fi && rm -rf \"$WORKTREE_PATH/.vscode\" && test -f \"$WORKTREE_PATH/package.json\" && (docker rm -f \"fraudebot-frontend-${input:workspaceName}\" || true) && docker run --detach --name \"fraudebot-frontend-${input:workspaceName}\" --network fraudebot_default -p \"${input:worktreePort}:80\" -v \"$WORKTREE_PATH:/app\" -v \"fraudebot-worktree-${input:workspaceName}-node-modules:/app/node_modules\" -w /app -e HOME=/tmp -e NPM_CONFIG_CACHE=/tmp/.npm -e VITE_API_PROXY_TARGET=http://web:80 node:20-alpine sh -c \"if [ -f package.json ]; then npm install && npm run dev; else tail -f /dev/null; fi\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Workspaces] Turn on",
+      "type": "shell",
+      "command": "REPO_ROOT=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\") && bash \"$REPO_ROOT/.vscode/scripts/turn-on-workspace.sh\" \"${input:worktreePort}\"",
       "options": {
         "cwd": "${workspaceFolder}"
       },
