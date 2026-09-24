@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Git Workspaces
 
-This repo uses **git worktrees**. The root checkout is the **main workspace** and must stay clean on `main`. All code changes happen in a **feature workspace** under `workspaces/`.
+This repo uses **git worktrees**. The root checkout is the **main workspace** and must stay clean on `main`. All code changes happen in a **feature workspace** under `worktrees/`.
 
 ## Main workspace (read-only for code changes)
 
@@ -16,13 +16,13 @@ This repo uses **git worktrees**. The root checkout is the **main workspace** an
 
 ## Feature workspaces (where work happens)
 
-- Path pattern: `workspaces/<feature-name>/`
-- Example: `workspaces/support-tab` → branch `feature/support-tab` or `fix/support-tab` or `wip/support-tab`
+- Path pattern: `worktrees/<feature-name>/`
+- Example: `worktrees/support-tab` → branch `feature/support-tab` or `fix/support-tab` or `wip/support-tab`
 - Before editing, confirm you are **not** in the main workspace:
 
 ```bash
 git branch --show-current   # must NOT be `main`
-pwd                         # must be under workspaces/
+pwd                         # must be under worktrees/
 ```
 
 ## Starting new work
@@ -32,8 +32,8 @@ pwd                         # must be under workspaces/
 3. Otherwise create one from the repo root:
 
 ```bash
-git worktree add workspaces/<feature-name> -b feature/<feature-name>
-cd workspaces/<feature-name>
+git worktree add worktrees/<feature-name> -b feature/<feature-name>
+cd worktrees/<feature-name>
 ```
 
 Use kebab-case for `<feature-name>` (e.g. `support-tab` → `feature/support-tab`).
