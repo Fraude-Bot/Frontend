@@ -6,6 +6,8 @@ import {
   type Tag,
 } from "react-tag-autocomplete";
 import PartyNameInput from "@/presentation/pages/report-form/components/PartyNameInput";
+import ReportDetailsActions from "@/presentation/pages/report-form/components/ReportDetailsActions";
+import EvidenceScreenshotsInput from "@/presentation/pages/report-form/components/EvidenceScreenshotsInput";
 import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
 import ReportContactsSection from "@/presentation/pages/report-form/components/ReportContactsSection";
 import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
@@ -91,24 +93,6 @@ function IndividualDetailsStep({
     productTagsRef.current?.select({ label: product, value: product });
   }
 
-  function addEvidence(files: FileList | null) {
-    if (!files?.length) {
-      return;
-    }
-
-    updateDraft({
-      evidenceFiles: [...draft.evidenceFiles, ...Array.from(files)],
-    });
-  }
-
-  function removeEvidence(index: number) {
-    updateDraft({
-      evidenceFiles: draft.evidenceFiles.filter(
-        (_, fileIndex) => fileIndex !== index,
-      ),
-    });
-  }
-
   return (
     <section className="mx-auto mt-10 w-full max-w-2xl pb-10">
       <h2 className="sr-only">Información del individuo y del reporte</h2>
@@ -117,7 +101,9 @@ function IndividualDetailsStep({
         <PartyPhotoInput
           id="individual-photo"
           file={draft.avatarFile}
-          onChange={(avatarFile) => updateDraft({ avatarFile })}
+          onChange={(avatarFile, avatarPath) =>
+            updateDraft({ avatarFile, avatarPath })
+          }
           addLabel="Agregar foto del individuo"
           changeLabel="Cambiar foto del individuo"
         />
@@ -205,7 +191,7 @@ function IndividualDetailsStep({
             }
             placeholder="Descripción de tu caso"
             rows={7}
-            className="w-full resize-y border border-gray-300 px-3 py-2 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+            className="w-full resize-none border border-gray-300 px-3 py-2 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
           />
         </div>
 
@@ -214,39 +200,14 @@ function IndividualDetailsStep({
             Capturas de pantalla de pruebas{" "}
             <span className="uppercase">(OPCIONAL)</span>
           </p>
-          <div className="flex flex-wrap gap-3">
-            {draft.evidenceFiles.map((file, index) => (
-              <button
-                key={`${file.name}-${file.lastModified}-${index}`}
-                type="button"
-                onClick={() => removeEvidence(index)}
-                aria-label={`Eliminar ${file.name}`}
-                title="Haz clic para eliminar"
-                className="flex h-20 max-w-48 items-center gap-2 border border-orange-200 bg-orange-50 px-3 text-left text-sm text-gray-800 hover:border-orange-400 focus-visible:outline-2 focus-visible:outline-orange-600"
-              >
-                <span className="min-w-0 truncate">{file.name}</span>
-                <span aria-hidden="true" className="text-lg">
-                  ×
-                </span>
-                <span className="sr-only">Eliminar {file.name}</span>
-              </button>
-            ))}
-            <label className="flex h-16 w-16 cursor-pointer items-center justify-center border-2 border-dashed border-gray-500 text-4xl font-light text-gray-900 hover:border-orange-500 hover:bg-orange-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-orange-600">
-              <span aria-hidden="true">+</span>
-              <span className="sr-only">Agregar capturas de pantalla</span>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                aria-label="Agregar capturas de pantalla"
-                className="sr-only"
-                onChange={(event) => {
-                  addEvidence(event.currentTarget.files);
-                  event.currentTarget.value = "";
-                }}
-              />
-            </label>
-          </div>
+          <EvidenceScreenshotsInput
+            id="individual-evidence"
+            files={draft.evidenceFiles}
+            paths={draft.evidencePaths}
+            onChange={(evidenceFiles, evidencePaths) =>
+              updateDraft({ evidenceFiles, evidencePaths })
+            }
+          />
         </div>
 
         <ReportContactsSection
@@ -262,22 +223,11 @@ function IndividualDetailsStep({
         />
       </div>
 
-      <div className="mt-12 flex flex-col-reverse justify-center gap-4 sm:flex-row sm:gap-20">
-        <button
-          type="button"
-          onClick={goBack}
-          className="min-w-40 cursor-pointer rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-        >
-          Regresar
-        </button>
-        <button
-          type="button"
-          onClick={goNext}
-          className="min-w-40 cursor-pointer rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-        >
-          Continuar
-        </button>
-      </div>
+      <ReportDetailsActions
+        canContinue={draft.contacts.length > 0 || draft.payments.length > 0}
+        goNext={goNext}
+        goBack={goBack}
+      />
     </section>
   );
 }

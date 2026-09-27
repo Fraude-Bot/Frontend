@@ -23,6 +23,7 @@ type SearchableSelectProps = {
   placeholder: string;
   noResultsText?: string;
   listLabel?: string;
+  disabled?: boolean;
 };
 
 type ListPosition = {
@@ -69,6 +70,7 @@ function SearchableSelect({
   placeholder,
   noResultsText = "Sin resultados",
   listLabel = "Opciones",
+  disabled = false,
 }: SearchableSelectProps) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -115,6 +117,10 @@ function SearchableSelect({
   }, [isOpen]);
 
   function openList() {
+    if (disabled) {
+      return;
+    }
+
     setQuery(selected?.label ?? "");
     setExplicitIndex(null);
     setIsOpen(true);
@@ -252,9 +258,9 @@ function SearchableSelect({
           }`}
         >
           <ChevronDownIcon
-            className={`h-4 w-4 shrink-0 text-orange-500 transition-transform ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`h-4 w-4 shrink-0 transition-transform ${
+              disabled ? "text-gray-400" : "text-orange-500"
+            } ${isOpen ? "rotate-180" : ""}`}
           />
           {showSelectedIcon ? (
             <img
@@ -280,6 +286,8 @@ function SearchableSelect({
           value={inputValue}
           placeholder={placeholder}
           autoComplete="off"
+          disabled={disabled}
+          aria-disabled={disabled}
           onChange={(event) => {
             setQuery(event.currentTarget.value);
             setExplicitIndex(null);
@@ -296,7 +304,7 @@ function SearchableSelect({
           }}
           onBlur={() => window.setTimeout(closeList, 100)}
           onKeyDown={handleKeyDown}
-          className={`h-11 w-full rounded-md border border-gray-300 py-2 pr-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 ${
+          className={`h-11 w-full rounded-md border border-gray-300 py-2 pr-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-700 ${
             showSelectedIcon ? "pl-[4.75rem]" : "pl-9"
           }`}
         />

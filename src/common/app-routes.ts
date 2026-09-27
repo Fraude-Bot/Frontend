@@ -3,6 +3,7 @@ const APP_ROUTES = {
   contact: "/contacto",
   search: "/busqueda",
   report: "/reportar",
+  terms: "/terminos-y-condiciones",
   scammer: "/estafadores/:id",
   organization: "/empresas/:id",
   reportScammer: "/reportar/estafadores/:id",

@@ -6,6 +6,8 @@ import FindOrganizationSummaryByIdUsecase from "@/application/usecases/organizat
 import SearchReportStubUsecase from "@/application/usecases/report/stub/search-report.stub";
 import FindContactsByPartyUsecase from "@/application/usecases/contact/find-contacts-by-party.usecase";
 import FindRelationshipMapByPartyUsecase from "@/application/usecases/map/find-relationship-map-by-party.usecase";
+import StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/store-temporary-profile-picture.usecase";
+import StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
 
 export const createSearchReportUseCase = () => new SearchReportUsecase();
 export const createFindScammerSummaryByIdUseCase = () => new FindScammerSummaryByIdUsecase();
@@ -17,6 +19,10 @@ export const createFindReportsByPartyUseCase = () =>
   new FindReportsByPartyUsecase();
 export const createFindRelationshipMapByPartyUseCase = () =>
   new FindRelationshipMapByPartyUsecase();
+export const createStoreTemporaryProfilePictureUseCase = () =>
+  new StoreTemporaryProfilePictureUsecase();
+export const createStoreTemporaryProofsUseCase = () =>
+  new StoreTemporaryProofsUsecase();
 export const dependencies = {
   searchReportUseCase: createSearchReportUseCase,
   findScammerSummaryByIdUseCase: createFindScammerSummaryByIdUseCase,
@@ -26,6 +32,9 @@ export const dependencies = {
   findContactsByPartyUseCase: createFindContactsByPartyUseCase,
   findReportsByPartyUseCase: createFindReportsByPartyUseCase,
   findRelationshipMapByPartyUseCase: createFindRelationshipMapByPartyUseCase,
+  storeTemporaryProfilePictureUseCase:
+    createStoreTemporaryProfilePictureUseCase,
+  storeTemporaryProofsUseCase: createStoreTemporaryProofsUseCase,
 };
 
 type PublicInterface<T> = Pick<T, keyof T>;
@@ -47,4 +56,7 @@ export const createDependencies = (): Dependencies => ({
   findReportsByPartyUseCase: dependencies.findReportsByPartyUseCase(),
   findRelationshipMapByPartyUseCase:
     dependencies.findRelationshipMapByPartyUseCase(),
+  storeTemporaryProfilePictureUseCase:
+    dependencies.storeTemporaryProfilePictureUseCase(),
+  storeTemporaryProofsUseCase: dependencies.storeTemporaryProofsUseCase(),
 });

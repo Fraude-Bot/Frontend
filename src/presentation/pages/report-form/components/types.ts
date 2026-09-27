@@ -26,9 +26,13 @@ export type ReportFormDraft = {
   reportTitle: string;
   reportDescription: string;
   avatarFile: File | null;
+  avatarPath: string | null;
   evidenceFiles: File[];
+  evidencePaths: string[];
   contacts: ReportFormContactDraft[];
   payments: ReportFormPaymentDraft[];
+  contactEmail: string;
+  acceptedTerms: boolean;
 };
 
 export type ReportFormStepProps = {
@@ -54,9 +58,13 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
   reportTitle: "",
   reportDescription: "",
   avatarFile: null,
+  avatarPath: null,
   evidenceFiles: [],
+  evidencePaths: [],
   contacts: [],
   payments: [],
+  contactEmail: "",
+  acceptedTerms: false,
 };
 
 export function isReportFormDraftDirty(draft: ReportFormDraft) {
@@ -67,8 +75,12 @@ export function isReportFormDraftDirty(draft: ReportFormDraft) {
     draft.reportTitle.trim() !== "" ||
     draft.reportDescription.trim() !== "" ||
     draft.avatarFile !== null ||
+    draft.avatarPath !== null ||
     draft.evidenceFiles.length > 0 ||
+    draft.evidencePaths.length > 0 ||
     draft.contacts.length > 0 ||
-    draft.payments.length > 0
+    draft.payments.length > 0 ||
+    draft.contactEmail.trim() !== "" ||
+    draft.acceptedTerms
   );
 }

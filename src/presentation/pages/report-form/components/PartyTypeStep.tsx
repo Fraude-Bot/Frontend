@@ -9,6 +9,7 @@ const PARTY_TYPE_OPTIONS: {
   title: string;
   description: string;
   imageSrc: string;
+  disabled?: boolean;
 }[] = [
   {
     value: "individual",
@@ -16,6 +17,7 @@ const PARTY_TYPE_OPTIONS: {
     description:
       "Persona particular, vendedor informal, perfil de red social o particular sin registro formal.",
     imageSrc: reportIcons.individual,
+    disabled: true,
   },
   {
     value: "company",
@@ -31,6 +33,7 @@ function PartyTypeOption({
   title,
   description,
   imageSrc,
+  disabled = false,
   selected,
   onSelect,
 }: (typeof PARTY_TYPE_OPTIONS)[number] & {
@@ -39,8 +42,12 @@ function PartyTypeOption({
 }) {
   return (
     <label
-      className={`flex flex-1 cursor-pointer select-none flex-col items-center rounded-xl px-4 py-6 text-center transition-colors hover:bg-orange-50/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-orange-600 ${
-        selected ? "bg-orange-50 ring-2 ring-orange-400" : ""
+      className={`flex flex-1 select-none flex-col items-center rounded-xl px-4 py-6 text-center ${
+        disabled
+          ? "cursor-not-allowed opacity-50"
+          : `cursor-pointer transition-colors hover:bg-orange-50/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-orange-600 ${
+              selected ? "bg-orange-50 ring-2 ring-orange-400" : ""
+            }`
       }`}
     >
       <input
@@ -48,6 +55,7 @@ function PartyTypeOption({
         name="partyType"
         value={value}
         checked={selected}
+        disabled={disabled}
         onChange={() => onSelect(value)}
         className="sr-only"
       />
@@ -62,6 +70,11 @@ function PartyTypeOption({
       <span className="pointer-events-none mt-3 max-w-xs text-sm leading-relaxed text-gray-600 sm:text-base">
         {description}
       </span>
+      {disabled ? (
+        <span className="pointer-events-none mt-4 text-sm font-extrabold uppercase tracking-wide text-gray-500">
+          Próximamente
+        </span>
+      ) : null}
     </label>
   );
 }

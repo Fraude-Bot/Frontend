@@ -61,7 +61,7 @@ function ReportFormStepper({
               )}
               {isLast ? (
                 <span
-                  className="h-0.5 min-w-4 flex-1 bg-gray-300"
+                  className={`h-0.5 min-w-4 flex-1 ${lineClass(isReached)}`}
                   aria-hidden="true"
                 />
               ) : null}

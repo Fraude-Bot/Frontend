@@ -1,5 +1,8 @@
 import { useId, useState } from "react";
-import { SOCIAL_FILTERS } from "@/presentation/pages/report/components/contact-platform";
+import {
+  detectContactPlatform,
+  SOCIAL_FILTERS,
+} from "@/presentation/pages/report/components/contact-platform";
 import { getPlatformIconSrc } from "@/presentation/pages/report/components/platform-icons";
 import type { ReportFormContactDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
@@ -61,6 +64,25 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
       ]}
     >
       <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <label htmlFor={urlId} className={LABEL_CLASS}>
+            URL
+          </label>
+          <input
+            id={urlId}
+            type="text"
+            value={url}
+            autoComplete="off"
+            placeholder="https://website.org"
+            onChange={(event) => {
+              const nextUrl = event.currentTarget.value;
+              setUrl(nextUrl);
+              setPlatform(detectContactPlatform(nextUrl));
+            }}
+            className={FIELD_CLASS}
+          />
+        </div>
+
         <div>
           <label htmlFor={nameId} className={LABEL_CLASS}>
             Nombre del Contacto
@@ -88,21 +110,7 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
             placeholder="Selecciona una plataforma"
             listLabel="Plataformas"
             noResultsText="No hay plataformas con ese nombre"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label htmlFor={urlId} className={LABEL_CLASS}>
-            URL
-          </label>
-          <input
-            id={urlId}
-            type="text"
-            value={url}
-            autoComplete="off"
-            placeholder="https://website.org"
-            onChange={(event) => setUrl(event.currentTarget.value)}
-            className={FIELD_CLASS}
+            disabled
           />
         </div>
       </div>
