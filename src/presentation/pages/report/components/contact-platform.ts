@@ -29,6 +29,59 @@ export function getPlatformLabel(platform: string): string {
   return PLATFORM_LABELS[platform.toLowerCase()] ?? platform;
 }
 
+const PLATFORM_HOSTS: { platform: string; hosts: string[] }[] = [
+  { platform: "Instagram", hosts: ["instagram.com"] },
+  { platform: "Facebook", hosts: ["facebook.com", "fb.com", "fb.me"] },
+  { platform: "Youtube", hosts: ["youtube.com", "youtu.be"] },
+  { platform: "TikTok", hosts: ["tiktok.com"] },
+  { platform: "Whatsapp", hosts: ["whatsapp.com", "wa.me"] },
+  { platform: "Telegram", hosts: ["t.me", "telegram.me", "telegram.org"] },
+];
+
+function hostMatches(hostname: string, host: string) {
+  return hostname === host || hostname.endsWith(`.${host}`);
+}
+
+function readHostname(value: string) {
+  const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+
+  try {
+    const hostname = new URL(withProtocol).hostname.toLowerCase();
+    return hostname.includes(".") ? hostname : null;
+  } catch {
+    return null;
+  }
+}
+
+export function detectContactPlatform(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (
+    /^mailto:/i.test(trimmed) ||
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+  ) {
+    return "Email";
+  }
+
+  if (/^tel:/i.test(trimmed) || /^[+\d][\d\s().-]{6,}$/.test(trimmed)) {
+    return "Cellphone";
+  }
+
+  const hostname = readHostname(trimmed);
+  if (!hostname) {
+    return "Other";
+  }
+
+  const match = PLATFORM_HOSTS.find((entry) =>
+    entry.hosts.some((host) => hostMatches(hostname, host)),
+  );
+
+  return match?.platform ?? "Other";
+}
+
 function digitsOnly(value: string): string {
   return value.replace(/[^\d+]/g, "");
 }

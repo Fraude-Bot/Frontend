@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { getPaymentLabel } from "@/presentation/pages/report/components/payment-method.util";
+import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
 import AddPaymentModal from "@/presentation/pages/report-form/components/AddPaymentModal";
 import ReportAddTile from "@/presentation/pages/report-form/components/ReportAddTile";
 import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";
@@ -41,6 +42,7 @@ function ReportPaymentsSection({
       <div className="mt-4 flex flex-wrap gap-4">
         {payments.map((payment) => {
           const typeLabel = getPaymentLabel(payment.type, Number(payment.type));
+          const typeIconSrc = getPaymentIconSrc(payment.type);
 
           return (
             <article
@@ -55,9 +57,18 @@ function ReportPaymentsSection({
               >
                 ×
               </button>
-              <p className="truncate text-sm font-bold text-gray-900">
-                {payment.holder}
-              </p>
+              <div className="flex min-w-0 items-center gap-2">
+                {typeIconSrc ? (
+                  <img
+                    src={typeIconSrc}
+                    alt=""
+                    className="h-5 w-5 shrink-0 object-contain"
+                  />
+                ) : null}
+                <p className="truncate text-sm font-bold text-gray-900">
+                  {payment.holder}
+                </p>
+              </div>
               <p
                 className="mt-1 truncate text-xs text-gray-500"
                 title={`${typeLabel} · ${payment.reference}`}

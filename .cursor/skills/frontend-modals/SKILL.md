@@ -73,7 +73,7 @@ Closed lists with search use `SearchableSelect`:
 />
 ```
 
-Do not allow free-text values unless the design says so. Platform options for contacts come from `SOCIAL_FILTERS` in `contact-platform.ts`. Payment method types come from `PAYMENT_TYPE_OPTIONS` in `payment-method.util.ts`.
+Do not allow free-text values unless the design says so. Platform options for contacts come from `SOCIAL_FILTERS` in `contact-platform.ts` (icons via `getPlatformIconSrc`). Payment method types come from `PAYMENT_TYPE_OPTIONS` in `payment-method.util.ts` (icons via `getPaymentIconSrc`).
 
 ## Page wrapper
 
@@ -102,4 +102,5 @@ If you change Modal chrome (sizes, footer layout, button classes), update `DESIG
 - Confirm: centered body copy, primary stays on the safe/default action when that matches existing leave-step behavior.
 - Searchable closed lists use `SearchableSelect`.
 - Escape does not dismiss the modal while the combobox is open.
+- An open `SearchableSelect` list overlays the modal footer (do not clip it to the panel).
 - Parent unmounts the modal on close; draft/list updates on success.

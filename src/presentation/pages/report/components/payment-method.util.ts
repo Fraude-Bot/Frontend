@@ -40,6 +40,51 @@ function getPaymentLabel(label: string, paymentType?: number): string {
   return PAYMENT_TYPE_LABELS[normalizedLabel] ?? label;
 }
 
+function isNumericPaymentInput(value: string): boolean {
+  return value.length > 0 && !/[^\d\s+]/.test(value);
+}
+
+function isWalletReference(value: string): boolean {
+  return /\d/.test(value) && /[a-z]/i.test(value);
+}
+
+/**
+ * Maps a payment reference to a `PAYMENT_TYPE_OPTIONS` value.
+ * Digit length follows `Formatter`: 16 tarjeta, 18 CLABE, 10 cuenta.
+ * A non-numeric value with letters and digits is a wallet. Anything else
+ * non-empty is "Otro". Empty input has no type.
+ */
+export function detectPaymentType(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (isNumericPaymentInput(trimmed)) {
+    const length = trimmed.replace(/\D/g, "").length;
+
+    if (length === 16) {
+      return "1";
+    }
+
+    if (length === 18) {
+      return "2";
+    }
+
+    if (length === 10) {
+      return "3";
+    }
+
+    return "5";
+  }
+
+  if (isWalletReference(trimmed)) {
+    return "4";
+  }
+
+  return "5";
+}
+
 function buildPaymentSearchHref(reference: string): string {
   const value = reference.trim();
   if (!value) {

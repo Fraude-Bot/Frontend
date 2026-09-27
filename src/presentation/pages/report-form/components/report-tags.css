@@ -64,6 +64,19 @@
   outline: none;
 }
 
+.report-product-tags__tag--readonly {
+  cursor: default;
+}
+
+.report-product-tags__tag--readonly::after {
+  content: none;
+}
+
+.report-product-tags__tag--readonly:hover,
+.report-product-tags__tag--readonly:focus-visible {
+  background: #fff7ed;
+}
+
 .report-product-tags__combobox {
   min-width: 10rem;
   flex: 1;

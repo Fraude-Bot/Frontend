@@ -1,8 +1,13 @@
 import { useId, useState } from "react";
-import { PAYMENT_TYPE_OPTIONS } from "@/presentation/pages/report/components/payment-method.util";
+import {
+  detectPaymentType,
+  PAYMENT_TYPE_OPTIONS,
+} from "@/presentation/pages/report/components/payment-method.util";
+import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
 import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
 import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
+import Formatter from "@/presentation/shared/utils/formatter";
 
 const FIELD_CLASS =
   "h-11 w-full rounded-md border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
@@ -12,6 +17,7 @@ const LABEL_CLASS = "mb-2 block font-bold text-gray-900";
 const TYPE_OPTIONS = PAYMENT_TYPE_OPTIONS.map((option) => ({
   value: option.value,
   label: option.label,
+  iconSrc: getPaymentIconSrc(option.value),
 }));
 
 type AddPaymentModalProps = {
@@ -71,7 +77,15 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
             value={reference}
             autoComplete="off"
             placeholder="Ej. (4152316423, 1A1zP1eP5, 100023)"
-            onChange={(event) => setReference(event.currentTarget.value)}
+            onChange={(event) => {
+              Formatter.FormatInputAndUpdate(
+                event.currentTarget.value,
+                (nextReference) => {
+                  setReference(nextReference);
+                  setType(detectPaymentType(nextReference));
+                },
+              );
+            }}
             className={FIELD_CLASS}
           />
         </div>
@@ -103,6 +117,7 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
             placeholder="Selecciona un tipo"
             listLabel="Tipos de método de pago"
             noResultsText="No hay tipos con ese nombre"
+            disabled
           />
         </div>
       </div>
