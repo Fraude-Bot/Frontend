@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getPaymentLabel } from "@/presentation/pages/report/components/payment-method.util";
 import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
 import AddPaymentModal from "@/presentation/pages/report-form/components/AddPaymentModal";
+import EditPaymentModal from "@/presentation/pages/report-form/components/EditPaymentModal";
 import ReportAddTile from "@/presentation/pages/report-form/components/ReportAddTile";
 import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";
 
@@ -25,14 +26,33 @@ function ReportPaymentsSection({
   onChange,
 }: ReportPaymentsSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
+  const editingPayment =
+    payments.find((payment) => payment.id === editingPaymentId) ?? null;
 
   function addPayment(payment: Omit<ReportFormPaymentDraft, "id">) {
     onChange([...payments, { ...payment, id: createPaymentId() }]);
     setIsModalOpen(false);
   }
 
+  function savePayment(payment: Omit<ReportFormPaymentDraft, "id">) {
+    if (editingPaymentId === null) {
+      return;
+    }
+
+    onChange(
+      payments.map((item) =>
+        item.id === editingPaymentId ? { ...payment, id: item.id } : item,
+      ),
+    );
+    setEditingPaymentId(null);
+  }
+
   function removePayment(id: string) {
     onChange(payments.filter((payment) => payment.id !== id));
+    if (editingPaymentId === id) {
+      setEditingPaymentId(null);
+    }
   }
 
   return (
@@ -47,17 +67,24 @@ function ReportPaymentsSection({
           return (
             <article
               key={payment.id}
-              className="relative flex h-20 min-w-40 max-w-56 flex-col justify-center border border-gray-300 bg-white px-3 pr-8"
+              className="relative flex h-20 min-w-40 max-w-56 flex-col justify-center border border-gray-300 bg-white px-3 pr-8 transition-colors hover:border-orange-400 hover:bg-orange-50"
             >
+              <button
+                type="button"
+                aria-label={`Editar método de pago ${payment.holder}`}
+                title={`${typeLabel} · ${payment.reference}`}
+                onClick={() => setEditingPaymentId(payment.id)}
+                className="absolute inset-0 cursor-pointer border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+              />
               <button
                 type="button"
                 onClick={() => removePayment(payment.id)}
                 aria-label={`Eliminar método de pago ${payment.reference}`}
-                className="absolute top-1 right-1 cursor-pointer px-1 text-lg leading-none text-gray-500 hover:text-gray-900"
+                className="absolute top-1 right-1 z-10 cursor-pointer px-1 text-lg leading-none text-gray-500 hover:text-gray-900"
               >
                 ×
               </button>
-              <div className="flex min-w-0 items-center gap-2">
+              <div className="pointer-events-none flex min-w-0 items-center gap-2">
                 {typeIconSrc ? (
                   <img
                     src={typeIconSrc}
@@ -69,10 +96,7 @@ function ReportPaymentsSection({
                   {payment.holder}
                 </p>
               </div>
-              <p
-                className="mt-1 truncate text-xs text-gray-500"
-                title={`${typeLabel} · ${payment.reference}`}
-              >
+              <p className="pointer-events-none mt-1 truncate text-xs text-gray-500">
                 {typeLabel} · {payment.reference}
               </p>
             </article>
@@ -87,6 +111,13 @@ function ReportPaymentsSection({
         <AddPaymentModal
           onClose={() => setIsModalOpen(false)}
           onCreate={addPayment}
+        />
+      ) : null}
+      {editingPayment ? (
+        <EditPaymentModal
+          payment={editingPayment}
+          onClose={() => setEditingPaymentId(null)}
+          onSave={savePayment}
         />
       ) : null}
     </div>
