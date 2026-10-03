@@ -32,12 +32,6 @@ const PRODUCT_TAG_CLASS_NAMES: ClassNames = {
   highlight: "report-product-tags__highlight",
 };
 
-const EXAMPLE_INDIVIDUALS = [
-  { id: "example:carlos-ponzi", name: "Carlos Ponzi" },
-  { id: "example:ruja-ignatova", name: "Ruja Ignatova" },
-  { id: "example:bernard-madoff", name: "Bernard Madoff" },
-];
-
 const FIELD_CLASS =
   "h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
 
@@ -124,7 +118,7 @@ function IndividualDetailsStep({
             placeholder="Ej. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)"
             listLabel="Individuos reportados"
             resultType="scammer"
-            examples={EXAMPLE_INDIVIDUALS}
+            examples={[]}
           />
         </div>
 

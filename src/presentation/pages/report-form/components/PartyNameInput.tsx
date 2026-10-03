@@ -42,7 +42,12 @@ function PartyNameInput({
   const [suggestions, setSuggestions] = useState<PartySuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const { searchReportUseCase } = useDependencies();
+  const { suggestOrganizationNamesUseCase, suggestScammerNamesUseCase } =
+    useDependencies();
+  const suggestNamesUseCase =
+    resultType === "organization"
+      ? suggestOrganizationNamesUseCase
+      : suggestScammerNamesUseCase;
   const query = value.trim();
   const exampleSuggestions = filterExamples(examples, query);
   const showDropdown =
@@ -61,25 +66,18 @@ function PartyNameInput({
     const timeoutId = window.setTimeout(() => {
       setIsLoading(true);
 
-      void searchReportUseCase
-        .execute(query, 1)
-        .then((result) => {
+      const suggestionRequest = suggestNamesUseCase.execute(query).then((names) =>
+        names.map((name) => ({
+          id: `suggested:${name}`,
+          name,
+        })),
+      );
+
+      void suggestionRequest
+        .then((matches) => {
           if (currentRequestId !== requestId.current) {
             return;
           }
-
-          const seen = new Set<string>();
-          const matches = result.data
-            .filter((report) => report.type === resultType)
-            .filter((report) => {
-              const key = report.name.trim().toLocaleLowerCase();
-              if (seen.has(key)) {
-                return false;
-              }
-              seen.add(key);
-              return true;
-            })
-            .map((report) => ({ id: report.id, name: report.name }));
 
           setSuggestions(matches);
           setIsLoading(false);
@@ -99,12 +97,15 @@ function PartyNameInput({
 
     return () => {
       window.clearTimeout(timeoutId);
-      searchReportUseCase.cancel();
+      suggestNamesUseCase.cancel();
     };
-  }, [query, resultType, searchReportUseCase]);
+  }, [query, suggestNamesUseCase]);
 
   function chooseSuggestion(item: PartySuggestion) {
-    const matchedId = item.id.startsWith("example:") ? null : item.id;
+    const matchedId =
+      item.id.startsWith("example:") || item.id.startsWith("suggested:")
+        ? null
+        : item.id;
     onChange(item.name, matchedId);
     setSuggestions([]);
     setIsFocused(false);
