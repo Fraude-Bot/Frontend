@@ -2,7 +2,6 @@ import warningIcon from "@presentation/assets/alert.svg";
 import calendarIcon from "@presentation/assets/calendar.webp";
 import statusIcon from "@presentation/assets/clipboard.webp";
 import reportsIcon from "@presentation/assets/alert.svg";
-import locationIcon from "@presentation/assets/mark.webp";
 import categoriesIcon from "@presentation/assets/categories.webp";
 import shareArrowIcon from "@presentation/assets/arrow-down.webp";
 import homeIcon from "@presentation/assets/home.svg";
@@ -23,7 +22,6 @@ const reportIcons = {
   calendar: calendarIcon,
   status: statusIcon,
   reports: reportsIcon,
-  location: locationIcon,
   categories: categoriesIcon,
   shareArrow: shareArrowIcon,
   home: homeIcon,

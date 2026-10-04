@@ -24,7 +24,6 @@ export type ReportHeroProps = {
   reportDate: Date;
   status: string;
   reports: number;
-  location: string;
   categories: string[];
   profilePicture?: string | null;
 };
