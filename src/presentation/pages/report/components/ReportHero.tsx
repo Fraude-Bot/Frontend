@@ -60,8 +60,8 @@ export function ReportHeroSkeleton() {
               <SkeletonBar className="h-8 w-28" />
             </div>
 
-            <div className="mt-5 grid gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
+            <div className="mt-5 grid gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
                 <div key={index} className="min-w-0">
                   <SkeletonBar className="h-3 w-24" />
                   <SkeletonBar className="mt-2 h-5 w-20" />
@@ -107,7 +107,6 @@ function ReportHero({
   reportDate,
   status,
   reports,
-  location,
   categories,
   profilePicture,
 }: ReportHeroProps) {
@@ -198,7 +197,7 @@ function ReportHero({
               </div>
             </div>
 
-            <div className="mt-5 grid gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-5 grid gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2 lg:grid-cols-3">
               <SummaryItem
                 label="Fecha del Reporte"
                 value={formattedDate}
@@ -214,16 +213,11 @@ function ReportHero({
                 value={String(reports)}
                 iconSrc={reportIcons.reports}
               />
-              <SummaryItem
-                label="Ubicación"
-                value={location}
-                iconSrc={reportIcons.location}
-              />
             </div>
 
             <div className="mt-4 flex flex-col gap-4 border-t border-gray-100 pt-4 lg:flex-row lg:items-end lg:justify-between">
               <SummaryItem
-                label="Categorías"
+                label="Productos"
                 value={categories.join(", ")}
                 iconSrc={reportIcons.categories}
               />
