@@ -162,7 +162,6 @@ function Report({ type }: { type: "scammer" | "organization" }) {
           reportDate={party.createdAt}
           status={party.isActive ? "Activo" : "Inactivo"}
           reports={party.reports}
-          location={party.country}
           categories={party.categories}
           profilePicture={party.profilePicture || defaultAvatar}
         />
