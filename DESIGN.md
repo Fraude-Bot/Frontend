@@ -210,7 +210,7 @@ There is **no** shared Button, Input, Badge, Card, or icon set. Those patterns a
 | Width | `size="md"` (default) `42rem`; `size="lg"` `48rem`. Both use `min(calc(100%-2rem), …)` |
 | Title | Left-aligned `text-xl sm:text-2xl font-extrabold text-gray-900` |
 | Header divider | Off by default. Set `headerDivider` for form dialogs (`border-b border-gray-200`) |
-| Body | Slot (`children`). Confirmation copy is centered in a tall block (`min-h-48`). Forms use a padded grid. |
+| Body | Slot (`children`). Confirmation copy is centered in a tall block (`min-h-48`). Forms use a padded grid. The slot scrolls (`overflow-y-auto`) when the form is taller than the panel. |
 | Footer | `border-t border-gray-200`, `gap-3`, `px-6 py-4 sm:px-8` |
 
 **Actions**
@@ -244,6 +244,8 @@ Do not put a gray or red footer button on this shell. Single-button dialogs stay
 | Edit contact | `EditContactModal` | Same form as add contact, prefilled. Opens from a contact card. **Cerrar** + **Guardar** |
 | Add payment method | `AddPaymentModal` | `lg`, `headerDivider`, form fields, **Cerrar** + **Crear**. Type list uses `SearchableSelect` with `PAYMENT_TYPE_OPTIONS` |
 | Edit payment method | `EditPaymentModal` | Same form as add payment, prefilled. Opens from a payment card. **Cerrar** + **Guardar** |
+| Add collaborator | `AddCollaboratorModal` | `lg`, `headerDivider`, optional photo (`PartyPhotoInput`, same temporary profile API) above the name, plus optional payment and contact rows. **Cerrar** + **Crear** |
+| Edit collaborator | `EditCollaboratorModal` | Same form as add collaborator, prefilled. Opens from a collaborator card. **Cerrar** + **Guardar** |
 
 Future similar dialogs should reuse this shell. `ImageLightbox` is **not** this pattern: darker overlay (`bg-black/80`), no title/footer chrome.
 

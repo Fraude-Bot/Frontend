@@ -28,13 +28,10 @@ type EditPaymentModalProps = {
 
 function EditPaymentModal({ payment, onClose, onSave }: EditPaymentModalProps) {
   const referenceId = useId();
-  const holderId = useId();
   const typeId = useId();
   const [reference, setReference] = useState(payment.reference);
-  const [holder, setHolder] = useState(payment.holder);
   const [type, setType] = useState<string | null>(payment.type);
-  const canSave =
-    reference.trim().length > 0 && holder.trim().length > 0 && type !== null;
+  const canSave = reference.trim().length > 0 && type !== null;
 
   function handleSave() {
     if (!canSave || type === null) {
@@ -43,7 +40,6 @@ function EditPaymentModal({ payment, onClose, onSave }: EditPaymentModalProps) {
 
     onSave({
       reference: reference.trim(),
-      holder: holder.trim(),
       type,
     });
   }
@@ -65,7 +61,7 @@ function EditPaymentModal({ payment, onClose, onSave }: EditPaymentModalProps) {
         },
       ]}
     >
-      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-2">
+      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor={referenceId} className={LABEL_CLASS}>
             Número de tarjeta/cuenta/wallet/referencia
@@ -85,21 +81,6 @@ function EditPaymentModal({ payment, onClose, onSave }: EditPaymentModalProps) {
                 },
               );
             }}
-            className={FIELD_CLASS}
-          />
-        </div>
-
-        <div>
-          <label htmlFor={holderId} className={LABEL_CLASS}>
-            Titular de la Cuenta
-          </label>
-          <input
-            id={holderId}
-            type="text"
-            value={holder}
-            autoComplete="off"
-            placeholder="Ej. (José Lopez, Armando Caveira...)"
-            onChange={(event) => setHolder(event.currentTarget.value)}
             className={FIELD_CLASS}
           />
         </div>

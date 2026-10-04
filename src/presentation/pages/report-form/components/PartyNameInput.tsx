@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { isCanceledError } from "@/common/utils/http-error.util";
+import { reportInputClass } from "@/presentation/pages/report-form/components/ReportFieldError";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 
 type PartySuggestion = {
@@ -15,6 +16,8 @@ type PartyNameInputProps = {
   listLabel: string;
   resultType: "organization" | "scammer";
   examples: PartySuggestion[];
+  invalid?: boolean;
+  describedBy?: string;
 };
 
 function filterExamples(examples: PartySuggestion[], query: string) {
@@ -36,6 +39,8 @@ function PartyNameInput({
   listLabel,
   resultType,
   examples,
+  invalid = false,
+  describedBy,
 }: PartyNameInputProps) {
   const listId = useId();
   const requestId = useRef(0);
@@ -140,7 +145,10 @@ function PartyNameInput({
         aria-autocomplete="list"
         aria-controls={listId}
         aria-expanded={showDropdown}
-        className="h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        required
+        className={reportInputClass(invalid)}
       />
 
       {showDropdown ? (

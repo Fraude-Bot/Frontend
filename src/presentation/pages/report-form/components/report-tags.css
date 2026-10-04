@@ -18,6 +18,12 @@
   box-shadow: 0 0 0 1px #f97316;
 }
 
+.report-product-tags.is-invalid,
+.report-product-tags.is-invalid:focus-within {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 1px #dc2626;
+}
+
 .report-product-tags__label {
   position: absolute;
   width: 1px;

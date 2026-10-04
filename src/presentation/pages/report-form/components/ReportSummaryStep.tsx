@@ -211,7 +211,7 @@ function ReportSummaryStep({
                       </p>
                     </div>
                     <p className="mt-1 truncate text-sm text-gray-700">
-                      {contact.name}
+                      {contact.url}
                     </p>
                   </li>
                 );
@@ -250,6 +250,37 @@ function ReportSummaryStep({
               })}
             </ul>
           </div>
+
+          {draft.partyType === "company" && draft.collaborators.length > 0 ? (
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Colaborador</h3>
+              <ul className="mt-3 flex flex-wrap gap-3">
+                {draft.collaborators.map((collaborator) => (
+                  <li
+                    key={collaborator.id}
+                    className="flex min-w-36 items-center gap-3 border border-gray-300 bg-white px-3 py-2"
+                  >
+                    {collaborator.avatarFile ? (
+                      <FileImage
+                        file={collaborator.avatarFile}
+                        label={`Ver foto de ${collaborator.name}`}
+                        className="h-10 w-10 shrink-0 overflow-hidden rounded-full"
+                      />
+                    ) : null}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-gray-900">
+                        {collaborator.name}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-gray-700">
+                        {collaborator.payments.length} métodos de pago ·{" "}
+                        {collaborator.contacts.length} contactos
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
 

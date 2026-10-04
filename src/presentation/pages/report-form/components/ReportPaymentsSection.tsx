@@ -10,6 +10,8 @@ type ReportPaymentsSectionProps = {
   description: string;
   payments: ReportFormPaymentDraft[];
   onChange: (payments: ReportFormPaymentDraft[]) => void;
+  error?: string;
+  errorId?: string;
 };
 
 function createPaymentId() {
@@ -24,6 +26,8 @@ function ReportPaymentsSection({
   description,
   payments,
   onChange,
+  error,
+  errorId,
 }: ReportPaymentsSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
@@ -56,7 +60,7 @@ function ReportPaymentsSection({
   }
 
   return (
-    <div className="pt-1">
+    <div className="pt-1" data-report-field="payments">
       <h3 className="font-extrabold text-gray-900">Métodos de pagos</h3>
       <p className="mt-1 text-sm text-gray-600">{description}</p>
       <div className="mt-4 flex flex-wrap gap-4">
@@ -71,7 +75,7 @@ function ReportPaymentsSection({
             >
               <button
                 type="button"
-                aria-label={`Editar método de pago ${payment.holder}`}
+                aria-label={`Editar método de pago ${payment.reference}`}
                 title={`${typeLabel} · ${payment.reference}`}
                 onClick={() => setEditingPaymentId(payment.id)}
                 className="absolute inset-0 cursor-pointer border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
@@ -93,11 +97,11 @@ function ReportPaymentsSection({
                   />
                 ) : null}
                 <p className="truncate text-sm font-bold text-gray-900">
-                  {payment.holder}
+                  {payment.reference}
                 </p>
               </div>
               <p className="pointer-events-none mt-1 truncate text-xs text-gray-500">
-                {typeLabel} · {payment.reference}
+                {typeLabel}
               </p>
             </article>
           );
@@ -105,8 +109,15 @@ function ReportPaymentsSection({
         <ReportAddTile
           label="Agregar método de pago"
           onClick={() => setIsModalOpen(true)}
+          invalid={Boolean(error)}
+          describedBy={error ? errorId : undefined}
         />
       </div>
+      {error ? (
+        <p id={errorId} role="alert" className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
       {isModalOpen ? (
         <AddPaymentModal
           onClose={() => setIsModalOpen(false)}

@@ -27,15 +27,10 @@ type AddPaymentModalProps = {
 
 function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
   const referenceId = useId();
-  const holderId = useId();
   const typeId = useId();
   const [reference, setReference] = useState("");
-  const [holder, setHolder] = useState("");
   const [type, setType] = useState<string | null>(null);
-  const canCreate =
-    reference.trim().length > 0 &&
-    holder.trim().length > 0 &&
-    type !== null;
+  const canCreate = reference.trim().length > 0 && type !== null;
 
   function handleCreate() {
     if (!canCreate || type === null) {
@@ -44,7 +39,6 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
 
     onCreate({
       reference: reference.trim(),
-      holder: holder.trim(),
       type,
     });
   }
@@ -66,7 +60,7 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
         },
       ]}
     >
-      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-2">
+      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor={referenceId} className={LABEL_CLASS}>
             Número de tarjeta/cuenta/wallet/referencia
@@ -86,21 +80,6 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
                 },
               );
             }}
-            className={FIELD_CLASS}
-          />
-        </div>
-
-        <div>
-          <label htmlFor={holderId} className={LABEL_CLASS}>
-            Titular de la Cuenta
-          </label>
-          <input
-            id={holderId}
-            type="text"
-            value={holder}
-            autoComplete="off"
-            placeholder="Ej. (José Lopez, Armando Caveira...)"
-            onChange={(event) => setHolder(event.currentTarget.value)}
             className={FIELD_CLASS}
           />
         </div>

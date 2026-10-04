@@ -3,9 +3,16 @@ import PartyNameInput from "@/presentation/pages/report-form/components/PartyNam
 type CompanyNameInputProps = {
   value: string;
   onChange: (value: string, organizationId: string | null) => void;
+  invalid?: boolean;
+  describedBy?: string;
 };
 
-function CompanyNameInput({ value, onChange }: CompanyNameInputProps) {
+function CompanyNameInput({
+  value,
+  onChange,
+  invalid = false,
+  describedBy,
+}: CompanyNameInputProps) {
   return (
     <PartyNameInput
       id="company-name"
@@ -15,6 +22,8 @@ function CompanyNameInput({ value, onChange }: CompanyNameInputProps) {
       listLabel="Empresas reportadas"
       resultType="organization"
       examples={[]}
+      invalid={invalid}
+      describedBy={describedBy}
     />
   );
 }

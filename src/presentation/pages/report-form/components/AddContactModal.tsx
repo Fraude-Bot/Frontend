@@ -25,14 +25,11 @@ type AddContactModalProps = {
 };
 
 function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
-  const nameId = useId();
   const platformId = useId();
   const urlId = useId();
-  const [name, setName] = useState("");
   const [platform, setPlatform] = useState<string | null>(null);
   const [url, setUrl] = useState("");
-  const canCreate =
-    name.trim().length > 0 && platform !== null && url.trim().length > 0;
+  const canCreate = platform !== null && url.trim().length > 0;
 
   function handleCreate() {
     if (!canCreate || platform === null) {
@@ -40,7 +37,6 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
     }
 
     onCreate({
-      name: name.trim(),
       platform,
       url: url.trim(),
     });
@@ -63,7 +59,7 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
         },
       ]}
     >
-      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-2">
+      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor={urlId} className={LABEL_CLASS}>
             URL
@@ -79,21 +75,6 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
               setUrl(nextUrl);
               setPlatform(detectContactPlatform(nextUrl));
             }}
-            className={FIELD_CLASS}
-          />
-        </div>
-
-        <div>
-          <label htmlFor={nameId} className={LABEL_CLASS}>
-            Nombre del Contacto
-          </label>
-          <input
-            id={nameId}
-            type="text"
-            value={name}
-            autoComplete="off"
-            placeholder="Ej. (José Lopez, Armando Caveira...)"
-            onChange={(event) => setName(event.currentTarget.value)}
             className={FIELD_CLASS}
           />
         </div>

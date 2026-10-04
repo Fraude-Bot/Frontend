@@ -26,14 +26,11 @@ type EditContactModalProps = {
 };
 
 function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
-  const nameId = useId();
   const platformId = useId();
   const urlId = useId();
-  const [name, setName] = useState(contact.name);
   const [platform, setPlatform] = useState<string | null>(contact.platform);
   const [url, setUrl] = useState(contact.url);
-  const canSave =
-    name.trim().length > 0 && platform !== null && url.trim().length > 0;
+  const canSave = platform !== null && url.trim().length > 0;
 
   function handleSave() {
     if (!canSave || platform === null) {
@@ -41,7 +38,6 @@ function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
     }
 
     onSave({
-      name: name.trim(),
       platform,
       url: url.trim(),
     });
@@ -64,7 +60,7 @@ function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
         },
       ]}
     >
-      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-2">
+      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor={urlId} className={LABEL_CLASS}>
             URL
@@ -80,21 +76,6 @@ function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
               setUrl(nextUrl);
               setPlatform(detectContactPlatform(nextUrl));
             }}
-            className={FIELD_CLASS}
-          />
-        </div>
-
-        <div>
-          <label htmlFor={nameId} className={LABEL_CLASS}>
-            Nombre del Contacto
-          </label>
-          <input
-            id={nameId}
-            type="text"
-            value={name}
-            autoComplete="off"
-            placeholder="Ej. (José Lopez, Armando Caveira...)"
-            onChange={(event) => setName(event.currentTarget.value)}
             className={FIELD_CLASS}
           />
         </div>
