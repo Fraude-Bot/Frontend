@@ -19,24 +19,25 @@ const PLATFORM_OPTIONS = SOCIAL_FILTERS.map((filter) => ({
   iconSrc: getPlatformIconSrc(filter.platform),
 }));
 
-type AddContactModalProps = {
+type EditContactModalProps = {
+  contact: ReportFormContactDraft;
   onClose: () => void;
-  onCreate: (contact: Omit<ReportFormContactDraft, "id">) => void;
+  onSave: (contact: Omit<ReportFormContactDraft, "id">) => void;
 };
 
-function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
+function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
   const platformId = useId();
   const urlId = useId();
-  const [platform, setPlatform] = useState<string | null>(null);
-  const [url, setUrl] = useState("");
-  const canCreate = platform !== null && url.trim().length > 0;
+  const [platform, setPlatform] = useState<string | null>(contact.platform);
+  const [url, setUrl] = useState(contact.url);
+  const canSave = platform !== null && url.trim().length > 0;
 
-  function handleCreate() {
-    if (!canCreate || platform === null) {
+  function handleSave() {
+    if (!canSave || platform === null) {
       return;
     }
 
-    onCreate({
+    onSave({
       platform,
       url: url.trim(),
     });
@@ -44,7 +45,7 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
 
   return (
     <Modal
-      title="Agregar Contacto"
+      title="Editar Contacto"
       size="lg"
       headerDivider
       autoFocusAction={false}
@@ -52,24 +53,24 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
       actions={[
         { label: "Cerrar", variant: "secondary", onClick: onClose },
         {
-          label: "Crear",
+          label: "Guardar",
           variant: "primary",
-          disabled: !canCreate,
-          onClick: handleCreate,
+          disabled: !canSave,
+          onClick: handleSave,
         },
       ]}
     >
       <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor={urlId} className={LABEL_CLASS}>
-            Número telefónico, Facebook, Instagram, URL...
+            URL
           </label>
           <input
             id={urlId}
             type="text"
             value={url}
             autoComplete="off"
-            placeholder="Ej. (6623145124, https://website.org...)"
+            placeholder="https://website.org"
             onChange={(event) => {
               const nextUrl = event.currentTarget.value;
               setUrl(nextUrl);
@@ -99,4 +100,4 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
   );
 }
 
-export default AddContactModal;
+export default EditContactModal;

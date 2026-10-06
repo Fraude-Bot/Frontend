@@ -1,5 +1,15 @@
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from "react";
+import { createPortal } from "react-dom";
 import { isCanceledError } from "@/common/utils/http-error.util";
+import { reportInputClass } from "@/presentation/pages/report-form/components/ReportFieldError";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 
 type PartySuggestion = {
@@ -15,6 +25,10 @@ type PartyNameInputProps = {
   listLabel: string;
   resultType: "organization" | "scammer";
   examples: PartySuggestion[];
+  invalid?: boolean;
+  describedBy?: string;
+  rounded?: boolean;
+  required?: boolean;
 };
 
 function filterExamples(examples: PartySuggestion[], query: string) {
@@ -36,13 +50,25 @@ function PartyNameInput({
   listLabel,
   resultType,
   examples,
+  invalid = false,
+  describedBy,
+  rounded = false,
+  required = true,
 }: PartyNameInputProps) {
   const listId = useId();
   const requestId = useRef(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const [suggestions, setSuggestions] = useState<PartySuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const { searchReportUseCase } = useDependencies();
+  const { suggestOrganizationNamesUseCase, suggestScammerNamesUseCase } =
+    useDependencies();
+  const suggestNamesUseCase =
+    resultType === "organization"
+      ? suggestOrganizationNamesUseCase
+      : suggestScammerNamesUseCase;
   const query = value.trim();
   const exampleSuggestions = filterExamples(examples, query);
   const showDropdown =
@@ -61,25 +87,18 @@ function PartyNameInput({
     const timeoutId = window.setTimeout(() => {
       setIsLoading(true);
 
-      void searchReportUseCase
-        .execute(query, 1)
-        .then((result) => {
+      const suggestionRequest = suggestNamesUseCase.execute(query).then((names) =>
+        names.map((name) => ({
+          id: `suggested:${name}`,
+          name,
+        })),
+      );
+
+      void suggestionRequest
+        .then((matches) => {
           if (currentRequestId !== requestId.current) {
             return;
           }
-
-          const seen = new Set<string>();
-          const matches = result.data
-            .filter((report) => report.type === resultType)
-            .filter((report) => {
-              const key = report.name.trim().toLocaleLowerCase();
-              if (seen.has(key)) {
-                return false;
-              }
-              seen.add(key);
-              return true;
-            })
-            .map((report) => ({ id: report.id, name: report.name }));
 
           setSuggestions(matches);
           setIsLoading(false);
@@ -99,12 +118,52 @@ function PartyNameInput({
 
     return () => {
       window.clearTimeout(timeoutId);
-      searchReportUseCase.cancel();
+      suggestNamesUseCase.cancel();
     };
-  }, [query, resultType, searchReportUseCase]);
+  }, [query, suggestNamesUseCase]);
+
+  useLayoutEffect(() => {
+    if (!showDropdown) {
+      setPortalRoot(null);
+      setMenuStyle(null);
+      return;
+    }
+
+    const input = inputRef.current;
+    const dialog = input?.closest("dialog");
+    if (!input || !(dialog instanceof HTMLElement)) {
+      setPortalRoot(null);
+      setMenuStyle(null);
+      return;
+    }
+
+    function placeMenu() {
+      const rect = input.getBoundingClientRect();
+      setPortalRoot(dialog);
+      setMenuStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        maxHeight: 224,
+      });
+    }
+
+    placeMenu();
+    window.addEventListener("resize", placeMenu);
+    dialog.addEventListener("scroll", placeMenu, true);
+
+    return () => {
+      window.removeEventListener("resize", placeMenu);
+      dialog.removeEventListener("scroll", placeMenu, true);
+    };
+  }, [showDropdown]);
 
   function chooseSuggestion(item: PartySuggestion) {
-    const matchedId = item.id.startsWith("example:") ? null : item.id;
+    const matchedId =
+      item.id.startsWith("example:") || item.id.startsWith("suggested:")
+        ? null
+        : item.id;
     onChange(item.name, matchedId);
     setSuggestions([]);
     setIsFocused(false);
@@ -122,10 +181,43 @@ function PartyNameInput({
     return true;
   });
   const dropdownItems = [...exampleSuggestions, ...uniqueApiSuggestions];
+  const suggestionList = (
+    <>
+      {dropdownItems.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          role="option"
+          aria-selected={false}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => chooseSuggestion(item)}
+          className="block w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-orange-50 focus:bg-orange-50 focus:outline-none"
+        >
+          {item.name}
+        </button>
+      ))}
+      {isLoading ? (
+        <p className="px-3 py-2 text-sm text-gray-500" role="status">
+          Buscando…
+        </p>
+      ) : null}
+    </>
+  );
+
+  function closeSuggestions(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Escape" || !showDropdown) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    setIsFocused(false);
+  }
 
   return (
     <div className="relative">
       <input
+        ref={inputRef}
         id={id}
         type="text"
         value={value}
@@ -133,40 +225,41 @@ function PartyNameInput({
         onFocus={() => setIsFocused(true)}
         onClick={() => setIsFocused(true)}
         onBlur={() => window.setTimeout(() => setIsFocused(false), 100)}
+        onKeyDown={closeSuggestions}
         placeholder={placeholder}
         autoComplete="off"
         role="combobox"
         aria-autocomplete="list"
         aria-controls={listId}
         aria-expanded={showDropdown}
-        className="h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        required={required}
+        className={`${reportInputClass(invalid)}${rounded ? " rounded-md" : ""}`}
       />
 
-      {showDropdown ? (
+      {showDropdown && portalRoot && menuStyle
+        ? createPortal(
+            <div
+              id={listId}
+              role="listbox"
+              aria-label={listLabel}
+              style={menuStyle}
+              className={`z-[100] overflow-y-auto border border-gray-300 bg-white shadow-lg ${rounded ? "rounded-md" : ""}`}
+            >
+              {suggestionList}
+            </div>,
+            portalRoot,
+          )
+        : null}
+      {showDropdown && !portalRoot ? (
         <div
           id={listId}
           role="listbox"
           aria-label={listLabel}
           className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto border border-gray-300 bg-white shadow-lg"
         >
-          {dropdownItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="option"
-              aria-selected={false}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => chooseSuggestion(item)}
-              className="block w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-orange-50 focus:bg-orange-50 focus:outline-none"
-            >
-              {item.name}
-            </button>
-          ))}
-          {isLoading ? (
-            <p className="px-3 py-2 text-sm text-gray-500" role="status">
-              Buscando…
-            </p>
-          ) : null}
+          {suggestionList}
         </div>
       ) : null}
     </div>

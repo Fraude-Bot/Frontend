@@ -20,24 +20,25 @@ const TYPE_OPTIONS = PAYMENT_TYPE_OPTIONS.map((option) => ({
   iconSrc: getPaymentIconSrc(option.value),
 }));
 
-type AddPaymentModalProps = {
+type EditPaymentModalProps = {
+  payment: ReportFormPaymentDraft;
   onClose: () => void;
-  onCreate: (payment: Omit<ReportFormPaymentDraft, "id">) => void;
+  onSave: (payment: Omit<ReportFormPaymentDraft, "id">) => void;
 };
 
-function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
+function EditPaymentModal({ payment, onClose, onSave }: EditPaymentModalProps) {
   const referenceId = useId();
   const typeId = useId();
-  const [reference, setReference] = useState("");
-  const [type, setType] = useState<string | null>(null);
-  const canCreate = reference.trim().length > 0 && type !== null;
+  const [reference, setReference] = useState(payment.reference);
+  const [type, setType] = useState<string | null>(payment.type);
+  const canSave = reference.trim().length > 0 && type !== null;
 
-  function handleCreate() {
-    if (!canCreate || type === null) {
+  function handleSave() {
+    if (!canSave || type === null) {
       return;
     }
 
-    onCreate({
+    onSave({
       reference: reference.trim(),
       type,
     });
@@ -45,7 +46,7 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
 
   return (
     <Modal
-      title="Agregar Método de Pago"
+      title="Editar Método de Pago"
       size="lg"
       headerDivider
       autoFocusAction={false}
@@ -53,10 +54,10 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
       actions={[
         { label: "Cerrar", variant: "secondary", onClick: onClose },
         {
-          label: "Crear",
+          label: "Guardar",
           variant: "primary",
-          disabled: !canCreate,
-          onClick: handleCreate,
+          disabled: !canSave,
+          onClick: handleSave,
         },
       ]}
     >
@@ -104,4 +105,4 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
   );
 }
 
-export default AddPaymentModal;
+export default EditPaymentModal;

@@ -45,6 +45,10 @@ When adding a dependency, install it in **both** places:
 
 Both installs are required so the container volume (`node_modules`) and the local worktree stay in sync.
 
+## OpenAPI definition
+
+Backend has a public OpenAPI definition in JSON format in `/api/public/openapi`, ensure to load it into your session memory.
+
 ## Related rules
 
 - `git-workspaces.mdc` — edit only in feature worktrees, never on `main`.

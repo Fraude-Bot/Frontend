@@ -4,7 +4,6 @@ export type PartyType = "individual" | "company";
 
 export type ReportFormContactDraft = {
   id: string;
-  name: string;
   platform: string;
   url: string;
 };
@@ -12,8 +11,22 @@ export type ReportFormContactDraft = {
 export type ReportFormPaymentDraft = {
   id: string;
   reference: string;
-  holder: string;
   type: string;
+};
+
+export type ReportFormCollaboratorEntryDraft = {
+  id: string;
+  reference: string;
+  type: string;
+};
+
+export type ReportFormCollaboratorDraft = {
+  id: string;
+  name: string;
+  avatarFile: File | null;
+  avatarPath: string | null;
+  payments: ReportFormCollaboratorEntryDraft[];
+  contacts: ReportFormContactDraft[];
 };
 
 export type ReportFormDraft = {
@@ -31,6 +44,8 @@ export type ReportFormDraft = {
   evidencePaths: string[];
   contacts: ReportFormContactDraft[];
   payments: ReportFormPaymentDraft[];
+  collaborators: ReportFormCollaboratorDraft[];
+  organizations: ReportFormCollaboratorDraft[];
   contactEmail: string;
   acceptedTerms: boolean;
 };
@@ -63,6 +78,8 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
   evidencePaths: [],
   contacts: [],
   payments: [],
+  collaborators: [],
+  organizations: [],
   contactEmail: "",
   acceptedTerms: false,
 };
@@ -80,6 +97,8 @@ export function isReportFormDraftDirty(draft: ReportFormDraft) {
     draft.evidencePaths.length > 0 ||
     draft.contacts.length > 0 ||
     draft.payments.length > 0 ||
+    draft.collaborators.length > 0 ||
+    draft.organizations.length > 0 ||
     draft.contactEmail.trim() !== "" ||
     draft.acceptedTerms
   );

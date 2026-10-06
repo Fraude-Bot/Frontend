@@ -8,10 +8,13 @@ const API_ROUTES: Record<string, Record<string, Record<string, string>>> = {
     public: {
         reports: {
             search: "/public/reports/",
-            profilePicture: "/public/reports/pictures/profiles",
-            proofs: "/public/reports/pictures/proofs",
+            profilePicture: "/public/reports/media/profiles",
+            proofs: "/public/reports/media/proofs",
+            createOrganization: "/public/reports/organizations",
+            createScammer: "/public/reports/scammers",
         },
         scammers: {
+            suggest: "/public/scammers/suggest",
             findById: "/public/scammers/{id}",
             calendar: "/public/scammers/{id}/calendar/{year}",
             contacts: "/public/scammers/{id}/contacts",
@@ -19,6 +22,7 @@ const API_ROUTES: Record<string, Record<string, Record<string, string>>> = {
             map: "/public/scammers/{id}/map",
         },
         organizations: {
+            suggest: "/public/organizations/suggest",
             findById: "/public/organizations/{id}",
             calendar: "/public/organizations/{id}/calendar/{year}",
             contacts: "/public/organizations/{id}/contacts",

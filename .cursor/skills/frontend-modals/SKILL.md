@@ -13,7 +13,9 @@ Canonical files:
 - `src/presentation/shared/components/SearchableSelect.tsx` — searchable closed list
 - `src/presentation/pages/report-form/components/DiscardChangesModal.tsx` — confirmation
 - `src/presentation/pages/report-form/components/AddContactModal.tsx` — form
+- `src/presentation/pages/report-form/components/EditContactModal.tsx` — form, prefilled, opened from a contact card
 - `src/presentation/pages/report-form/components/AddPaymentModal.tsx` — form
+- `src/presentation/pages/report-form/components/EditPaymentModal.tsx` — form, prefilled, opened from a payment card
 - `DESIGN.md` — visual rules (Modal section)
 
 ## Shell API
@@ -81,8 +83,9 @@ Do not allow free-text values unless the design says so. Platform options for co
 2. Keep open/close state in the parent; unmount the modal when closed so field state resets.
 3. Buttons are `type="button"` (the shell already does this). Do not nest a `<form>` inside the wizard `<form>`.
 4. Put created items on the page (card + existing **+** tile). Do not leave success only inside the dialog.
+5. Edit dialogs open from the existing card. Keep remove as its own button above the card hit target. Pass the current draft in, save the trimmed fields, and keep the existing id. Unmount on close.
 
-Copy `AddContactModal` or `AddPaymentModal` for forms and `DiscardChangesModal` for confirms.
+Copy `AddContactModal` or `AddPaymentModal` for create forms, `EditContactModal` or `EditPaymentModal` for edit forms, and `DiscardChangesModal` for confirms. Edit forms use **Cerrar** / **Guardar**.
 
 ## Do not
 

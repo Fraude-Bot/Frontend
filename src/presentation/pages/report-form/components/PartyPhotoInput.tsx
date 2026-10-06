@@ -9,8 +9,12 @@ type PartyPhotoInputProps = {
   id: string;
   file: File | null;
   onChange: (file: File | null, path: string | null) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   addLabel: string;
   changeLabel: string;
+  invalid?: boolean;
+  describedBy?: string;
+  required?: boolean;
 };
 
 function isJpegOrPng(file: File) {
@@ -45,8 +49,12 @@ function PartyPhotoInput({
   id,
   file,
   onChange,
+  onUploadingChange,
   addLabel,
   changeLabel,
+  invalid = false,
+  describedBy,
+  required = true,
 }: PartyPhotoInputProps) {
   const { storeTemporaryProfilePictureUseCase } = useDependencies();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -58,6 +66,7 @@ function PartyPhotoInput({
   const isMounted = useRef(true);
   const previewFile = pendingFile ?? file;
   const label = previewFile ? changeLabel : addLabel;
+  const circleBorder = invalid ? "border-red-600" : "border-gray-400";
   const viewLabel = addLabel.replace(/^Agregar /, "Ver ");
   const closePreview = useCallback(() => {
     setIsPreviewOpen(false);
@@ -85,13 +94,18 @@ function PartyPhotoInput({
     };
   }, [previewFile]);
 
+  function setUploading(uploading: boolean) {
+    setIsUploading(uploading);
+    onUploadingChange?.(uploading);
+  }
+
   function finishUpload(currentRequestId: number) {
     if (!isMounted.current || currentRequestId !== requestId.current) {
       return;
     }
 
     setPendingFile(null);
-    setIsUploading(false);
+    setUploading(false);
   }
 
   function upload(nextFile: File) {
@@ -104,7 +118,7 @@ function PartyPhotoInput({
     const currentRequestId = ++requestId.current;
     setErrorMessage(null);
     setPendingFile(nextFile);
-    setIsUploading(true);
+    setUploading(true);
 
     void storeTemporaryProfilePictureUseCase
       .execute(nextFile)
@@ -139,7 +153,7 @@ function PartyPhotoInput({
       requestId.current += 1;
       storeTemporaryProfilePictureUseCase.cancel();
       setPendingFile(null);
-      setIsUploading(false);
+      setUploading(false);
       return;
     }
 
@@ -158,7 +172,7 @@ function PartyPhotoInput({
             aria-expanded={isPreviewOpen}
             aria-busy={isUploading}
             aria-label={viewLabel}
-            className="relative flex h-28 w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-gray-400 p-0 text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+            className={`relative flex h-28 w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed p-0 text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${circleBorder}`}
           >
             <img
               src={previewUrl}
@@ -174,7 +188,7 @@ function PartyPhotoInput({
         ) : (
           <label
             htmlFor={id}
-            className="relative flex h-28 w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-gray-400 text-5xl font-light text-gray-900 transition-colors hover:border-orange-500 hover:bg-orange-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-orange-600"
+            className={`relative flex h-28 w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed text-5xl font-light text-gray-900 transition-colors hover:bg-orange-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-orange-600 ${circleBorder} ${invalid ? "" : "hover:border-orange-500"}`}
           >
             <span aria-hidden="true">+</span>
             <span className="sr-only">{label}</span>
@@ -185,6 +199,9 @@ function PartyPhotoInput({
           type="file"
           accept="image/jpeg,image/png"
           aria-label={label}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
+          required={required}
           className="sr-only"
           onChange={(event) => {
             const nextFile = event.currentTarget.files?.[0] ?? null;

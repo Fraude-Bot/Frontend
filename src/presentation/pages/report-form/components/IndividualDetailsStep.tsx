@@ -10,7 +10,13 @@ import ReportDetailsActions from "@/presentation/pages/report-form/components/Re
 import EvidenceScreenshotsInput from "@/presentation/pages/report-form/components/EvidenceScreenshotsInput";
 import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
 import ReportContactsSection from "@/presentation/pages/report-form/components/ReportContactsSection";
+import ReportFieldError, {
+  reportInputClass,
+  reportTextareaClass,
+} from "@/presentation/pages/report-form/components/ReportFieldError";
+import ReportCollaboratorsSection from "@/presentation/pages/report-form/components/ReportCollaboratorsSection";
 import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
+import { useReportDetailsAttempt } from "@/presentation/pages/report-form/components/report-details-validation";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import "@/presentation/pages/report-form/components/report-tags.css";
 
@@ -32,15 +38,6 @@ const PRODUCT_TAG_CLASS_NAMES: ClassNames = {
   highlight: "report-product-tags__highlight",
 };
 
-const EXAMPLE_INDIVIDUALS = [
-  { id: "example:carlos-ponzi", name: "Carlos Ponzi" },
-  { id: "example:ruja-ignatova", name: "Ruja Ignatova" },
-  { id: "example:bernard-madoff", name: "Bernard Madoff" },
-];
-
-const FIELD_CLASS =
-  "h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
-
 function IndividualDetailsStep({
   draft,
   updateDraft,
@@ -48,6 +45,7 @@ function IndividualDetailsStep({
   goBack,
 }: ReportFormStepProps) {
   const productTagsRef = useRef<ReactTagsAPI>(null);
+  const { errors, continueIfValid } = useReportDetailsAttempt(draft);
 
   if (draft.partyType !== "individual") {
     return null;
@@ -106,9 +104,10 @@ function IndividualDetailsStep({
           }
           addLabel="Agregar foto del individuo"
           changeLabel="Cambiar foto del individuo"
+          required={false}
         />
 
-        <div>
+        <div data-report-field="name">
           <label
             htmlFor="individual-name"
             className="mb-2 block font-extrabold text-gray-900"
@@ -124,11 +123,14 @@ function IndividualDetailsStep({
             placeholder="Ej. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)"
             listLabel="Individuos reportados"
             resultType="scammer"
-            examples={EXAMPLE_INDIVIDUALS}
+            examples={[]}
+            invalid={Boolean(errors.name)}
+            describedBy={errors.name ? "individual-name-error" : undefined}
           />
+          <ReportFieldError id="individual-name-error" message={errors.name} />
         </div>
 
-        <div>
+        <div data-report-field="products">
           <p className="mb-2 font-extrabold text-gray-900">
             Productos que ofrece
           </p>
@@ -152,12 +154,23 @@ function IndividualDetailsStep({
               deleteButtonText="Eliminar %value%"
               ariaAddedText="Producto %value% agregado"
               ariaDeletedText="Producto %value% eliminado"
+              isInvalid={Boolean(errors.products)}
+              ariaErrorMessage={
+                errors.products ? "individual-products-error" : undefined
+              }
+              ariaDescribedBy={
+                errors.products ? "individual-products-error" : undefined
+              }
               classNames={PRODUCT_TAG_CLASS_NAMES}
             />
           </div>
+          <ReportFieldError
+            id="individual-products-error"
+            message={errors.products}
+          />
         </div>
 
-        <div>
+        <div data-report-field="title">
           <label
             htmlFor="individual-report-title"
             className="mb-2 block font-extrabold text-gray-900"
@@ -172,11 +185,21 @@ function IndividualDetailsStep({
               updateDraft({ reportTitle: event.currentTarget.value })
             }
             placeholder="Ej. (Me estafó $2,000 MXN, me estafó este tipo...)"
-            className={FIELD_CLASS}
+            maxLength={50}
+            aria-invalid={Boolean(errors.title) || undefined}
+            aria-describedby={
+              errors.title ? "individual-report-title-error" : undefined
+            }
+            required
+            className={reportInputClass(Boolean(errors.title))}
+          />
+          <ReportFieldError
+            id="individual-report-title-error"
+            message={errors.title}
           />
         </div>
 
-        <div>
+        <div data-report-field="description">
           <label
             htmlFor="individual-report-description"
             className="mb-2 block font-extrabold text-gray-900"
@@ -191,7 +214,18 @@ function IndividualDetailsStep({
             }
             placeholder="Descripción de tu caso"
             rows={7}
-            className="w-full resize-none border border-gray-300 px-3 py-2 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+            aria-invalid={Boolean(errors.description) || undefined}
+            aria-describedby={
+              errors.description
+                ? "individual-report-description-error"
+                : undefined
+            }
+            required
+            className={reportTextareaClass(Boolean(errors.description))}
+          />
+          <ReportFieldError
+            id="individual-report-description-error"
+            message={errors.description}
           />
         </div>
 
@@ -214,18 +248,27 @@ function IndividualDetailsStep({
           description="Los perfiles/números que haya utilizado el individuo para contactarte"
           contacts={draft.contacts}
           onChange={(contacts) => updateDraft({ contacts })}
+          error={errors.contacts}
+          errorId="individual-contacts-error"
         />
 
         <ReportPaymentsSection
           description="Los números de cuenta/bancos/wallets que esté utilizando el individuo para captar fondos"
           payments={draft.payments}
           onChange={(payments) => updateDraft({ payments })}
+          error={errors.payments}
+          errorId="individual-payments-error"
+        />
+
+        <ReportCollaboratorsSection
+          variant="organization"
+          collaborators={draft.organizations}
+          onChange={(organizations) => updateDraft({ organizations })}
         />
       </div>
 
       <ReportDetailsActions
-        canContinue={draft.contacts.length > 0 || draft.payments.length > 0}
-        goNext={goNext}
+        onContinue={() => continueIfValid(goNext)}
         goBack={goBack}
       />
     </section>

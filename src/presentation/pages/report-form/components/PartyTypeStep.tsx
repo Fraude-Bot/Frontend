@@ -17,7 +17,6 @@ const PARTY_TYPE_OPTIONS: {
     description:
       "Persona particular, vendedor informal, perfil de red social o particular sin registro formal.",
     imageSrc: reportIcons.individual,
-    disabled: true,
   },
   {
     value: "company",

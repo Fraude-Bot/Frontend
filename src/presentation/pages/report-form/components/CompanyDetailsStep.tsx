@@ -9,8 +9,14 @@ import CompanyNameInput from "@/presentation/pages/report-form/components/Compan
 import ReportDetailsActions from "@/presentation/pages/report-form/components/ReportDetailsActions";
 import EvidenceScreenshotsInput from "@/presentation/pages/report-form/components/EvidenceScreenshotsInput";
 import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
+import ReportCollaboratorsSection from "@/presentation/pages/report-form/components/ReportCollaboratorsSection";
 import ReportContactsSection from "@/presentation/pages/report-form/components/ReportContactsSection";
+import ReportFieldError, {
+  reportInputClass,
+  reportTextareaClass,
+} from "@/presentation/pages/report-form/components/ReportFieldError";
 import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
+import { useReportDetailsAttempt } from "@/presentation/pages/report-form/components/report-details-validation";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import "@/presentation/pages/report-form/components/report-tags.css";
 
@@ -39,6 +45,7 @@ function CompanyDetailsStep({
   goBack,
 }: ReportFormStepProps) {
   const productTagsRef = useRef<ReactTagsAPI>(null);
+  const { errors, continueIfValid } = useReportDetailsAttempt(draft);
 
   if (draft.partyType !== "company") {
     return null;
@@ -97,9 +104,10 @@ function CompanyDetailsStep({
           }
           addLabel="Agregar foto de la empresa"
           changeLabel="Cambiar foto de la empresa"
+          required={false}
         />
 
-        <div>
+        <div data-report-field="name">
           <label
             htmlFor="company-name"
             className="mb-2 block font-extrabold text-gray-900"
@@ -111,10 +119,13 @@ function CompanyDetailsStep({
             onChange={(companyName, organizationId) =>
               updateDraft({ companyName, organizationId })
             }
+            invalid={Boolean(errors.name)}
+            describedBy={errors.name ? "company-name-error" : undefined}
           />
+          <ReportFieldError id="company-name-error" message={errors.name} />
         </div>
 
-        <div>
+        <div data-report-field="products">
           <p className="mb-2 font-extrabold text-gray-900">
             Productos que ofrecen
           </p>
@@ -138,12 +149,23 @@ function CompanyDetailsStep({
               deleteButtonText="Eliminar %value%"
               ariaAddedText="Producto %value% agregado"
               ariaDeletedText="Producto %value% eliminado"
+              isInvalid={Boolean(errors.products)}
+              ariaErrorMessage={
+                errors.products ? "company-products-error" : undefined
+              }
+              ariaDescribedBy={
+                errors.products ? "company-products-error" : undefined
+              }
               classNames={PRODUCT_TAG_CLASS_NAMES}
             />
           </div>
+          <ReportFieldError
+            id="company-products-error"
+            message={errors.products}
+          />
         </div>
 
-        <div>
+        <div data-report-field="title">
           <label
             htmlFor="report-title"
             className="mb-2 block font-extrabold text-gray-900"
@@ -158,11 +180,16 @@ function CompanyDetailsStep({
               updateDraft({ reportTitle: event.currentTarget.value })
             }
             placeholder="Ej. (Me estafó $2,000 MXN, me estafó esta empresa...)"
-            className="h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+            maxLength={50}
+            aria-invalid={Boolean(errors.title) || undefined}
+            aria-describedby={errors.title ? "report-title-error" : undefined}
+            required
+            className={reportInputClass(Boolean(errors.title))}
           />
+          <ReportFieldError id="report-title-error" message={errors.title} />
         </div>
 
-        <div>
+        <div data-report-field="description">
           <label
             htmlFor="report-description"
             className="mb-2 block font-extrabold text-gray-900"
@@ -177,7 +204,16 @@ function CompanyDetailsStep({
             }
             placeholder="Descripción de tu caso"
             rows={7}
-            className="w-full resize-none border border-gray-300 px-3 py-2 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+            aria-invalid={Boolean(errors.description) || undefined}
+            aria-describedby={
+              errors.description ? "report-description-error" : undefined
+            }
+            required
+            className={reportTextareaClass(Boolean(errors.description))}
+          />
+          <ReportFieldError
+            id="report-description-error"
+            message={errors.description}
           />
         </div>
 
@@ -200,18 +236,26 @@ function CompanyDetailsStep({
           description="Los perfiles/números que haya utilizado la empresa para contactarte"
           contacts={draft.contacts}
           onChange={(contacts) => updateDraft({ contacts })}
+          error={errors.contacts}
+          errorId="company-contacts-error"
         />
 
         <ReportPaymentsSection
           description="Los números de cuenta/bancos/wallets que esté utilizando la empresa para captar fondos"
           payments={draft.payments}
           onChange={(payments) => updateDraft({ payments })}
+          error={errors.payments}
+          errorId="company-payments-error"
+        />
+
+        <ReportCollaboratorsSection
+          collaborators={draft.collaborators}
+          onChange={(collaborators) => updateDraft({ collaborators })}
         />
       </div>
 
       <ReportDetailsActions
-        canContinue={draft.contacts.length > 0 || draft.payments.length > 0}
-        goNext={goNext}
+        onContinue={() => continueIfValid(goNext)}
         goBack={goBack}
       />
     </section>
