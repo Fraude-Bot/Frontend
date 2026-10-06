@@ -8,6 +8,8 @@ import SuggestOrganizationNamesUsecase from "@/application/usecases/organization
 import SearchReportStubUsecase from "@/application/usecases/report/stub/search-report.stub";
 import FindContactsByPartyUsecase from "@/application/usecases/contact/find-contacts-by-party.usecase";
 import FindRelationshipMapByPartyUsecase from "@/application/usecases/map/find-relationship-map-by-party.usecase";
+import CreateOrganizationReportUsecase from "@/application/usecases/report/create-organization-report.usecase";
+import CreateScammerReportUsecase from "@/application/usecases/report/create-scammer-report.usecase";
 import StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/store-temporary-profile-picture.usecase";
 import StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
 
@@ -29,6 +31,10 @@ export const createStoreTemporaryProfilePictureUseCase = () =>
   new StoreTemporaryProfilePictureUsecase();
 export const createStoreTemporaryProofsUseCase = () =>
   new StoreTemporaryProofsUsecase();
+export const createCreateOrganizationReportUseCase = () =>
+  new CreateOrganizationReportUsecase();
+export const createCreateScammerReportUseCase = () =>
+  new CreateScammerReportUsecase();
 export const dependencies = {
   searchReportUseCase: createSearchReportUseCase,
   findScammerSummaryByIdUseCase: createFindScammerSummaryByIdUseCase,
@@ -43,6 +49,8 @@ export const dependencies = {
   storeTemporaryProfilePictureUseCase:
     createStoreTemporaryProfilePictureUseCase,
   storeTemporaryProofsUseCase: createStoreTemporaryProofsUseCase,
+  createOrganizationReportUseCase: createCreateOrganizationReportUseCase,
+  createScammerReportUseCase: createCreateScammerReportUseCase,
 };
 
 type PublicInterface<T> = Pick<T, keyof T>;
@@ -70,4 +78,7 @@ export const createDependencies = (): Dependencies => ({
   storeTemporaryProfilePictureUseCase:
     dependencies.storeTemporaryProfilePictureUseCase(),
   storeTemporaryProofsUseCase: dependencies.storeTemporaryProofsUseCase(),
+  createOrganizationReportUseCase:
+    dependencies.createOrganizationReportUseCase(),
+  createScammerReportUseCase: dependencies.createScammerReportUseCase(),
 });

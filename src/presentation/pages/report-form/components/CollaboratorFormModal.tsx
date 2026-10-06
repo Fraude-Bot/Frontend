@@ -9,6 +9,7 @@ import {
   PAYMENT_TYPE_OPTIONS,
 } from "@/presentation/pages/report/components/payment-method.util";
 import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
+import PartyNameInput from "@/presentation/pages/report-form/components/PartyNameInput";
 import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
 import type {
   ReportFormCollaboratorEntryDraft,
@@ -47,9 +48,45 @@ type ContactRow = {
   url: string;
 };
 
+type CollaboratorFormVariant = "collaborator" | "organization";
+
+const FORM_COPY: Record<
+  CollaboratorFormVariant,
+  {
+    photoAdd: string;
+    photoChange: string;
+    name: string;
+    placeholder: string;
+    payments: string;
+    contacts: string;
+  }
+> = {
+  collaborator: {
+    photoAdd: "Agregar foto del colaborador",
+    photoChange: "Cambiar foto del colaborador",
+    name: "Nombre del colaborador",
+    placeholder: "E.g. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)",
+    payments:
+      "Los números de cuenta/bancos/wallets que esté utilizando el colaborador para captar fondos",
+    contacts:
+      "Los perfiles/números que haya utilizado el colaborador para contactarte",
+  },
+  organization: {
+    photoAdd: "Agregar foto de la organización",
+    photoChange: "Cambiar foto de la organización",
+    name: "Nombre de la organización",
+    placeholder: "Ej. (Billions Trade Club, Globoshop)",
+    payments:
+      "Los números de cuenta/bancos/wallets que esté utilizando la organización para captar fondos",
+    contacts:
+      "Los perfiles/números que haya utilizado la organización para contactarte",
+  },
+};
+
 type CollaboratorFormModalProps = {
   title: string;
   submitLabel: string;
+  variant?: CollaboratorFormVariant;
   initialName: string;
   initialAvatarFile: File | null;
   initialAvatarPath: string | null;
@@ -278,9 +315,11 @@ function EntryRowFields({
 }
 
 function ContactRows({
+  description,
   rows,
   onChange,
 }: {
+  description: string;
   rows: ContactRow[];
   onChange: (rows: ContactRow[]) => void;
 }) {
@@ -295,9 +334,7 @@ function ContactRows({
       <h3 id={headingId} className="text-base font-extrabold text-gray-900">
         Contactos
       </h3>
-      <p className="mt-1 text-sm text-gray-600">
-        Los perfiles/números que haya utilizado el colaborador para contactarte
-      </p>
+      <p className="mt-1 text-sm text-gray-600">{description}</p>
       <div className="mt-4 space-y-5">
         {rows.map((row, index) => (
           <ContactRowFields
@@ -390,6 +427,7 @@ function ContactRowFields({
 function CollaboratorFormModal({
   title,
   submitLabel,
+  variant = "collaborator",
   initialName,
   initialAvatarFile,
   initialAvatarPath,
@@ -410,6 +448,7 @@ function CollaboratorFormModal({
   const [contacts, setContacts] = useState<ContactRow[]>(() =>
     seedContacts(initialContacts),
   );
+  const copy = FORM_COPY[variant];
   const canSubmit =
     name.trim().length > 0 &&
     !isUploadingPhoto &&
@@ -456,23 +495,25 @@ function CollaboratorFormModal({
             setAvatarPath(nextPath);
           }}
           onUploadingChange={setIsUploadingPhoto}
-          addLabel="Agregar foto del colaborador"
-          changeLabel="Cambiar foto del colaborador"
+          addLabel={copy.photoAdd}
+          changeLabel={copy.photoChange}
           required={false}
         />
 
         <div>
           <label htmlFor={nameId} className="mb-2 block font-bold text-gray-900">
-            Nombre del colaborador
+            {copy.name}
           </label>
-          <input
+          <PartyNameInput
             id={nameId}
-            type="text"
             value={name}
-            autoComplete="off"
-            placeholder="E.g. (Carlos Ponzi, Ruja Ignatova, Bernard Madoff)"
-            onChange={(event) => setName(event.currentTarget.value)}
-            className={FIELD_CLASS}
+            onChange={(nextName) => setName(nextName)}
+            placeholder={copy.placeholder}
+            listLabel="Empresas reportadas"
+            resultType="organization"
+            examples={[]}
+            rounded
+            required={false}
           />
         </div>
 
@@ -484,14 +525,18 @@ function CollaboratorFormModal({
 
         <EntryRows
           legend="Métodos de pago"
-          description="Los números de cuenta/bancos/wallets que esté utilizando el colaborador para captar fondos"
+          description={copy.payments}
           rows={payments}
           onChange={setPayments}
           removeLabel="Eliminar método de pago"
           addLabel="Agregar método de pago"
         />
 
-        <ContactRows rows={contacts} onChange={setContacts} />
+        <ContactRows
+          description={copy.contacts}
+          rows={contacts}
+          onChange={setContacts}
+        />
       </div>
     </Modal>
   );

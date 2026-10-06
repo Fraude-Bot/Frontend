@@ -14,6 +14,7 @@ import ReportFieldError, {
   reportInputClass,
   reportTextareaClass,
 } from "@/presentation/pages/report-form/components/ReportFieldError";
+import ReportCollaboratorsSection from "@/presentation/pages/report-form/components/ReportCollaboratorsSection";
 import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
 import { useReportDetailsAttempt } from "@/presentation/pages/report-form/components/report-details-validation";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
@@ -95,24 +96,16 @@ function IndividualDetailsStep({
       <h2 className="sr-only">Información del individuo y del reporte</h2>
 
       <div className="space-y-5">
-        <div data-report-field="photo">
-          <PartyPhotoInput
-            id="individual-photo"
-            file={draft.avatarFile}
-            onChange={(avatarFile, avatarPath) =>
-              updateDraft({ avatarFile, avatarPath })
-            }
-            addLabel="Agregar foto del individuo"
-            changeLabel="Cambiar foto del individuo"
-            invalid={Boolean(errors.photo)}
-            describedBy={errors.photo ? "individual-photo-error" : undefined}
-          />
-          <ReportFieldError
-            id="individual-photo-error"
-            message={errors.photo}
-            centered
-          />
-        </div>
+        <PartyPhotoInput
+          id="individual-photo"
+          file={draft.avatarFile}
+          onChange={(avatarFile, avatarPath) =>
+            updateDraft({ avatarFile, avatarPath })
+          }
+          addLabel="Agregar foto del individuo"
+          changeLabel="Cambiar foto del individuo"
+          required={false}
+        />
 
         <div data-report-field="name">
           <label
@@ -192,6 +185,7 @@ function IndividualDetailsStep({
               updateDraft({ reportTitle: event.currentTarget.value })
             }
             placeholder="Ej. (Me estafó $2,000 MXN, me estafó este tipo...)"
+            maxLength={50}
             aria-invalid={Boolean(errors.title) || undefined}
             aria-describedby={
               errors.title ? "individual-report-title-error" : undefined
@@ -264,6 +258,12 @@ function IndividualDetailsStep({
           onChange={(payments) => updateDraft({ payments })}
           error={errors.payments}
           errorId="individual-payments-error"
+        />
+
+        <ReportCollaboratorsSection
+          variant="organization"
+          collaborators={draft.organizations}
+          onChange={(organizations) => updateDraft({ organizations })}
         />
       </div>
 

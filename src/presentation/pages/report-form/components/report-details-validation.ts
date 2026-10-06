@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { ReportFormDraft } from "@/presentation/pages/report-form/components/types";
 
 export const REPORT_DETAILS_FIELDS = [
-  "photo",
   "name",
   "products",
   "title",
@@ -24,12 +23,6 @@ export function getReportDetailsErrors(
   const isCompany = draft.partyType === "company";
   const name = isCompany ? draft.companyName : draft.individualName;
 
-  if (draft.avatarFile === null && draft.avatarPath === null) {
-    errors.photo = isCompany
-      ? "Agrega una foto de la empresa."
-      : "Agrega una foto del individuo.";
-  }
-
   if (name.trim() === "") {
     errors.name = isCompany
       ? "Escribe el nombre de la empresa."
@@ -42,6 +35,8 @@ export function getReportDetailsErrors(
 
   if (draft.reportTitle.trim() === "") {
     errors.title = "Escribe el título de tu reporte.";
+  } else if (draft.reportTitle.trim().length > 50) {
+    errors.title = "El título no puede superar 50 caracteres.";
   }
 
   if (draft.reportDescription.trim() === "") {

@@ -62,14 +62,14 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
       <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <label htmlFor={urlId} className={LABEL_CLASS}>
-            URL
+            Número telefónico, Facebook, Instagram, URL...
           </label>
           <input
             id={urlId}
             type="text"
             value={url}
             autoComplete="off"
-            placeholder="https://website.org"
+            placeholder="Ej. (6623145124, https://website.org...)"
             onChange={(event) => {
               const nextUrl = event.currentTarget.value;
               setUrl(nextUrl);

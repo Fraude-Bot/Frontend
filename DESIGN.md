@@ -244,8 +244,10 @@ Do not put a gray or red footer button on this shell. Single-button dialogs stay
 | Edit contact | `EditContactModal` | Same form as add contact, prefilled. Opens from a contact card. **Cerrar** + **Guardar** |
 | Add payment method | `AddPaymentModal` | `lg`, `headerDivider`, form fields, **Cerrar** + **Crear**. Type list uses `SearchableSelect` with `PAYMENT_TYPE_OPTIONS` |
 | Edit payment method | `EditPaymentModal` | Same form as add payment, prefilled. Opens from a payment card. **Cerrar** + **Guardar** |
-| Add collaborator | `AddCollaboratorModal` | `lg`, `headerDivider`, optional photo (`PartyPhotoInput`, same temporary profile API) above the name, plus optional payment and contact rows. **Cerrar** + **Crear** |
+| Add collaborator | `AddCollaboratorModal` | `lg`, `headerDivider`, optional photo (`PartyPhotoInput`, same temporary profile API) above the name. The name uses `PartyNameInput` with organization suggestions. Optional payment and contact rows. **Cerrar** + **Crear** |
 | Edit collaborator | `EditCollaboratorModal` | Same form as add collaborator, prefilled. Opens from a collaborator card. **Cerrar** + **Guardar** |
+| Add organization | `AddOrganizationModal` | Same form as add collaborator, on the individual report. Organization photo and name labels. **Cerrar** + **Crear** |
+| Edit organization | `EditOrganizationModal` | Same form as add organization, prefilled. Opens from an organization card. **Cerrar** + **Guardar** |
 
 Future similar dialogs should reuse this shell. `ImageLightbox` is **not** this pattern: darker overlay (`bg-black/80`), no title/footer chrome.
 
@@ -263,7 +265,7 @@ Future similar dialogs should reuse this shell. `ImageLightbox` is **not** this 
 | Profile panels | General / Support | White, `border-gray-200`, `divide-y` / `lg:divide-x`, hover `bg-gray-50` |
 | List row card | `ContactCard`, `PartyReportCard` | `rounded-md border-gray-200 px-4 py-3 hover:bg-gray-50` |
 | Platform chips | `PlatformFilterRow` | Unselected white + gray border; selected blue fill |
-| Report form wizard | `report-form/` | 3-step stepper, orange Continue / Back, party cards, circular party photo upload, product tags. Step 3 is a read-only summary of step 2 plus terms and contact email. Confirm leave + add-contact use shared `Modal`. |
+| Report form wizard | `report-form/` | 3-step stepper, orange Continue / Back, party cards, circular party photo upload, product tags. Step 3 summarizes step 2, then **Enviar** posts a new organization or scammer report. Confirm leave + add-contact use shared `Modal`. |
 | Lightbox | `ImageLightbox` | Full-screen photo `role="dialog"`, Escape, restore focus, lock body scroll. Not the shared `Modal` shell. |
 | Map nodes | `MapPartyNode`, `MapSatelliteNode` | `w-52 rounded-md border-gray-200 bg-white shadow-sm`; current party uses `border-gray-950` |
 | Chart | `MonthlyReportsChart` | Chart.js bars `#111827`, Nunito ticks, `sr-only` data table |
@@ -302,7 +304,7 @@ Disabled controls keep visible text (`próximamente`) rather than being omitted.
 - Visible `<label>` on home; `sr-only` label on the search page (the page has an `sr-only` `h1`).
 - Year selector and other native controls in report General follow nearby gray borders; do not restyle them as a new component.
 - **Report form** (`/reportar`) uses square-ish fields on the page (`h-11`, `border-gray-300`, orange focus ring) and **rounded-md** fields inside `Modal` forms (`h-11 rounded-md border-gray-300 px-3`, `focus:border-orange-500 focus:ring-1 focus:ring-orange-500`). Labels over modal fields are `font-bold text-gray-900`.
-- Party photo on Individual / Organization details is a centered `h-28 w-28 rounded-full` dashed circle with a plus (`PartyPhotoInput`). A selected image previews inside the same control; click replaces it, and a small × removes it.
+- Party photo on Individual / Organization details is optional. It is a centered `h-28 w-28 rounded-full` dashed circle with a plus (`PartyPhotoInput`). A selected image previews inside the same control; click replaces it, and a small × removes it.
 - Closed lists with search use `SearchableSelect`, not a native `<select>` restyle or a third-party select widget.
 - **Checkbox** (report form terms): `h-4 w-4 appearance-none rounded-sm border border-gray-400 bg-white checked:border-orange-600 checked:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600`. A white check icon is shown only while checked (`peer-checked`). Brand orange is `orange-600`, the same as report-form primary buttons. Do not use the browser’s default accent.
 

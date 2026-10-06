@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { APP_ROUTES } from "@/common/app-routes";
+import { Link, useNavigate } from "react-router-dom";
+import { APP_ROUTES, reportDetailPath } from "@/common/app-routes";
+import { getHttpStatus, isCanceledError } from "@/common/utils/http-error.util";
 import ImageLightbox from "@/presentation/pages/report/components/ImageLightbox";
 import {
   getPlatformLabel,
@@ -10,7 +11,12 @@ import { getPlatformIconSrc } from "@/presentation/pages/report/components/platf
 import { PlatformIcon } from "@/presentation/pages/report/components/PlatformIcon";
 import { getPaymentLabel } from "@/presentation/pages/report/components/payment-method.util";
 import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
+import {
+  toOrganizationReportRequest,
+  toScammerReportRequest,
+} from "@/presentation/pages/report-form/components/create-report-request";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import "@/presentation/pages/report-form/components/report-tags.css";
 
 const FIELD_CLASS =
@@ -95,16 +101,75 @@ function FileImage({
   );
 }
 
+function submitErrorMessage(error: unknown) {
+  if (getHttpStatus(error) === 422) {
+    return "Revisa los datos del reporte. Faltan campos o alguno no es válido.";
+  }
+
+  if (getHttpStatus(error) === 429) {
+    return "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
+  }
+
+  return "No se pudo enviar el reporte. Inténtalo de nuevo.";
+}
+
 function ReportSummaryStep({
   draft,
   updateDraft,
-  goNext,
   goBack,
 }: ReportFormStepProps) {
+  const navigate = useNavigate();
+  const {
+    createOrganizationReportUseCase,
+    createScammerReportUseCase,
+  } = useDependencies();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const partyName =
     draft.partyType === "company" ? draft.companyName : draft.individualName;
   const termsId = "report-terms";
   const emailId = "report-contact-email";
+
+  useEffect(() => {
+    return () => {
+      createOrganizationReportUseCase.cancel();
+      createScammerReportUseCase.cancel();
+    };
+  }, [createOrganizationReportUseCase, createScammerReportUseCase]);
+
+  async function submitReport() {
+    if (!draft.acceptedTerms) {
+      setErrorMessage("Acepta los términos y condiciones para enviar el reporte.");
+      return;
+    }
+
+    if (draft.partyType !== "company" && draft.partyType !== "individual") {
+      return;
+    }
+
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const created =
+        draft.partyType === "company"
+          ? await createOrganizationReportUseCase.execute(
+              toOrganizationReportRequest(draft),
+            )
+          : await createScammerReportUseCase.execute(
+              toScammerReportRequest(draft),
+            );
+
+      navigate(reportDetailPath(String(created.reportId)));
+    } catch (error: unknown) {
+      if (isCanceledError(error)) {
+        return;
+      }
+
+      setErrorMessage(submitErrorMessage(error));
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <section className="mx-auto mt-10 w-full max-w-2xl pb-10">
@@ -185,71 +250,107 @@ function ReportSummaryStep({
             </p>
           </div>
 
-          <div>
-            <h3 className="text-sm font-bold text-gray-900">Contactos</h3>
-            <ul className="mt-3 flex flex-wrap gap-3">
-              {draft.contacts.map((contact) => {
-                const iconSrc = getPlatformIconSrc(contact.platform);
+          {draft.contacts.length > 0 ? (
+            <div>
+              <p className="text-xs text-gray-500">Contactos</p>
+              <ul className="mt-1 flex flex-wrap gap-3">
+                {draft.contacts.map((contact) => {
+                  const iconSrc = getPlatformIconSrc(contact.platform);
 
-                return (
+                  return (
+                    <li
+                      key={contact.id}
+                      className="flex min-w-36 flex-col justify-center border border-gray-300 bg-white px-3 py-2"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        {iconSrc ? (
+                          <img
+                            src={iconSrc}
+                            alt=""
+                            className="h-5 w-5 shrink-0 object-contain"
+                          />
+                        ) : (
+                          <PlatformIcon platform={contact.platform} />
+                        )}
+                        <p className="truncate text-sm font-bold text-gray-900">
+                          {platformName(contact.platform)}
+                        </p>
+                      </div>
+                      <p className="mt-1 truncate text-sm text-gray-700">
+                        {contact.url}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
+          {draft.payments.length > 0 ? (
+            <div>
+              <p className="text-xs text-gray-500">Métodos de pago</p>
+              <ul className="mt-1 flex flex-wrap gap-3">
+                {draft.payments.map((payment) => {
+                  const iconSrc = getPaymentIconSrc(payment.type);
+
+                  return (
+                    <li
+                      key={payment.id}
+                      className="flex min-w-36 flex-col justify-center border border-gray-300 bg-white px-3 py-2"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        {iconSrc ? (
+                          <img
+                            src={iconSrc}
+                            alt=""
+                            className="h-5 w-5 shrink-0 object-contain"
+                          />
+                        ) : null}
+                        <p className="truncate text-sm font-bold text-gray-900">
+                          {paymentTypeName(payment.type)}
+                        </p>
+                      </div>
+                      <p className="mt-1 truncate text-sm text-gray-700">
+                        {maskReference(payment.reference)}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
+          {draft.partyType === "individual" &&
+          draft.organizations.length > 0 ? (
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Organización</h3>
+              <ul className="mt-3 flex flex-wrap gap-3">
+                {draft.organizations.map((organization) => (
                   <li
-                    key={contact.id}
-                    className="flex min-w-36 flex-col justify-center border border-gray-300 bg-white px-3 py-2"
+                    key={organization.id}
+                    className="flex min-w-36 items-center gap-3 border border-gray-300 bg-white px-3 py-2"
                   >
-                    <div className="flex min-w-0 items-center gap-2">
-                      {iconSrc ? (
-                        <img
-                          src={iconSrc}
-                          alt=""
-                          className="h-5 w-5 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <PlatformIcon platform={contact.platform} />
-                      )}
+                    {organization.avatarFile ? (
+                      <FileImage
+                        file={organization.avatarFile}
+                        label={`Ver foto de ${organization.name}`}
+                        className="h-10 w-10 shrink-0 overflow-hidden rounded-full"
+                      />
+                    ) : null}
+                    <div className="min-w-0">
                       <p className="truncate text-sm font-bold text-gray-900">
-                        {platformName(contact.platform)}
+                        {organization.name}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-gray-700">
+                        {organization.payments.length} métodos de pago ·{" "}
+                        {organization.contacts.length} contactos
                       </p>
                     </div>
-                    <p className="mt-1 truncate text-sm text-gray-700">
-                      {contact.url}
-                    </p>
                   </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-gray-900">Métodos de pago</h3>
-            <ul className="mt-3 flex flex-wrap gap-3">
-              {draft.payments.map((payment) => {
-                const iconSrc = getPaymentIconSrc(payment.type);
-
-                return (
-                  <li
-                    key={payment.id}
-                    className="flex min-w-36 flex-col justify-center border border-gray-300 bg-white px-3 py-2"
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      {iconSrc ? (
-                        <img
-                          src={iconSrc}
-                          alt=""
-                          className="h-5 w-5 shrink-0 object-contain"
-                        />
-                      ) : null}
-                      <p className="truncate text-sm font-bold text-gray-900">
-                        {paymentTypeName(payment.type)}
-                      </p>
-                    </div>
-                    <p className="mt-1 truncate text-sm text-gray-700">
-                      {maskReference(payment.reference)}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           {draft.partyType === "company" && draft.collaborators.length > 0 ? (
             <div>
@@ -343,20 +444,31 @@ function ReportSummaryStep({
         />
       </div>
 
+      {errorMessage ? (
+        <p role="alert" className="mt-6 text-sm text-red-600">
+          {errorMessage}
+        </p>
+      ) : null}
+
       <div className="mt-12 flex flex-col-reverse justify-center gap-4 sm:flex-row sm:gap-20">
         <button
           type="button"
           onClick={goBack}
-          className="min-w-40 cursor-pointer rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          disabled={isSubmitting}
+          className="min-w-40 cursor-pointer rounded-md border border-orange-500 bg-white px-8 py-2 font-bold text-gray-900 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Regresar
         </button>
         <button
           type="button"
-          onClick={goNext}
-          className="min-w-40 cursor-pointer rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          onClick={() => {
+            void submitReport();
+          }}
+          disabled={isSubmitting}
+          aria-busy={isSubmitting}
+          className="min-w-40 cursor-pointer rounded-md bg-orange-600 px-8 py-2 font-bold text-white hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Continuar
+          {isSubmitting ? "Enviando…" : "Enviar"}
         </button>
       </div>
     </section>

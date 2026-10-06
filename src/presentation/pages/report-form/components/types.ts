@@ -45,6 +45,7 @@ export type ReportFormDraft = {
   contacts: ReportFormContactDraft[];
   payments: ReportFormPaymentDraft[];
   collaborators: ReportFormCollaboratorDraft[];
+  organizations: ReportFormCollaboratorDraft[];
   contactEmail: string;
   acceptedTerms: boolean;
 };
@@ -78,6 +79,7 @@ export const EMPTY_REPORT_FORM_DRAFT: ReportFormDraft = {
   contacts: [],
   payments: [],
   collaborators: [],
+  organizations: [],
   contactEmail: "",
   acceptedTerms: false,
 };
@@ -96,6 +98,7 @@ export function isReportFormDraftDirty(draft: ReportFormDraft) {
     draft.contacts.length > 0 ||
     draft.payments.length > 0 ||
     draft.collaborators.length > 0 ||
+    draft.organizations.length > 0 ||
     draft.contactEmail.trim() !== "" ||
     draft.acceptedTerms
   );

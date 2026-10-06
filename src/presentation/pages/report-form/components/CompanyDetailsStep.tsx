@@ -96,24 +96,16 @@ function CompanyDetailsStep({
       <h2 className="sr-only">Información de la empresa y del reporte</h2>
 
       <div className="space-y-5">
-        <div data-report-field="photo">
-          <PartyPhotoInput
-            id="company-photo"
-            file={draft.avatarFile}
-            onChange={(avatarFile, avatarPath) =>
-              updateDraft({ avatarFile, avatarPath })
-            }
-            addLabel="Agregar foto de la empresa"
-            changeLabel="Cambiar foto de la empresa"
-            invalid={Boolean(errors.photo)}
-            describedBy={errors.photo ? "company-photo-error" : undefined}
-          />
-          <ReportFieldError
-            id="company-photo-error"
-            message={errors.photo}
-            centered
-          />
-        </div>
+        <PartyPhotoInput
+          id="company-photo"
+          file={draft.avatarFile}
+          onChange={(avatarFile, avatarPath) =>
+            updateDraft({ avatarFile, avatarPath })
+          }
+          addLabel="Agregar foto de la empresa"
+          changeLabel="Cambiar foto de la empresa"
+          required={false}
+        />
 
         <div data-report-field="name">
           <label
@@ -188,6 +180,7 @@ function CompanyDetailsStep({
               updateDraft({ reportTitle: event.currentTarget.value })
             }
             placeholder="Ej. (Me estafó $2,000 MXN, me estafó esta empresa...)"
+            maxLength={50}
             aria-invalid={Boolean(errors.title) || undefined}
             aria-describedby={errors.title ? "report-title-error" : undefined}
             required

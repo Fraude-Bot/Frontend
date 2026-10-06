@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import AddCollaboratorModal from "@/presentation/pages/report-form/components/AddCollaboratorModal";
+import AddOrganizationModal from "@/presentation/pages/report-form/components/AddOrganizationModal";
 import EditCollaboratorModal from "@/presentation/pages/report-form/components/EditCollaboratorModal";
+import EditOrganizationModal from "@/presentation/pages/report-form/components/EditOrganizationModal";
 import ReportAddTile from "@/presentation/pages/report-form/components/ReportAddTile";
 import type { ReportFormCollaboratorDraft } from "@/presentation/pages/report-form/components/types";
 
 type ReportCollaboratorsSectionProps = {
   collaborators: ReportFormCollaboratorDraft[];
   onChange: (collaborators: ReportFormCollaboratorDraft[]) => void;
+  variant?: "collaborator" | "organization";
 };
 
 function createCollaboratorId() {
@@ -68,7 +71,14 @@ function entrySummary(collaborator: ReportFormCollaboratorDraft) {
 function ReportCollaboratorsSection({
   collaborators,
   onChange,
+  variant = "collaborator",
 }: ReportCollaboratorsSectionProps) {
+  const isOrganization = variant === "organization";
+  const entityLabel = isOrganization ? "organización" : "colaborador";
+  const heading = isOrganization ? "Organización" : "Colaborador";
+  const description = isOrganization
+    ? "Organizaciones que hayan colaborado con el individuo"
+    : "Personas que hayan colaborado con la empresa";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCollaboratorId, setEditingCollaboratorId] = useState<
     string | null
@@ -115,11 +125,9 @@ function ReportCollaboratorsSection({
   return (
     <div className="pt-1">
       <h3 className="font-extrabold text-gray-900">
-        Colaborador <span className="uppercase">(Opcional)</span>
+        {heading} <span className="uppercase">(Opcional)</span>
       </h3>
-      <p className="mt-1 text-sm text-gray-600">
-        Personas que hayan colaborado con la empresa
-      </p>
+      <p className="mt-1 text-sm text-gray-600">{description}</p>
       <div className="mt-4 flex flex-wrap gap-4">
         {collaborators.map((collaborator) => {
           const summary = entrySummary(collaborator);
@@ -131,7 +139,7 @@ function ReportCollaboratorsSection({
             >
               <button
                 type="button"
-                aria-label={`Editar colaborador ${collaborator.name}`}
+                aria-label={`Editar ${entityLabel} ${collaborator.name}`}
                 title={summary || collaborator.name}
                 onClick={() => setEditingCollaboratorId(collaborator.id)}
                 className="absolute inset-0 cursor-pointer border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
@@ -139,7 +147,7 @@ function ReportCollaboratorsSection({
               <button
                 type="button"
                 onClick={() => removeCollaborator(collaborator.id)}
-                aria-label={`Eliminar colaborador ${collaborator.name}`}
+                aria-label={`Eliminar ${entityLabel} ${collaborator.name}`}
                 className="absolute top-1 right-1 z-10 cursor-pointer px-1 text-lg leading-none text-gray-500 hover:text-gray-900"
               >
                 ×
@@ -164,22 +172,37 @@ function ReportCollaboratorsSection({
           );
         })}
         <ReportAddTile
-          label="Agregar colaborador"
+          label={isOrganization ? "Agregar organización" : "Agregar colaborador"}
           onClick={() => setIsModalOpen(true)}
         />
       </div>
       {isModalOpen ? (
-        <AddCollaboratorModal
-          onClose={() => setIsModalOpen(false)}
-          onCreate={addCollaborator}
-        />
+        isOrganization ? (
+          <AddOrganizationModal
+            onClose={() => setIsModalOpen(false)}
+            onCreate={addCollaborator}
+          />
+        ) : (
+          <AddCollaboratorModal
+            onClose={() => setIsModalOpen(false)}
+            onCreate={addCollaborator}
+          />
+        )
       ) : null}
       {editingCollaborator ? (
-        <EditCollaboratorModal
-          collaborator={editingCollaborator}
-          onClose={() => setEditingCollaboratorId(null)}
-          onSave={saveCollaborator}
-        />
+        isOrganization ? (
+          <EditOrganizationModal
+            organization={editingCollaborator}
+            onClose={() => setEditingCollaboratorId(null)}
+            onSave={saveCollaborator}
+          />
+        ) : (
+          <EditCollaboratorModal
+            collaborator={editingCollaborator}
+            onClose={() => setEditingCollaboratorId(null)}
+            onSave={saveCollaborator}
+          />
+        )
       ) : null}
     </div>
   );

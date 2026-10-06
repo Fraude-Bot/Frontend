@@ -10,6 +10,8 @@ const API_ROUTES: Record<string, Record<string, Record<string, string>>> = {
             search: "/public/reports/",
             profilePicture: "/public/reports/media/profiles",
             proofs: "/public/reports/media/proofs",
+            createOrganization: "/public/reports/organizations",
+            createScammer: "/public/reports/scammers",
         },
         scammers: {
             suggest: "/public/scammers/suggest",
