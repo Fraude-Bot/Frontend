@@ -28,6 +28,8 @@ Create `.env.local` when local values need to differ from the defaults:
 VITE_API_PROXY_TARGET=http://localhost:9000
 # Optional: bypass the relative /api base URL used by the browser
 # VITE_API_BASE_URL=https://api.example.com/api
+# Canonical public origin used for SEO output
+# VITE_SITE_URL=https://www.example.com
 # Optional: receive privacy-safe generic UI error events
 # VITE_ERROR_REPORT_URL=https://errors.example.com/events
 ```
@@ -37,6 +39,7 @@ VITE_API_PROXY_TARGET=http://localhost:9000
 - `VITE_API_BASE_URL` changes the browser's API base URL in every mode. Leave it unset for
   same-origin `/api` requests, which avoids browser CORS configuration when a reverse proxy is
   available.
+- `VITE_SITE_URL` is the canonical public origin used by generated profile pages and sitemaps.
 - `VITE_ERROR_REPORT_URL` receives generic `unexpected_ui_error` events. Error messages,
   stacks, routes, query strings, and user data are intentionally excluded.
 
@@ -75,3 +78,24 @@ verification, not production hosting.
 
 See [CLEAN_ARCHITECTURE.md](./CLEAN_ARCHITECTURE.md) for the project structure and import
 conventions.
+
+## Public profile SEO
+
+The production build can pre-render scammer and organization profiles into crawlable HTML. Set
+these build-time variables:
+
+```dotenv
+VITE_SITE_URL=https://www.example.com
+VITE_API_BASE_URL=https://api.example.com/api
+SEO_PROFILE_FEED_URL=https://api.example.com/api/public/seo/profiles
+```
+
+The feed returns an array (or `{ "data": [...] }`) of public profiles with `id`, `type`
+(`scammer` or `organization`), and optionally `updatedAt`. `npm run build` then writes profile
+HTML under `/estafadores/:id/` and `/empresas/:id/`, embeds unique metadata and JSON-LD, and
+generates `sitemap.xml` plus an absolute sitemap declaration in `robots.txt`.
+
+Without `SEO_PROFILE_FEED_URL`, the SPA still builds and supplies runtime metadata, but profile
+HTML and the profile sitemap are not generated. Production hosting must serve generated profile
+files before the SPA fallback and return a real `404` or `410` for unknown or removed profiles
+to avoid soft-404 indexing.

@@ -1,0 +1,31 @@
+---
+description: Enforce dependency direction, ports, DTO ownership, and composition boundaries
+globs: "src/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Clean Architecture
+
+Follow the dependency rules in `CLEAN_ARCHITECTURE.md`:
+
+- `core` depends only on core and contains framework-independent domain types.
+- `application` depends on core and application-owned ports/contracts. Never import
+  `infrastructure`, React, Axios, API routes, environment variables, or browser storage.
+- `infrastructure` implements application ports and owns API DTOs, snake_case fields, Axios,
+  environment configuration, route assembly, persistence, and transport error translation.
+- `presentation` depends on application/core and obtains operations through `useDependencies`.
+  Never import concrete infrastructure from presentation.
+- `src/main.tsx` is the composition root and is the only UI entry point that constructs
+  infrastructure dependencies.
+
+When adding API behavior:
+
+1. Add or extend an application-owned port.
+2. Implement it in an infrastructure adapter.
+3. Constructor-inject the port into the use case.
+4. Wire it in `infrastructure/di/container.ts`.
+5. Map wire DTOs to domain/application models before returning.
+
+Use `ApplicationError` for expected failures; do not expose Axios-shaped errors outside
+infrastructure. Keep request mapping, caching policy, and reusable orchestration out of page
+components. Run `npm run lint` to verify import boundaries.

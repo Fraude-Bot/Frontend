@@ -12,73 +12,34 @@ import CreateOrganizationReportUsecase from "@/application/usecases/report/creat
 import CreateScammerReportUsecase from "@/application/usecases/report/create-scammer-report.usecase";
 import StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/store-temporary-profile-picture.usecase";
 import StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
+import type { Dependencies } from "@/application/dependencies";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { BrowserSearchReportCache } from "@/infrastructure/cache/browser-search-report-cache";
 
-export const createSearchReportUseCase = () => new SearchReportUsecase();
-export const createFindScammerSummaryByIdUseCase = () => new FindScammerSummaryByIdUsecase();
-export const createSuggestScammerNamesUseCase = () =>
-  new SuggestScammerNamesUsecase();
-export const createFindOrganizationSummaryByIdUseCase = () => new FindOrganizationSummaryByIdUsecase();
-export const createSuggestOrganizationNamesUseCase = () =>
-  new SuggestOrganizationNamesUsecase();
-export const createSearchReportStubUseCase = () => new SearchReportStubUsecase();
-export const createFindMonthlyReportCountsUseCase = () => new FindMonthlyReportCountsUsecase();
-export const createFindContactsByPartyUseCase = () => new FindContactsByPartyUsecase();
-export const createFindReportsByPartyUseCase = () =>
-  new FindReportsByPartyUsecase();
-export const createFindRelationshipMapByPartyUseCase = () =>
-  new FindRelationshipMapByPartyUsecase();
-export const createStoreTemporaryProfilePictureUseCase = () =>
-  new StoreTemporaryProfilePictureUsecase();
-export const createStoreTemporaryProofsUseCase = () =>
-  new StoreTemporaryProofsUsecase();
-export const createCreateOrganizationReportUseCase = () =>
-  new CreateOrganizationReportUsecase();
-export const createCreateScammerReportUseCase = () =>
-  new CreateScammerReportUsecase();
-export const dependencies = {
-  searchReportUseCase: createSearchReportUseCase,
-  findScammerSummaryByIdUseCase: createFindScammerSummaryByIdUseCase,
-  suggestScammerNamesUseCase: createSuggestScammerNamesUseCase,
-  findOrganizationSummaryByIdUseCase: createFindOrganizationSummaryByIdUseCase,
-  suggestOrganizationNamesUseCase: createSuggestOrganizationNamesUseCase,
-  searchReportStubUseCase: createSearchReportStubUseCase,
-  findMonthlyReportCountsUseCase: createFindMonthlyReportCountsUseCase,
-  findContactsByPartyUseCase: createFindContactsByPartyUseCase,
-  findReportsByPartyUseCase: createFindReportsByPartyUseCase,
-  findRelationshipMapByPartyUseCase: createFindRelationshipMapByPartyUseCase,
-  storeTemporaryProfilePictureUseCase:
-    createStoreTemporaryProfilePictureUseCase,
-  storeTemporaryProofsUseCase: createStoreTemporaryProofsUseCase,
-  createOrganizationReportUseCase: createCreateOrganizationReportUseCase,
-  createScammerReportUseCase: createCreateScammerReportUseCase,
-};
+export function createDependencies(): Dependencies {
+  const publicApi = new PublicApiAdapter();
 
-type PublicInterface<T> = Pick<T, keyof T>;
-
-export type Dependencies = {
-  [K in keyof typeof dependencies]: PublicInterface<
-    ReturnType<(typeof dependencies)[K]>
-  >;
-};
-
-export const createDependencies = (): Dependencies => ({
-  searchReportUseCase: dependencies.searchReportUseCase(),
-  findScammerSummaryByIdUseCase: dependencies.findScammerSummaryByIdUseCase(),
-  suggestScammerNamesUseCase: dependencies.suggestScammerNamesUseCase(),
-  findOrganizationSummaryByIdUseCase:
-    dependencies.findOrganizationSummaryByIdUseCase(),
-  suggestOrganizationNamesUseCase:
-    dependencies.suggestOrganizationNamesUseCase(),
-  searchReportStubUseCase: dependencies.searchReportStubUseCase(),
-  findMonthlyReportCountsUseCase: dependencies.findMonthlyReportCountsUseCase(),
-  findContactsByPartyUseCase: dependencies.findContactsByPartyUseCase(),
-  findReportsByPartyUseCase: dependencies.findReportsByPartyUseCase(),
-  findRelationshipMapByPartyUseCase:
-    dependencies.findRelationshipMapByPartyUseCase(),
-  storeTemporaryProfilePictureUseCase:
-    dependencies.storeTemporaryProfilePictureUseCase(),
-  storeTemporaryProofsUseCase: dependencies.storeTemporaryProofsUseCase(),
-  createOrganizationReportUseCase:
-    dependencies.createOrganizationReportUseCase(),
-  createScammerReportUseCase: dependencies.createScammerReportUseCase(),
-});
+  return {
+    searchReportUseCase: new SearchReportUsecase(publicApi),
+    findScammerSummaryByIdUseCase: new FindScammerSummaryByIdUsecase(publicApi),
+    suggestScammerNamesUseCase: new SuggestScammerNamesUsecase(publicApi),
+    findOrganizationSummaryByIdUseCase:
+      new FindOrganizationSummaryByIdUsecase(publicApi),
+    suggestOrganizationNamesUseCase:
+      new SuggestOrganizationNamesUsecase(publicApi),
+    searchReportStubUseCase: new SearchReportStubUsecase(),
+    findMonthlyReportCountsUseCase:
+      new FindMonthlyReportCountsUsecase(publicApi),
+    findContactsByPartyUseCase: new FindContactsByPartyUsecase(publicApi),
+    findReportsByPartyUseCase: new FindReportsByPartyUsecase(publicApi),
+    findRelationshipMapByPartyUseCase:
+      new FindRelationshipMapByPartyUsecase(publicApi),
+    storeTemporaryProfilePictureUseCase:
+      new StoreTemporaryProfilePictureUsecase(publicApi),
+    storeTemporaryProofsUseCase: new StoreTemporaryProofsUsecase(publicApi),
+    createOrganizationReportUseCase:
+      new CreateOrganizationReportUsecase(publicApi),
+    createScammerReportUseCase: new CreateScammerReportUsecase(publicApi),
+    searchReportCache: new BrowserSearchReportCache(),
+  };
+}

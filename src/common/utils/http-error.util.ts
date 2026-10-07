@@ -13,11 +13,15 @@ function isCanceledError(error: unknown): boolean {
 }
 
 function getHttpStatus(error: unknown): number | undefined {
-  if (typeof error !== "object" || error === null || !("response" in error)) {
+  if (typeof error !== "object" || error === null) {
     return undefined;
   }
 
-  const status = (error as { response?: { status?: unknown } }).response?.status;
+  const candidate = error as {
+    status?: unknown;
+    response?: { status?: unknown };
+  };
+  const status = candidate.status ?? candidate.response?.status;
   return typeof status === "number" ? status : undefined;
 }
 

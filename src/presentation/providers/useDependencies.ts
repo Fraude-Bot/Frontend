@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Dependencies } from "@/infrastructure/di/container";
+import type { Dependencies } from "@/application/dependencies";
 
 export const DependencyContext = createContext<Dependencies | null>(null);
 

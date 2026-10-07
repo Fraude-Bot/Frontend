@@ -1,0 +1,34 @@
+---
+description: Verification requirements for architecture, API contract, SEO, and dependency changes
+globs: "{src/**/*.{ts,tsx},e2e/**/*.ts,scripts/**/*.mjs,package.json,vite.config.ts,eslint.config.js}"
+alwaysApply: false
+---
+
+# Architecture Verification
+
+Add focused tests when the user requests tests or the task explicitly includes test coverage.
+Otherwise follow `agent.mdc` and do not add component or E2E tests unsolicited.
+
+- Unit-test pure mappers, adapters, typed errors, cache behavior, and reusable hooks.
+- Test use cases with injected fakes or ports; do not mock concrete infrastructure from
+  application tests.
+- For profile SEO, assert title, description, robots directives, canonical URL, and JSON-LD.
+- Add Playwright coverage for crawlable profile metadata, missing-profile `noindex`, and
+  crawler directives.
+- Use API route interception in E2E tests so profile fixtures are deterministic.
+- Do not start a new dev server. Use the running worktree container for browser checks.
+
+Before handoff, run proportionate checks:
+
+```bash
+npm run lint
+npm run test:run
+npm run test:coverage
+npm run build
+npm audit --audit-level=high
+```
+
+When API operations change, load `/api/public/openapi` and run `npm run contract:check` with
+`OPENAPI_URL`. Report undocumented frontend operations; do not silently weaken the validator.
+Keep architecture coverage focused on core, application, infrastructure, and pure presentation
+logic rather than lowering thresholds to hide regressions.

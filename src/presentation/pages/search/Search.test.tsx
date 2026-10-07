@@ -8,6 +8,7 @@ import { renderWithProviders } from "@/test/test-utils";
 import Formatter from "@/presentation/shared/utils/formatter";
 import { APP_ROUTES } from "@/common/app-routes";
 import { DependencyProvider } from "@/presentation/providers/DependencyProvider";
+import { createDependencies } from "@/infrastructure/di/container";
 
 function createMockSearchResult(page = 1, total = 25) {
   return {
@@ -206,6 +207,7 @@ describe("Search page", () => {
 
     render(
       <DependencyProvider
+        dependencies={createDependencies()}
         overrides={{
           searchReportUseCase: { execute, cancel: vi.fn() },
         }}

@@ -14,7 +14,7 @@ import { getPaymentIconSrc } from "@/presentation/pages/report/components/paymen
 import {
   toOrganizationReportRequest,
   toScammerReportRequest,
-} from "@/presentation/pages/report-form/components/create-report-request";
+} from "@/application/mappers/report-request.mapper";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 import "@/presentation/pages/report-form/components/report-tags.css";

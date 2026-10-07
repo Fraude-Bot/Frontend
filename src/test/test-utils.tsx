@@ -2,7 +2,8 @@ import { ReactElement, ReactNode } from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { DependencyProvider } from "@/presentation/providers/DependencyProvider";
-import { Dependencies } from "@/infrastructure/di/container";
+import type { Dependencies } from "@/application/dependencies";
+import { createDependencies } from "@/infrastructure/di/container";
 
 interface RenderWithProvidersOptions extends Omit<RenderOptions, "wrapper"> {
   route?: string;
@@ -19,7 +20,10 @@ function TestProviders({
   overrides?: Partial<Dependencies>;
 }) {
   return (
-    <DependencyProvider overrides={overrides}>
+    <DependencyProvider
+      dependencies={createDependencies()}
+      overrides={overrides}
+    >
       <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
     </DependencyProvider>
   );

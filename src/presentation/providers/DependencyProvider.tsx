@@ -1,22 +1,21 @@
 import React, { ReactNode, useMemo } from "react";
-import {
-  createDependencies,
-  Dependencies,
-} from "@/infrastructure/di/container";
+import type { Dependencies } from "@/application/dependencies";
 import { DependencyContext } from "@/presentation/providers/useDependencies";
 
-interface DependencyProviderProps {
+type DependencyProviderProps = {
   children: ReactNode;
+  dependencies: Dependencies;
   overrides?: Partial<Dependencies>;
-}
+};
 
 export const DependencyProvider: React.FC<DependencyProviderProps> = ({
   children,
+  dependencies,
   overrides,
 }) => {
   const contextValue = useMemo(() => {
-    return { ...createDependencies(), ...overrides };
-  }, [overrides]);
+    return { ...dependencies, ...overrides };
+  }, [dependencies, overrides]);
 
   return (
     <DependencyContext.Provider value={contextValue}>

@@ -1,43 +1,26 @@
 import ApiCallerInterface from "@/core/base/api-caller.interface";
 import type { CreateOrganizationReportRequest } from "@/core/domain/report/models/create-report.request";
-import CreateOrganizationReportResponse from "@/core/domain/report/models/create-organization-report.response";
-import Http from "@/infrastructure/http/http";
-import RequestCanceler from "@/infrastructure/http/request-canceler";
-import { API_ROUTES } from "@/common/environment";
+import type {
+  CreatedOrganizationReport,
+  PublicApiMethod,
+} from "@/application/ports/public-api.port";
+import RequestCanceler from "@/application/shared/request-canceler";
 
-export type CreatedOrganizationReport = {
-  reportId: number;
-  organizationId: number;
-};
+export type { CreatedOrganizationReport };
 
 class CreateOrganizationReportUsecase implements ApiCallerInterface {
   private requestCanceller = new RequestCanceler();
+
+  public constructor(
+    private readonly publicApi: PublicApiMethod<"createOrganizationReport">,
+  ) {}
 
   public async execute(
     request: CreateOrganizationReportRequest,
   ): Promise<CreatedOrganizationReport> {
     const signal = this.requestCanceller.prepareSignal();
 
-    const { data, status } = await Http.post<CreateOrganizationReportResponse>(
-      API_ROUTES.public.reports.createOrganization,
-      request,
-      { signal },
-    );
-
-    if (
-      status !== 201 ||
-      !Number.isInteger(data.id) ||
-      data.id < 1 ||
-      !Number.isInteger(data.organization_id) ||
-      data.organization_id < 1
-    ) {
-      throw new Error("The organization report was not created.");
-    }
-
-    return {
-      reportId: data.id,
-      organizationId: data.organization_id,
-    };
+    return this.publicApi.createOrganizationReport(request, signal);
   }
 
   public cancel(): void {

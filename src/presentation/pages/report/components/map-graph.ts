@@ -60,6 +60,7 @@ const PAYMENT_RADIUS = 300;
 const NEIGHBOR_ARC = { start: Math.PI * 1.1, end: Math.PI * 1.9 };
 // Lower semicircle (contacts and payments below center).
 const LOWER_ARC = { start: Math.PI * 0.1, end: Math.PI * 0.9 };
+const PAYMENT_ARC = { start: Math.PI * 0.35, end: Math.PI * 0.65 };
 
 type Rect = {
   x: number;
@@ -290,7 +291,7 @@ function createNodeIdResolver(nodes: RelationshipMapNode[]) {
 
   const getFlowNodeId = (node: RelationshipMapNode): string => {
     if (duplicateApiIds.has(node.id) && isPartyNode(node)) {
-      return `party:${node.kind}:${node.party_id}`;
+      return `party:${node.kind}:${node.partyId}`;
     }
 
     return node.id;
@@ -374,10 +375,10 @@ function buildMapGraphFromApi(
   const { getFlowNodeId, apiIdToFlowId } = createNodeIdResolver(map.nodes);
 
   const centerParty =
-    partyNodes.find((node) => node.is_center) ??
+    partyNodes.find((node) => node.isCenter) ??
     partyNodes.find(
       (node) =>
-        node.party_id === centerPartyId && node.kind === centerPartyKind,
+        node.partyId === centerPartyId && node.kind === centerPartyKind,
     ) ??
     partyNodes[0];
 
@@ -496,7 +497,7 @@ function buildMapGraphFromApi(
           LAYOUT_CENTER_Y,
           PAYMENT_RADIUS,
           PAYMENT_RADIUS + 70,
-          LOWER_ARC,
+          PAYMENT_ARC,
           occupied,
           reserved,
         ),
@@ -529,12 +530,12 @@ function buildMapGraphFromApi(
     if (isPartyNode(node)) {
       return [
         partyNode(flowId, position, {
-          partyId: node.party_id,
+          partyId: node.partyId,
           name: node.name,
           kind: node.kind,
           isCurrent:
-            node.is_center ||
-            (node.party_id === centerPartyId && node.kind === centerPartyKind),
+            node.isCenter ||
+            (node.partyId === centerPartyId && node.kind === centerPartyKind),
         }),
       ];
     }
@@ -551,7 +552,7 @@ function buildMapGraphFromApi(
             kind: "payment_method",
             label: node.label,
             detail: node.detail,
-            paymentType: node.payment_type,
+            paymentType: node.paymentType,
           }),
     ];
   });

@@ -57,7 +57,73 @@ export default defineConfig([
   {
     files: ['**/*.{test,spec}.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
     rules: {
+      'no-restricted-imports': 'off',
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['src/core/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/application/**',
+                '@/infrastructure/**',
+                '@/presentation/**',
+                '@presentation/**',
+              ],
+              message: 'Core must not depend on outer layers.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/application/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/infrastructure/**',
+                '@/presentation/**',
+                '@presentation/**',
+              ],
+              message:
+                'Application may depend only on core and application-owned contracts.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/presentation/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/infrastructure/**'],
+              message:
+                'Concrete infrastructure is composed in main.tsx, not presentation.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.{test,spec}.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
   {

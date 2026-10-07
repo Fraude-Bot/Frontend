@@ -1,6 +1,7 @@
 import FindMonthlyReportCountsUsecase from "@/application/usecases/report/find-monthly-report-counts.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -30,7 +31,7 @@ describe("FindMonthlyReportCountsUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new FindMonthlyReportCountsUsecase();
+    useCase = new FindMonthlyReportCountsUsecase(new PublicApiAdapter());
   });
 
   it("maps a scammer calendar response into twelve monthly counts", async () => {

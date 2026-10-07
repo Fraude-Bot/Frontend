@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { reportUnexpectedUiError } from "@/infrastructure/observability/error-reporter";
+
+const SAFE_CONSOLE_MESSAGE =
+  "[ErrorBoundary] An unexpected UI error occurred.";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -29,7 +31,7 @@ export class ErrorBoundary extends Component<
 
     // The default reporter intentionally receives no error object, message,
     // stack, route, or component tree because those may contain sensitive data.
-    reportUnexpectedUiError();
+    console.error(SAFE_CONSOLE_MESSAGE);
   }
 
   render(): ReactNode {

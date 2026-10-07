@@ -1,0 +1,26 @@
+---
+description: Preserve crawlable, accurate SEO for public scammer and organization profiles
+globs: "{src/presentation/pages/report/**,src/presentation/shared/components/ProfileSeo.tsx,scripts/prerender-public-profiles.mjs,index.html,public/**}"
+alwaysApply: false
+---
+
+# Public Profile SEO
+
+Public `/estafadores/:id` and `/empresas/:id` pages must remain crawlable without relying only
+on an empty SPA shell.
+
+- Keep a unique title, description, canonical URL, Open Graph metadata, and JSON-LD per profile.
+- Use `index,follow` only for active public profiles. Missing, inactive, removed, or error
+  profiles must use `noindex,follow`.
+- Structured data must match visible content. Use `ProfilePage` with `Person` or `Organization`;
+  do not encode unverified criminal allegations as structured facts.
+- Keep profile name, report count, categories, and dates accurate and escaped in generated HTML.
+- Preserve build-time prerendering through `SEO_PROFILE_FEED_URL`, `VITE_SITE_URL`, and an
+  absolute `VITE_API_BASE_URL`.
+- Keep `sitemap.xml` limited to public indexable profiles and include `lastmod` when available.
+- Keep `/reportar` and `/api/` disallowed in `robots.txt`.
+- Serve identical substantive content to users and crawlers; never add bot-only rendering.
+- Production hosting must serve generated profile files before SPA fallback and return real
+  `404`/`410` responses for unknown or removed profiles.
+
+When changing profile data or routing, update unit and Playwright SEO assertions.

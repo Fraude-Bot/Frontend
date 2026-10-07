@@ -1,6 +1,7 @@
 import FindOrganizationSummaryByIdUsecase from "./find-organization-summary-by-id.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES, CDN_URL } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES, CDN_URL } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -15,7 +16,7 @@ describe("FindOrganizationSummaryByIdUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new FindOrganizationSummaryByIdUsecase();
+    useCase = new FindOrganizationSummaryByIdUsecase(new PublicApiAdapter());
   });
 
   it("maps a successful API response to an organization summary entity", async () => {

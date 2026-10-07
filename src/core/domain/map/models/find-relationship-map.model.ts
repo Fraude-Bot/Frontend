@@ -4,16 +4,16 @@ type MapEdgeKind = "contact" | "payment" | "linked";
 type RelationshipMapPartyNode = {
   id: string;
   type: "party";
-  party_id: string;
+  partyId: string;
   name: string;
   kind: PartyKind;
-  is_center: boolean;
+  isCenter: boolean;
 };
 
 type RelationshipMapContactNode = {
   id: string;
   type: "contact";
-  contact_id: string;
+  contactId: string;
   label: string;
   detail: string;
   platform: string;
@@ -22,10 +22,10 @@ type RelationshipMapContactNode = {
 type RelationshipMapPaymentNode = {
   id: string;
   type: "payment_method";
-  payment_method_id: string;
+  paymentMethodId: string;
   label: string;
   detail: string;
-  payment_type?: number;
+  paymentType?: number;
 };
 
 type RelationshipMapNode =
@@ -40,12 +40,10 @@ type RelationshipMapEdge = {
   kind: MapEdgeKind;
 };
 
-type FindRelationshipMapResponse = {
+type FindRelationshipMapResult = {
   nodes: RelationshipMapNode[];
   edges: RelationshipMapEdge[];
 };
-
-type FindRelationshipMapResult = FindRelationshipMapResponse;
 
 export type {
   PartyKind,
@@ -55,6 +53,5 @@ export type {
   RelationshipMapPaymentNode,
   RelationshipMapNode,
   RelationshipMapEdge,
-  FindRelationshipMapResponse,
   FindRelationshipMapResult,
 };

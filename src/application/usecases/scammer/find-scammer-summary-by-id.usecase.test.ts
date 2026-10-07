@@ -1,6 +1,7 @@
 import FindScammerSummaryByIdUsecase from "./find-scammer-summary-by-id.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES, CDN_URL } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES, CDN_URL } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -15,7 +16,7 @@ describe("FindScammerSummaryByIdUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new FindScammerSummaryByIdUsecase();
+    useCase = new FindScammerSummaryByIdUsecase(new PublicApiAdapter());
   });
 
   it("maps a successful API response to a scammer summary entity", async () => {

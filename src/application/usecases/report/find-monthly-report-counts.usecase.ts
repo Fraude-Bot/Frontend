@@ -1,45 +1,26 @@
 import ApiCallerInterface from "@/core/base/api-caller.interface";
-import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
-import FindMonthlyReportCountsResponse from "@/core/domain/report/models/find-monthly-report-counts.response";
-import Http from "@/infrastructure/http/http";
-import RequestCanceler from "@/infrastructure/http/request-canceler";
-import { API_ROUTES } from "@/common/environment";
-
-function toMonthlyCounts(
-  year: number,
-  data: FindMonthlyReportCountsResponse,
-): MonthlyReportCountsEntity {
-  const counts = Array.from({ length: 12 }, (_, index) => {
-    const count = data[String(index + 1)];
-
-    return typeof count === "number" && Number.isFinite(count) ? count : 0;
-  });
-
-  return new MonthlyReportCountsEntity(year, counts);
-}
+import type MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
+import type {
+  PartyType,
+  PublicApiMethod,
+} from "@/application/ports/public-api.port";
+import RequestCanceler from "@/application/shared/request-canceler";
 
 class FindMonthlyReportCountsUsecase implements ApiCallerInterface {
   private requestCanceller = new RequestCanceler();
 
+  public constructor(
+    private readonly publicApi: PublicApiMethod<"findMonthlyReportCounts">,
+  ) {}
+
   public async execute(
     id: string,
-    type: "scammer" | "organization",
+    type: PartyType,
     year = new Date().getFullYear(),
   ): Promise<MonthlyReportCountsEntity> {
     const signal = this.requestCanceller.prepareSignal();
-    const route =
-      type === "scammer"
-        ? API_ROUTES.public.scammers.calendar
-        : API_ROUTES.public.organizations.calendar;
-    const url = route
-      .replace("{id}", encodeURIComponent(id))
-      .replace("{year}", encodeURIComponent(String(year)));
 
-    const { data } = await Http.get<FindMonthlyReportCountsResponse>(url, {
-      signal,
-    });
-
-    return toMonthlyCounts(year, data);
+    return this.publicApi.findMonthlyReportCounts(id, type, year, signal);
   }
 
   public cancel(): void {

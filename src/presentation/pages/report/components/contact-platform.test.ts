@@ -11,7 +11,7 @@ describe("getPlatformLabel", () => {
     expect(getPlatformLabel("Url")).toBe("Webpage");
     expect(getPlatformLabel("Email")).toBe("Email");
     expect(getPlatformLabel("Cellphone")).toBe("Cellphone");
-    expect(getPlatformLabel("Other")).toBe("Other");
+    expect(getPlatformLabel("Other")).toBe("Otro");
   });
 
   it("returns the original platform when it is unknown", () => {
