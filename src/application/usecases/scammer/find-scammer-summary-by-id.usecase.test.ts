@@ -1,6 +1,6 @@
 import FindScammerSummaryByIdUsecase from "./find-scammer-summary-by-id.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import { API_ROUTES, CDN_URL } from "@/common/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -26,7 +26,7 @@ describe("FindScammerSummaryByIdUsecase", () => {
         name: "Joseph Nacchio",
         country: "DM",
         reports: 3,
-        avatar_path: null,
+        profile_picture: null,
         products: ["Stocks", "Venture", "Recovery"],
         status: false,
         created_at: "2026-08-10",
@@ -52,7 +52,7 @@ describe("FindScammerSummaryByIdUsecase", () => {
     expect(result.updatedAt).toEqual(new Date("2026-08-10"));
   });
 
-  it("maps avatar_path and an active status", async () => {
+  it("maps profile_picture and an active status", async () => {
     mockedHttp.get.mockResolvedValue({
       status: 200,
       data: {
@@ -60,7 +60,7 @@ describe("FindScammerSummaryByIdUsecase", () => {
         name: "John Doe",
         country: "USA",
         reports: 10,
-        avatar_path: "https://example.com/profile.jpg",
+        profile_picture: "reports/scammers/profiles/8f3c1a.jpg",
         products: ["Investment Scam"],
         status: true,
         created_at: "2026-01-01",
@@ -69,7 +69,9 @@ describe("FindScammerSummaryByIdUsecase", () => {
 
     const result = await useCase.execute("1");
 
-    expect(result.profilePicture).toBe("https://example.com/profile.jpg");
+    expect(result.profilePicture).toBe(
+      `${CDN_URL}reports/scammers/profiles/8f3c1a.jpg`,
+    );
     expect(result.isActive).toBe(true);
     expect(result.categories).toEqual(["Investment Scam"]);
   });
@@ -82,7 +84,7 @@ describe("FindScammerSummaryByIdUsecase", () => {
         name: "Jane Doe",
         country: "MX",
         reports: 1,
-        avatar_path: null,
+        profile_picture: null,
         status: false,
         created_at: "2026-02-01",
       },

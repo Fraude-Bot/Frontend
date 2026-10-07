@@ -3,7 +3,7 @@ type FindScammerSummaryByIdResponse = {
   name: string;
   country: string;
   reports: number;
-  avatar_path: string | null;
+  profile_picture: string | null;
   products?: string[] | null;
   status: boolean;
   created_at: string;
