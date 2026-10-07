@@ -3,7 +3,7 @@ import OrganizationSummaryEntity from "@/core/domain/organization/entities/organ
 import FindOrganizationSummaryByIdResponse from "@/core/domain/organization/models/find-organization-summary-by-id.response";
 import Http from "@/infrastructure/http/http";
 import RequestCanceler from "@/infrastructure/http/request-canceler";
-import { API_ROUTES } from "@/common/environment";
+import { API_ROUTES, resolveCdnUrl } from "@/common/environment";
 
 class FindOrganizationSummaryByIdUsecase implements ApiCallerInterface {
   private requestCanceller = new RequestCanceler();
@@ -25,7 +25,7 @@ class FindOrganizationSummaryByIdUsecase implements ApiCallerInterface {
       String(data.id),
       data.name,
       data.country,
-      data.avatar_path,
+      resolveCdnUrl(data.profile_picture),
       data.reports,
       data.products || [],
       Boolean(data.status),

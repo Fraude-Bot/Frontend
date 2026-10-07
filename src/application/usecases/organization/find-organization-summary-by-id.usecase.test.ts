@@ -1,6 +1,6 @@
 import FindOrganizationSummaryByIdUsecase from "./find-organization-summary-by-id.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import { API_ROUTES, CDN_URL } from "@/common/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -26,7 +26,7 @@ describe("FindOrganizationSummaryByIdUsecase", () => {
         name: "Only Traders",
         country: "Côte d'Ivoire",
         reports: 3,
-        avatar_path: null,
+        profile_picture: null,
         products: ["Stocks", "Venture", "Recovery"],
         status: true,
         created_at: "2026-08-10",
@@ -52,7 +52,7 @@ describe("FindOrganizationSummaryByIdUsecase", () => {
     expect(result.updatedAt).toEqual(new Date("2026-08-10"));
   });
 
-  it("maps avatar_path and an inactive status", async () => {
+  it("maps profile_picture and an inactive status", async () => {
     mockedHttp.get.mockResolvedValue({
       status: 200,
       data: {
@@ -60,7 +60,7 @@ describe("FindOrganizationSummaryByIdUsecase", () => {
         name: "Ecohuertas",
         country: "Mexico",
         reports: 10,
-        avatar_path: "https://example.com/org.jpg",
+        profile_picture: "reports/organizations/profiles/8f3c1a.jpg",
         products: ["Criptomonedas"],
         status: false,
         created_at: "2026-01-01",
@@ -69,7 +69,9 @@ describe("FindOrganizationSummaryByIdUsecase", () => {
 
     const result = await useCase.execute("2");
 
-    expect(result.profilePicture).toBe("https://example.com/org.jpg");
+    expect(result.profilePicture).toBe(
+      `${CDN_URL}reports/organizations/profiles/8f3c1a.jpg`,
+    );
     expect(result.isActive).toBe(false);
     expect(result.categories).toEqual(["Criptomonedas"]);
   });
@@ -82,7 +84,7 @@ describe("FindOrganizationSummaryByIdUsecase", () => {
         name: "Acme",
         country: "USA",
         reports: 1,
-        avatar_path: null,
+        profile_picture: null,
         status: false,
         created_at: "2026-02-01",
       },

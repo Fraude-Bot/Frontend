@@ -3,7 +3,7 @@ import ScammerSummaryEntity from "@/core/domain/scammer/entities/scammer-summary
 import FindScammerSummaryByIdResponse from "@/core/domain/scammer/models/find-scammer-summary-by-id.response";
 import Http from "@/infrastructure/http/http";
 import RequestCanceler from "@/infrastructure/http/request-canceler";
-import { API_ROUTES } from "@/common/environment";
+import { API_ROUTES, resolveCdnUrl } from "@/common/environment";
 
 class FindScammerSummaryByIdUsecase implements ApiCallerInterface {
   private requestCanceller = new RequestCanceler();
@@ -25,7 +25,7 @@ class FindScammerSummaryByIdUsecase implements ApiCallerInterface {
       String(data.id),
       data.name,
       data.country,
-      data.avatar_path,
+      resolveCdnUrl(data.profile_picture),
       data.reports,
       data.products || [],
       Boolean(data.status),
