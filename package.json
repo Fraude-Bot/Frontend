@@ -8,13 +8,15 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run build:client && node scripts/prerender-public-profiles.mjs",
+    "build:client": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "audit": "npm audit --audit-level=high",
+    "contract:check": "node scripts/check-openapi.mjs",
     "quality": "npm run lint && npm run test:coverage && npm run build && npm run audit",
     "test:e2e": "playwright test",
     "test:e2e:docker": "mkdir -p playwright-report test-results && docker build -f Dockerfile.e2e -t frontend-e2e . && docker run --rm -e CI=true -e HOME=/tmp --user \"$(id -u):$(id -g)\" -v \"$(pwd)/playwright-report:/app/playwright-report\" -v \"$(pwd)/test-results:/app/test-results\" frontend-e2e",
@@ -25,7 +27,7 @@
     "@lottiefiles/dotlottie-react": "^0.19.1",
     "@tailwindcss/vite": "^4.2.2",
     "@xyflow/react": "^12.11.3",
-    "axios": "^1.14.0",
+    "axios": "^1.20.0",
     "chart.js": "^4.5.1",
     "html-to-image": "^1.11.13",
     "react": "^19.2.4",
@@ -59,5 +61,15 @@
   },
   "optionalDependencies": {
     "@rolldown/binding-darwin-x64": "^1.0.0-rc.17"
+  },
+  "overrides": {
+    "minimatch@<4": {
+      "brace-expansion": "1.1.21"
+    },
+    "minimatch@>=10": {
+      "brace-expansion": "5.0.12"
+    },
+    "js-yaml": "4.3.2",
+    "source-map-js": "1.2.2"
   }
 }

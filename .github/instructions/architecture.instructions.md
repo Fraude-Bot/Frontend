@@ -13,7 +13,14 @@ applyTo: '**/*'
 
 # Architecture
 
-The project follows the Clean Architecture principles. The codebase is organized into three main folders: `application`, `domain`, `infrastructure` and `presentation`.
+The dependency rules and composition model are defined in `CLEAN_ARCHITECTURE.md`. The main
+source folders are `core`, `application`, `infrastructure`, and `presentation`.
+
+- `core` is framework- and transport-independent.
+- `application` owns use cases and ports; it must not import infrastructure or presentation.
+- `infrastructure` implements application ports and owns API DTOs, routes, and adapters.
+- `presentation` uses application contracts through `useDependencies`; only `main.tsx` composes
+  concrete infrastructure.
 
 ## Presentation Layer
 
@@ -25,8 +32,9 @@ The `presentation` layer is organized into:
 
 ### Components
 
-- Avoid arrow functions in components to prevent unnecessary re-renders. Instead, use regular function declarations for better performance and readability.
+- Prefer regular function declarations for named components and readable stack traces. Function
+  syntax does not by itself affect React render frequency.
 
-- Props must be defined in the `types.ts` files within the same folder as the component. This promotes better organization and separation of concerns.
-
-- Props must be defined as `types` Typescript keyword.
+- Keep small, component-specific prop types next to the component. Move types to `types.ts` only
+  when multiple files in the feature share them.
+- Prefer TypeScript `type` aliases for props.

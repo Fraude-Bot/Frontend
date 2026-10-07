@@ -1,6 +1,7 @@
 import FindRelationshipMapByPartyUsecase from "@/application/usecases/map/find-relationship-map-by-party.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -15,7 +16,7 @@ describe("FindRelationshipMapByPartyUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new FindRelationshipMapByPartyUsecase();
+    useCase = new FindRelationshipMapByPartyUsecase(new PublicApiAdapter());
   });
 
   it("maps a scammer map response", async () => {
@@ -47,7 +48,7 @@ describe("FindRelationshipMapByPartyUsecase", () => {
     );
     expect(result.nodes).toHaveLength(1);
     expect(result.nodes[0]).toMatchObject({
-      party_id: "10",
+      partyId: "10",
       kind: "scammer",
     });
     expect(result.edges).toEqual([]);

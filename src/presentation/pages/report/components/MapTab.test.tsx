@@ -23,15 +23,15 @@ const mapWithNodes: FindRelationshipMapResult = {
     {
       id: "party:100",
       type: "party",
-      party_id: "100",
+      partyId: "100",
       name: "Centro",
       kind: "scammer",
-      is_center: true,
+      isCenter: true,
     },
     {
       id: "contact:501",
       type: "contact",
-      contact_id: "501",
+      contactId: "501",
       label: "WhatsApp",
       detail: "555 123 4567",
       platform: "whatsapp",

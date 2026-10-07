@@ -6,7 +6,8 @@ import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-rep
 import ScammerSummaryEntity from "@/core/domain/scammer/entities/scammer-summary.entity";
 import Report from "@/presentation/pages/report/Report";
 import { DependencyProvider } from "@/presentation/providers/DependencyProvider";
-import type { Dependencies } from "@/infrastructure/di/container";
+import type { Dependencies } from "@/application/dependencies";
+import { createDependencies } from "@/infrastructure/di/container";
 
 function renderScammerReport(
   execute: Dependencies["findScammerSummaryByIdUseCase"]["execute"],
@@ -14,6 +15,7 @@ function renderScammerReport(
 ) {
   render(
     <DependencyProvider
+      dependencies={createDependencies()}
       overrides={{
         findScammerSummaryByIdUseCase: { execute, cancel },
         findMonthlyReportCountsUseCase: {
@@ -71,7 +73,9 @@ describe("Report page", () => {
     expect(
       await screen.findByRole("heading", { name: "Joseph Nacchio" }),
     ).toBeInTheDocument();
-    expect(document.title).toBe("FraudeBot - Joseph Nacchio");
+    expect(document.title).toBe(
+      "Joseph Nacchio: reportes de fraude | FraudeBot",
+    );
   });
 
   it("shows the report date as day-spanish-month-year", async () => {

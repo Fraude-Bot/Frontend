@@ -1,4 +1,4 @@
-import RequestCanceler from "@/infrastructure/http/request-canceler";
+import RequestCanceler from "@/application/shared/request-canceler";
 
 describe("RequestCanceler", () => {
   it("returns a fresh abort signal from prepareSignal", () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Footer from "@presentation/shared/components/Footer";
 import Header from "@presentation/shared/components/Header";
@@ -18,8 +18,9 @@ import ScammerSummaryEntity from "@/core/domain/scammer/entities/scammer-summary
 import OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
 import {
   getHttpStatus,
-  isCanceledError,
 } from "@/common/utils/http-error.util";
+import { useCancellableQuery } from "@/presentation/shared/hooks/useCancellableQuery";
+import ProfileSeo from "@/presentation/shared/components/ProfileSeo";
 
 function GeneralPanelsSkeleton() {
   return (
@@ -66,80 +67,46 @@ function Report({ type }: { type: "scammer" | "organization" }) {
   const { findScammerSummaryByIdUseCase, findOrganizationSummaryByIdUseCase } =
     useDependencies();
   const [activeTab, setActiveTab] = useState<ReportTab>("General");
-  const [requestVersion, setRequestVersion] = useState(0);
-  const requestKey = `${type}:${id ?? ""}:${requestVersion}`;
-  const [result, setResult] = useState<{
-    key: string;
-    party: ScammerSummaryEntity | OrganizationSummaryEntity | null;
-    status: "ready" | "not-found" | "error";
-  } | null>(null);
-
-  useEffect(() => {
+  const query = useCallback(() => {
     if (!id) {
-      return;
+      return Promise.reject(new Error("Missing profile id."));
     }
-
-    let ignore = false;
-    const handleError = (error: unknown) => {
-      if (ignore || isCanceledError(error)) {
-        return;
-      }
-
-      setResult({
-        key: requestKey,
-        party: null,
-        status: getHttpStatus(error) === 404 ? "not-found" : "error",
-      });
-    };
-
-    if (type === "scammer") {
-      findScammerSummaryByIdUseCase
-        .execute(id)
-        .then((scammer) => {
-          if (ignore) {
-            return;
-          }
-
-          setResult({ key: requestKey, party: scammer, status: "ready" });
-        })
-        .catch(handleError);
-
-      return () => {
-        ignore = true;
-        findScammerSummaryByIdUseCase.cancel();
-      };
-    }
-
-    findOrganizationSummaryByIdUseCase
-      .execute(id)
-      .then((organization) => {
-        if (ignore) {
-          return;
-        }
-
-        setResult({ key: requestKey, party: organization, status: "ready" });
-      })
-      .catch(handleError);
-
-    return () => {
-      ignore = true;
-      findOrganizationSummaryByIdUseCase.cancel();
-    };
+    return type === "scammer"
+      ? findScammerSummaryByIdUseCase.execute(id)
+      : findOrganizationSummaryByIdUseCase.execute(id);
   }, [
     findOrganizationSummaryByIdUseCase,
     findScammerSummaryByIdUseCase,
     id,
-    requestKey,
-    requestVersion,
     type,
   ]);
-
+  const cancel = useCallback(() => {
+    if (type === "scammer") {
+      findScammerSummaryByIdUseCase.cancel();
+    } else {
+      findOrganizationSummaryByIdUseCase.cancel();
+    }
+  }, [
+    findOrganizationSummaryByIdUseCase,
+    findScammerSummaryByIdUseCase,
+    type,
+  ]);
+  const result = useCancellableQuery<
+    ScammerSummaryEntity | OrganizationSummaryEntity
+  >({
+    queryKey: `${type}:${id ?? ""}`,
+    query,
+    cancel,
+    enabled: Boolean(id),
+  });
   const loadState: "loading" | "ready" | "not-found" | "error" = !id
     ? "not-found"
-    : result?.key !== requestKey
-      ? "loading"
-      : result.status;
-  const party = loadState === "ready" ? result?.party : null;
+    : result.status === "error" && getHttpStatus(result.error) === 404
+      ? "not-found"
+      : result.status === "idle"
+        ? "loading"
+        : result.status;
+  const party = result.status === "ready" ? result.data : null;
 
   const title = party
     ? `FraudeBot - ${party.name}`
@@ -151,7 +118,25 @@ function Report({ type }: { type: "scammer" | "organization" }) {
 
   return (
     <div className="font-[Nunito]">
-      <title>{title}</title>
+      {party ? (
+        <ProfileSeo
+          id={party.id}
+          name={party.name}
+          type={type}
+          reports={party.reports}
+          categories={party.categories}
+          active={party.isActive}
+          createdAt={party.createdAt}
+          image={party.profilePicture}
+        />
+      ) : (
+        <>
+          <title>{title}</title>
+          {(loadState === "not-found" || loadState === "error") && (
+            <meta name="robots" content="noindex,follow" />
+          )}
+        </>
+      )}
       <Header />
       {loadState === "ready" && party ? (
         <ReportHero
@@ -208,7 +193,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
               </p>
               <button
                 type="button"
-                onClick={() => setRequestVersion((version) => version + 1)}
+                onClick={result.retry}
                 className="mt-6 rounded-md bg-red-600 px-5 py-2.5 font-bold text-white hover:bg-red-700"
               >
                 Reintentar

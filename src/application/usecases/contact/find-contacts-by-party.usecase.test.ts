@@ -1,6 +1,7 @@
 import FindContactsByPartyUsecase from "@/application/usecases/contact/find-contacts-by-party.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -24,7 +25,7 @@ describe("FindContactsByPartyUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new FindContactsByPartyUsecase();
+    useCase = new FindContactsByPartyUsecase(new PublicApiAdapter());
   });
 
   it("maps a scammer contacts response to domain entities", async () => {

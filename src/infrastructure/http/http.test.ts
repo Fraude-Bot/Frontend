@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
-import { ENVIRONMENT } from "@/common/environment";
+import { ENVIRONMENT } from "@/infrastructure/config/environment";
 
 const { mockInstance } = vi.hoisted(() => ({
   mockInstance: {

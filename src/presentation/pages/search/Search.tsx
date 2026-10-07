@@ -7,7 +7,6 @@ import SearchContainer from "@presentation/pages/search/components/SearchContain
 import Loader from "@/presentation/pages/search/components/Loader";
 import LookupForm from "@presentation/pages/search/components/LookupForm";
 import Formatter from "@/presentation/shared/utils/formatter";
-import searchReportCache from "@/presentation/shared/utils/search-report-cache.util";
 import Report from "@/presentation/pages/search/components/ReportCard";
 import ReportSummaryEntity from "@/core/domain/report/entities/report-summary.entity";
 import NotFound from "@/presentation/pages/search/components/NotFound";
@@ -32,7 +31,11 @@ function Search() {
   } | null>(null);
 
   const activeSearchId = useRef(0);
-  const { searchReportUseCase, searchReportStubUseCase } = useDependencies();
+  const {
+    searchReportUseCase,
+    searchReportStubUseCase,
+    searchReportCache,
+  } = useDependencies();
   const requestedPage = getValidPage(
     searchParams.get("p") || searchParams.get("page"),
   );
@@ -119,6 +122,7 @@ function Search() {
     requestKey,
     requestVersion,
     requestedPage,
+    searchReportCache,
     searchReportStubUseCase,
     searchReportUseCase,
     setSearchParams,

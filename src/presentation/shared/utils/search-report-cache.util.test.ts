@@ -1,8 +1,8 @@
 import ReportSummaryEntity from "@/core/domain/report/entities/report-summary.entity";
 import {
-  KeyValueStorage,
-  SearchReportCache,
-} from "@/presentation/shared/utils/search-report-cache.util";
+  BrowserSearchReportCache,
+  type KeyValueStorage,
+} from "@/infrastructure/cache/browser-search-report-cache";
 
 function createMockStorage(): KeyValueStorage & { store: Map<string, string> } {
   const store = new Map<string, string>();
@@ -39,16 +39,16 @@ function createSearchResult() {
   };
 }
 
-describe("SearchReportCache", () => {
+describe("BrowserSearchReportCache", () => {
   it("returns null on cache miss", () => {
-    const cache = new SearchReportCache(createMockStorage());
+    const cache = new BrowserSearchReportCache(createMockStorage());
 
     expect(cache.get("missing", 1)).toBeNull();
   });
 
   it("stores and retrieves search results", () => {
     const storage = createMockStorage();
-    const cache = new SearchReportCache(storage);
+    const cache = new BrowserSearchReportCache(storage);
     const result = createSearchResult();
 
     cache.set("test query", result);
@@ -60,7 +60,7 @@ describe("SearchReportCache", () => {
   });
 
   it("rehydrates ReportSummaryEntity instances from cache", () => {
-    const cache = new SearchReportCache(createMockStorage());
+    const cache = new BrowserSearchReportCache(createMockStorage());
     const result = createSearchResult();
 
     cache.set("test", result);
@@ -72,7 +72,7 @@ describe("SearchReportCache", () => {
 
   it("removes corrupt cache entries and returns null", () => {
     const storage = createMockStorage();
-    const cache = new SearchReportCache(storage);
+    const cache = new BrowserSearchReportCache(storage);
 
     storage.setItem("fraudebot:search:test:1", "{ invalid json");
 
@@ -83,7 +83,7 @@ describe("SearchReportCache", () => {
   it("removes results after the configured retention period", () => {
     const storage = createMockStorage();
     let now = 1_000;
-    const cache = new SearchReportCache(storage, 100, () => now);
+    const cache = new BrowserSearchReportCache(storage, 100, () => now);
 
     cache.set("sensitive query", createSearchResult());
     now = 1_101;

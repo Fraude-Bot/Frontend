@@ -56,7 +56,9 @@ function ReportFormWizard({
   const restoringDirtyBackRef = useRef(false);
   const allowDirtyReturnRef = useRef(false);
 
-  draftRef.current = draft;
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   useEffect(() => {
     const previousRestoration = window.history.scrollRestoration;

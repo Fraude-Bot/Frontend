@@ -1,6 +1,7 @@
 import SearchReportUsecase from "@/application/usecases/report/search-report.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -15,7 +16,7 @@ describe("SearchReportUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new SearchReportUsecase();
+    useCase = new SearchReportUsecase(new PublicApiAdapter());
   });
 
   it("maps a successful API response to domain entities", async () => {
@@ -87,20 +88,15 @@ describe("SearchReportUsecase", () => {
     expect(result.data[0].status).toBe("active");
   });
 
-  it("returns empty results for non-200 responses", async () => {
+  it("surfaces non-200 responses as errors", async () => {
     mockedHttp.get.mockResolvedValue({
       status: 500,
       data: {},
     } as never);
 
-    const result = await useCase.execute("test", 2);
-
-    expect(result).toEqual({
-      data: [],
-      total: 0,
-      page: 2,
-      count: 0,
-    });
+    await expect(useCase.execute("test", 2)).rejects.toThrow(
+      "Reports could not be searched.",
+    );
   });
 
   it("aborts in-flight requests when cancel is called", async () => {

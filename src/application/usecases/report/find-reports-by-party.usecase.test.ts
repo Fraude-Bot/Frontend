@@ -1,6 +1,7 @@
 import FindReportsByPartyUsecase from "@/application/usecases/report/find-reports-by-party.usecase";
 import Http from "@/infrastructure/http/http";
-import { API_ROUTES } from "@/common/environment";
+import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
+import { API_ROUTES } from "@/infrastructure/config/environment";
 
 vi.mock("@/infrastructure/http/http", () => ({
   default: {
@@ -23,7 +24,7 @@ describe("FindReportsByPartyUsecase", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useCase = new FindReportsByPartyUsecase();
+    useCase = new FindReportsByPartyUsecase(new PublicApiAdapter());
   });
 
   it("maps a scammer reports response to domain entities", async () => {

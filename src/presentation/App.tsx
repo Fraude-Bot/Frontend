@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "@presentation/App.css";
-import { DependencyProvider } from "@presentation/providers/DependencyProvider";
 import { APP_ROUTES } from "@/common/app-routes";
 
 const Home = lazy(() => import("@presentation/pages/home/Home"));
@@ -26,10 +25,9 @@ function RouteLoadingFallback() {
 
 function App() {
   return (
-    <DependencyProvider>
-      <BrowserRouter>
-        <Suspense fallback={<RouteLoadingFallback />}>
-          <Routes>
+    <BrowserRouter>
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <Routes>
             <Route path={APP_ROUTES.home} element={<Home />} />
             <Route path={APP_ROUTES.contact} element={<Contact />} />
             <Route path={APP_ROUTES.search} element={<Search />} />
@@ -44,10 +42,9 @@ function App() {
               element={<Report type="scammer" />}
             />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </DependencyProvider>
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 }
 
