@@ -24,7 +24,7 @@ function createDraft(): ReportCommandDraft {
     collaborators: [
       {
         name: "  Bob  ",
-        avatarPath: null,
+        avatarPath: "profiles/bob.png",
         contacts: [{ platform: "Email", url: " bob@example.com " }],
         payments: [],
       },
@@ -60,6 +60,7 @@ describe("report request mapper", () => {
       scammers: [
         {
           name: "Bob",
+          profile_picture: "profiles/bob.png",
           contacts: [{ platform: "email", reference: "bob@example.com" }],
         },
       ],
@@ -73,7 +74,7 @@ describe("report request mapper", () => {
     expect(result.organizations).toEqual([
       {
         name: "Example Corp",
-        profile_picture_path: "profiles/org.png",
+        profile_picture: "profiles/org.png",
         payment_methods: [{ type: "wallet", reference: "0x123" }],
       },
     ]);
