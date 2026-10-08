@@ -53,6 +53,7 @@ describe("write and suggestion use cases", () => {
 
   it("delegates scammer and organization report creation", async () => {
     const scammerRequest: CreateScammerReportRequest = {
+      email: "reporter@example.com",
       title: "Reporte",
       description: "Descripción",
       scammer: { name: "Alice" },
@@ -61,6 +62,7 @@ describe("write and suggestion use cases", () => {
       products: [],
     };
     const organizationRequest: CreateOrganizationReportRequest = {
+      email: "reporter@example.com",
       title: "Reporte",
       description: "Descripción",
       organization: { name: "Acme" },

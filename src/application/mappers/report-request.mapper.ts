@@ -27,6 +27,7 @@ export type ReportCommandDraft = {
   products: string[];
   collaborators: LinkedPartyDraft[];
   organizations: LinkedPartyDraft[];
+  contactEmail: string;
 };
 
 const CONTACT_PLATFORMS: Record<string, string> = {
@@ -88,6 +89,7 @@ function toLinkedParty(party: LinkedPartyDraft): ReportLinkedPartyPayload {
 
 function sharedFields(draft: ReportCommandDraft) {
   return {
+    email: draft.contactEmail.trim(),
     title: draft.reportTitle.trim(),
     description: draft.reportDescription.trim(),
     ...(draft.avatarPath ? { profile_picture: draft.avatarPath } : {}),

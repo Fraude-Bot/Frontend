@@ -37,12 +37,14 @@ function createDraft(): ReportCommandDraft {
         payments: [{ type: "wallet", reference: " 0x123 " }],
       },
     ],
+    contactEmail: "  reporter@example.com  ",
   };
 }
 
 describe("report request mapper", () => {
   it("normalizes an organization report command", () => {
     expect(toOrganizationReportRequest(createDraft())).toEqual({
+      email: "reporter@example.com",
       title: "Reporte",
       description: "Descripción",
       profile_picture: "profiles/a.png",
@@ -69,6 +71,7 @@ describe("report request mapper", () => {
   it("normalizes a scammer report command", () => {
     const result = toScammerReportRequest(createDraft());
 
+    expect(result.email).toBe("reporter@example.com");
     expect(result.scammer).toEqual({ name: "Alice" });
     expect(result.organizations).toEqual([
       {

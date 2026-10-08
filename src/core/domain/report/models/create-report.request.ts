@@ -16,6 +16,7 @@ export type ReportLinkedPartyPayload = {
 };
 
 export type CreateOrganizationReportRequest = {
+  email: string;
   title: string;
   description: string;
   profile_picture?: string;
@@ -30,6 +31,7 @@ export type CreateOrganizationReportRequest = {
 };
 
 export type CreateScammerReportRequest = {
+  email: string;
   title: string;
   description: string;
   profile_picture?: string;
