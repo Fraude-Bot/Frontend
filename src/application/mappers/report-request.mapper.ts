@@ -74,9 +74,7 @@ function toPaymentMethod(payment: PaymentDraft): ReportPaymentMethodPayload {
 function toLinkedParty(party: LinkedPartyDraft): ReportLinkedPartyPayload {
   return {
     name: party.name.trim(),
-    ...(party.avatarPath
-      ? { profile_picture_path: party.avatarPath }
-      : {}),
+    ...(party.avatarPath ? { profile_picture: party.avatarPath } : {}),
     ...(party.contacts.length > 0
       ? { contacts: party.contacts.map(toContact) }
       : {}),

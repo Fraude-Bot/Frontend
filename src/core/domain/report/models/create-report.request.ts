@@ -10,7 +10,7 @@ export type ReportPaymentMethodPayload = {
 
 export type ReportLinkedPartyPayload = {
   name: string;
-  profile_picture_path?: string;
+  profile_picture?: string;
   contacts?: ReportContactPayload[];
   payment_methods?: ReportPaymentMethodPayload[];
 };
