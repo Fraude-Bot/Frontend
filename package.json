@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:client && node scripts/prerender-public-profiles.mjs",
+    "build": "npm run build:client",
     "build:client": "vite build",
+    "build:prerender": "npm run build:client && SEO_PROFILE_FEED_URL=http://localhost:9000/api/public/seo/profiles/ VITE_SITE_URL=http://localhost/ VITE_API_BASE_URL=http://localhost:9000/api node scripts/prerender-public-profiles.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
