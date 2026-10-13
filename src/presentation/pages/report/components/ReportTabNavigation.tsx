@@ -14,6 +14,7 @@ const tabIcons: Record<ReportTab, string> = {
   General: reportIcons.home,
   Reportes: reportIcons.reportes,
   Contactos: reportIcons.contactos,
+  "Métodos de pago": reportIcons.paymentMethods,
   Mapa: reportIcons.mapa,
   Soporte: reportIcons.soporte,
 };

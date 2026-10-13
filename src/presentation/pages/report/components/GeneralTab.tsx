@@ -1,5 +1,6 @@
 import { KeyboardEvent, useEffect, useState } from "react";
 import reportIcons from "@presentation/pages/report/components/icons";
+import { getPaymentIconSrc } from "@presentation/pages/report/components/payment-icons";
 import MonthlyReportsChart from "@presentation/pages/report/components/MonthlyReportsChart";
 import { ReportTab } from "@presentation/pages/report/components/types";
 import { useDependencies } from "@/presentation/providers/useDependencies";
@@ -72,6 +73,11 @@ const CALENDAR_YEARS = Array.from(
 
 const panelClassName =
   "group grid h-full w-full cursor-pointer text-left transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gray-300 lg:row-span-4 lg:grid-rows-subgrid";
+
+const widePanelClassName =
+  "group w-full cursor-pointer text-left transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gray-300";
+
+const PAYMENT_ILLUSTRATION_TYPES = ["1", "2", "3", "4"] as const;
 
 const panelGridClassName =
   "grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto] lg:divide-x lg:divide-gray-200";
@@ -266,36 +272,86 @@ function GeneralTab({
           <div
             role="button"
             tabIndex={0}
-            onClick={() => onNavigateTab("Soporte")}
+            onClick={() => onNavigateTab("Métodos de pago")}
             onKeyDown={(event) =>
-              activatePanel(event, () => onNavigateTab("Soporte"))
+              activatePanel(event, () => onNavigateTab("Métodos de pago"))
             }
             className={`${panelClassName} lg:col-start-2`}
           >
             <div className="px-6 pt-6 sm:px-8 sm:pt-8">
-              <PanelHeader title="Soporte:" showExternalLink />
+              <PanelHeader title="Métodos de pago:" showExternalLink />
             </div>
             <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
-              Obtén ayuda y recursos para reportar o consultar sobre este
-              perfil:
+              Descubre los métodos de pago que utiliza esta{" "}
+              <span className="font-extrabold text-gray-900">
+                empresa/estafador
+              </span>
+              :
             </p>
             <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
+              <div className="grid h-32 w-32 grid-cols-2 place-items-center">
+                {PAYMENT_ILLUSTRATION_TYPES.map((type) => {
+                  const iconSrc = getPaymentIconSrc(type);
+                  if (!iconSrc) {
+                    return null;
+                  }
+
+                  return (
+                    <img
+                      key={type}
+                      src={iconSrc}
+                      alt=""
+                      aria-hidden
+                      className="h-12 w-12 object-contain"
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
+              Tarjetas, CLABEs, cuentas y wallets reportadas para este perfil.
+            </p>
+          </div>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onNavigateTab("Soporte")}
+          onKeyDown={(event) =>
+            activatePanel(event, () => onNavigateTab("Soporte"))
+          }
+          className={widePanelClassName}
+        >
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 px-6 py-6 sm:px-8 sm:py-8">
+            <div className="min-w-0">
+              <h2 className="text-xl font-extrabold leading-none text-gray-900">
+                Soporte:
+              </h2>
+              <p className="pt-3 text-base leading-6 text-gray-600">
+                Obtén ayuda y recursos para reportar o consultar sobre este
+                perfil:
+              </p>
+              <p className="pt-4 text-sm text-gray-400">
+                Encuentra ayuda jurídica y canales para contactar a
+                especialistas.
+              </p>
+            </div>
+            <div className="flex flex-col items-end">
+              <ExternalLinkIcon />
               {reportIcons.soporte ? (
                 <img
                   src={reportIcons.soporte}
                   alt=""
                   aria-hidden
-                  className="h-32 w-32 object-contain"
+                  className="mt-4 h-32 w-32 object-contain"
                 />
               ) : (
-                <div className="flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
+                <div className="mt-4 flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
                   Ilustración de soporte
                 </div>
               )}
             </div>
-            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
-              Encuentra ayuda jurídica y canales para contactar a especialistas.
-            </p>
           </div>
         </div>
       </div>

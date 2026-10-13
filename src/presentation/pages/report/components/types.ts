@@ -32,6 +32,7 @@ export const reportTabs = [
   "General",
   "Reportes",
   "Contactos",
+  "Métodos de pago",
   "Mapa",
   "Soporte",
 ] as const;

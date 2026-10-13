@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Footer from "@presentation/shared/components/Footer";
 import Header from "@presentation/shared/components/Header";
 import ContactsTab from "@presentation/pages/report/components/ContactsTab";
+import PaymentMethodsTab from "@presentation/pages/report/components/PaymentMethodsTab";
 import GeneralTab from "@presentation/pages/report/components/GeneralTab";
 import MapTab from "@presentation/pages/report/components/MapTab";
 import SupportTab from "@presentation/pages/report/components/SupportTab";
@@ -52,6 +53,13 @@ function GeneralPanelsSkeleton() {
             <div className="h-4 w-full max-w-xs animate-pulse rounded bg-gray-200" />
             <div className="mx-auto h-32 w-32 animate-pulse rounded-lg bg-gray-200" />
           </div>
+        </div>
+        <div className="flex flex-col gap-4 px-6 py-6 sm:px-8 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-4">
+            <div className="h-6 w-32 animate-pulse rounded bg-gray-200" />
+            <div className="h-4 w-full max-w-sm animate-pulse rounded bg-gray-200" />
+          </div>
+          <div className="mx-auto h-32 w-32 animate-pulse rounded-lg bg-gray-200 lg:mx-0" />
         </div>
       </div>
       <div className="p-6 sm:p-8">
@@ -222,6 +230,9 @@ function Report({ type }: { type: "scammer" | "organization" }) {
               )}
               {activeTab === "Contactos" && (
                 <ContactsTab partyId={party.id} partyType={type} />
+              )}
+              {activeTab === "Métodos de pago" && (
+                <PaymentMethodsTab partyId={party.id} partyType={type} />
               )}
               {activeTab === "Mapa" && (
                 <MapTab partyId={party.id} partyType={type} />
