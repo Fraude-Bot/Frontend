@@ -6,6 +6,7 @@ import categoriesIcon from "@presentation/assets/categories.webp";
 import shareArrowIcon from "@presentation/assets/arrow-down.webp";
 import homeIcon from "@presentation/assets/home.svg";
 import contactosIcon from "@presentation/assets/user.svg";
+import paymentMethodsIcon from "@presentation/assets/payment-methods.svg";
 import mapaIcon from "@presentation/assets/map.svg";
 import soporteIcon from "@presentation/assets/help.svg";
 import reportAlertIcon from "@presentation/assets/alert.svg";
@@ -27,6 +28,7 @@ const reportIcons = {
   home: homeIcon,
   reportes: reportAlertIcon,
   contactos: contactosIcon,
+  paymentMethods: paymentMethodsIcon,
   mapa: mapaIcon,
   soporte: soporteIcon,
   reportAlert: reportAlertIcon,
