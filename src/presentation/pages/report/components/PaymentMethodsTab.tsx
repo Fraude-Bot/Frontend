@@ -92,9 +92,17 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
 
   return (
     <section className="border border-gray-200 bg-white p-6 sm:p-8">
-      <h2 className="text-xl font-extrabold leading-none text-gray-900">
-        Métodos de pago:
-      </h2>
+      <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+        <h2 className="text-xl font-extrabold leading-none text-gray-900">
+          Métodos de pago:
+        </h2>
+        <button
+          type="button"
+          className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
+        >
+          Agregar Método de Pago +
+        </button>
+      </div>
 
       <p className="mt-4 text-base leading-6 text-gray-900">
         Los métodos de pago que este estafador/empresa ha utilizado a lo largo

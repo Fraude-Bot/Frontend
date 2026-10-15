@@ -12,6 +12,7 @@ import soporteIcon from "@presentation/assets/help.svg";
 import reportAlertIcon from "@presentation/assets/alert.svg";
 import contactsIllustrationIcon from "@presentation/assets/thief-world.png";
 import mapIllustrationIcon from "@presentation/assets/knowledge-graph.webp";
+import paymentIllustrationIcon from "@presentation/assets/payment-illustration.webp";
 import legalHelpIcon from "@presentation/assets/auction.webp";
 import customerServiceIcon from "@presentation/assets/customer-service.webp";
 import agreementIcon from "@presentation/assets/agreement.webp";
@@ -34,6 +35,7 @@ const reportIcons = {
   reportAlert: reportAlertIcon,
   contactsIllustration: contactsIllustrationIcon,
   mapIllustration: mapIllustrationIcon,
+  paymentIllustration: paymentIllustrationIcon,
   legalHelp: legalHelpIcon,
   customerService: customerServiceIcon,
   agreement: agreementIcon,

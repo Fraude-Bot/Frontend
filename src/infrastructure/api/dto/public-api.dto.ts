@@ -41,6 +41,16 @@ export type ContactDto = {
 
 export type ContactsDto = PaginatedDto<ContactDto>;
 
+export type PaymentMethodDto = {
+  id: string | number;
+  reference: string;
+  type: string;
+  created_at: string;
+  is_active: boolean;
+};
+
+export type PaymentMethodsDto = PaginatedDto<PaymentMethodDto>;
+
 export type PartyReportDto = {
   id: string | number;
   title: string;

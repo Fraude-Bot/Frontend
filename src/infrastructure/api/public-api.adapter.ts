@@ -6,6 +6,8 @@ import type {
 } from "@/application/ports/public-api.port";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
 import type FindContactsByPartyResult from "@/core/domain/contact/models/find-contacts-by-party.model";
+import PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/payment-method-summary.entity";
+import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
 import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-relationship-map.model";
 import OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
 import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
@@ -26,6 +28,7 @@ import {
 import Http from "@/infrastructure/http/http";
 import type {
   ContactsDto,
+  PaymentMethodsDto,
   CreatedOrganizationReportDto,
   CreatedScammerReportDto,
   MonthlyReportCountsDto,
@@ -43,6 +46,39 @@ const emptyPage = <T>(page: number) => ({
   page,
   count: 0,
 });
+
+const PAYMENT_TYPE_QUERY: Record<string, string> = {
+  "1": "card_number",
+  "2": "clabe",
+  "3": "account_number",
+  "4": "wallet",
+  "5": "other",
+  card_number: "card_number",
+  clabe: "clabe",
+  account_number: "account_number",
+  wallet: "wallet",
+  other: "other",
+};
+
+const PAYMENT_TYPE_FROM_API: Record<string, number> = {
+  card_number: 1,
+  clabe: 2,
+  account_number: 3,
+  wallet: 4,
+  other: 5,
+};
+
+function paymentTypeQuery(paymentType: string | undefined): string | undefined {
+  if (!paymentType) {
+    return undefined;
+  }
+
+  return PAYMENT_TYPE_QUERY[paymentType.trim().toLowerCase()];
+}
+
+function paymentTypeFromApi(type: string): number {
+  return PAYMENT_TYPE_FROM_API[type.trim().toLowerCase()] ?? 5;
+}
 
 function partyRoute(
   type: PartyType,
@@ -205,6 +241,55 @@ class PublicApiAdapter implements PublicApiPort {
     } catch (error) {
       if (getHttpStatus(error) === 404) {
         return emptyPage<ContactSummaryEntity>(page);
+      }
+      throw error;
+    }
+  }
+
+  public async findPaymentMethodsByParty(
+    id: string,
+    type: PartyType,
+    page: number,
+    paymentType: string | undefined,
+    signal: AbortSignal,
+  ): Promise<FindPaymentMethodsByPartyResult> {
+    const route = partyRoute(type, {
+      scammer: API_ROUTES.public.scammers.paymentMethods,
+      organization: API_ROUTES.public.organizations.paymentMethods,
+    });
+    const url = route.replace("{id}", encodeURIComponent(id));
+    const typeQuery = paymentTypeQuery(paymentType);
+
+    try {
+      const { data, status } = await Http.get<PaymentMethodsDto>(url, {
+        signal,
+        params: {
+          p: page,
+          ...(typeQuery ? { type: typeQuery } : {}),
+        },
+      });
+      if (status !== 200) {
+        return emptyPage<PaymentMethodSummaryEntity>(page);
+      }
+
+      return {
+        data: data.data.map(
+          (paymentMethod) =>
+            new PaymentMethodSummaryEntity(
+              String(paymentMethod.id),
+              paymentMethod.reference,
+              paymentTypeFromApi(paymentMethod.type),
+              paymentMethod.created_at,
+              Boolean(paymentMethod.is_active),
+            ),
+        ),
+        total: data.total,
+        page: data.page,
+        count: data.count,
+      };
+    } catch (error) {
+      if (getHttpStatus(error) === 404) {
+        return emptyPage<PaymentMethodSummaryEntity>(page);
       }
       throw error;
     }
