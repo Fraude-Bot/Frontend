@@ -1,6 +1,5 @@
 import { KeyboardEvent, useEffect, useState } from "react";
 import reportIcons from "@presentation/pages/report/components/icons";
-import { getPaymentIconSrc } from "@presentation/pages/report/components/payment-icons";
 import MonthlyReportsChart from "@presentation/pages/report/components/MonthlyReportsChart";
 import { ReportTab } from "@presentation/pages/report/components/types";
 import { useDependencies } from "@/presentation/providers/useDependencies";
@@ -76,8 +75,6 @@ const panelClassName =
 
 const widePanelClassName =
   "group w-full cursor-pointer text-left transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gray-300";
-
-const PAYMENT_ILLUSTRATION_TYPES = ["1", "2", "3", "4"] as const;
 
 const panelGridClassName =
   "grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto] lg:divide-x lg:divide-gray-200";
@@ -225,7 +222,10 @@ function GeneralTab({
                 </div>
               )}
             </div>
-            <div className="px-6 pb-6 pt-4 sm:px-8 sm:pb-8" />
+            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
+              Redes sociales, correo, teléfono y sitios web reportados para
+              este perfil.
+            </p>
           </div>
         </div>
 
@@ -289,24 +289,18 @@ function GeneralTab({
               :
             </p>
             <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
-              <div className="grid h-32 w-32 grid-cols-2 place-items-center">
-                {PAYMENT_ILLUSTRATION_TYPES.map((type) => {
-                  const iconSrc = getPaymentIconSrc(type);
-                  if (!iconSrc) {
-                    return null;
-                  }
-
-                  return (
-                    <img
-                      key={type}
-                      src={iconSrc}
-                      alt=""
-                      aria-hidden
-                      className="h-12 w-12 object-contain"
-                    />
-                  );
-                })}
-              </div>
+              {reportIcons.paymentIllustration ? (
+                <img
+                  src={reportIcons.paymentIllustration}
+                  alt=""
+                  aria-hidden
+                  className="h-32 w-32 object-contain"
+                />
+              ) : (
+                <div className="flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
+                  Ilustración de métodos de pago
+                </div>
+              )}
             </div>
             <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
               Tarjetas, CLABEs, cuentas y wallets reportadas para este perfil.

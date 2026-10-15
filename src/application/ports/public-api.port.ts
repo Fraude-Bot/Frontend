@@ -3,6 +3,7 @@ import type OrganizationSummaryEntity from "@/core/domain/organization/entities/
 import type MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
 import type SearchReportResult from "@/core/domain/report/models/search-report.model";
 import type FindContactsByPartyResult from "@/core/domain/contact/models/find-contacts-by-party.model";
+import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
 import type FindReportsByPartyResult from "@/core/domain/report/models/find-reports-by-party.model";
 import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-relationship-map.model";
 import type {
@@ -57,6 +58,13 @@ export interface PublicApiPort {
     platform: string | undefined,
     signal: AbortSignal,
   ): Promise<FindContactsByPartyResult>;
+  findPaymentMethodsByParty(
+    id: string,
+    type: PartyType,
+    page: number,
+    paymentType: string | undefined,
+    signal: AbortSignal,
+  ): Promise<FindPaymentMethodsByPartyResult>;
   findReportsByParty(
     id: string,
     type: PartyType,

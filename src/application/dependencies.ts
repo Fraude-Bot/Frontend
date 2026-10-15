@@ -1,5 +1,5 @@
 import type FindContactsByPartyUsecase from "@/application/usecases/contact/find-contacts-by-party.usecase";
-import type FindPaymentMethodsByPartyStubUsecase from "@/application/usecases/payment-method/stub/find-payment-methods-by-party.stub";
+import type FindPaymentMethodsByPartyUsecase from "@/application/usecases/payment-method/find-payment-methods-by-party.usecase";
 import type FindRelationshipMapByPartyUsecase from "@/application/usecases/map/find-relationship-map-by-party.usecase";
 import type FindOrganizationSummaryByIdUsecase from "@/application/usecases/organization/find-organization-summary-by-id.usecase";
 import type SuggestOrganizationNamesUsecase from "@/application/usecases/organization/suggest-organization-names.usecase";
@@ -26,7 +26,7 @@ export type Dependencies = {
   searchReportStubUseCase: PublicInterface<SearchReportStubUsecase>;
   findMonthlyReportCountsUseCase: PublicInterface<FindMonthlyReportCountsUsecase>;
   findContactsByPartyUseCase: PublicInterface<FindContactsByPartyUsecase>;
-  findPaymentMethodsByPartyUseCase: PublicInterface<FindPaymentMethodsByPartyStubUsecase>;
+  findPaymentMethodsByPartyUseCase: PublicInterface<FindPaymentMethodsByPartyUsecase>;
   findReportsByPartyUseCase: PublicInterface<FindReportsByPartyUsecase>;
   findRelationshipMapByPartyUseCase: PublicInterface<FindRelationshipMapByPartyUsecase>;
   storeTemporaryProfilePictureUseCase: PublicInterface<StoreTemporaryProfilePictureUsecase>;
