@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getPlatformLabel } from "@/presentation/pages/report/components/contact-platform";
 import { getPlatformIconSrc } from "@/presentation/pages/report/components/platform-icons";
 import { PlatformIcon } from "@/presentation/pages/report/components/PlatformIcon";
-import AddContactModal from "@/presentation/pages/report-form/components/AddContactModal";
+import AddContactModal from "@/presentation/shared/components/AddContactModal";
 import EditContactModal from "@/presentation/pages/report-form/components/EditContactModal";
 import ReportAddTile from "@/presentation/pages/report-form/components/ReportAddTile";
 import type { ReportFormContactDraft } from "@/presentation/pages/report-form/components/types";

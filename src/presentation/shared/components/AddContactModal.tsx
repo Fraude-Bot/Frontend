@@ -4,7 +4,6 @@ import {
   SOCIAL_FILTERS,
 } from "@/presentation/pages/report/components/contact-platform";
 import { getPlatformIconSrc } from "@/presentation/pages/report/components/platform-icons";
-import type { ReportFormContactDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
 import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
 
@@ -19,9 +18,14 @@ const PLATFORM_OPTIONS = SOCIAL_FILTERS.map((filter) => ({
   iconSrc: getPlatformIconSrc(filter.platform),
 }));
 
+export type AddContactDraft = {
+  platform: string;
+  url: string;
+};
+
 type AddContactModalProps = {
   onClose: () => void;
-  onCreate: (contact: Omit<ReportFormContactDraft, "id">) => void;
+  onCreate: (contact: AddContactDraft) => void;
 };
 
 function AddContactModal({ onClose, onCreate }: AddContactModalProps) {

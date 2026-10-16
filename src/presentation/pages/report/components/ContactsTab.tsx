@@ -4,6 +4,9 @@ import { useDependencies } from "@/presentation/providers/useDependencies";
 import ContactCard from "@presentation/pages/report/components/ContactCard";
 import PlatformFilterRow from "@presentation/pages/report/components/PlatformFilterRow";
 import { isCanceledError } from "@/common/utils/http-error.util";
+import AddContactModal, {
+  type AddContactDraft,
+} from "@/presentation/shared/components/AddContactModal";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
 
 interface ContactsTabProps {
@@ -16,10 +19,14 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [platform, setPlatform] = useState<string | undefined>();
   const [contacts, setContacts] = useState<ContactSummaryEntity[]>([]);
+  const [addedContacts, setAddedContacts] = useState<ContactSummaryEntity[]>(
+    [],
+  );
   const [totalResults, setTotalResults] = useState(0);
   const [pageSize, setPageSize] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const requestKey = `${partyId}:${partyType}:${currentPage}:${platform ?? ""}:${requestVersion}`;
   const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
     null,
@@ -27,6 +34,9 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
   const isLoading = loadedRequestKey !== requestKey;
+  const visibleAddedContacts = platform
+    ? addedContacts.filter((contact) => contact.platform === platform)
+    : addedContacts;
 
   useEffect(() => {
     let ignore = false;
@@ -88,6 +98,32 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
     setCurrentPage(1);
   };
 
+  function handleCreateContact(draft: AddContactDraft) {
+    const now = new Date();
+    const createdAt = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    setAddedContacts((current) => [
+      new ContactSummaryEntity(
+        crypto.randomUUID(),
+        draft.platform,
+        draft.url,
+        draft.platform,
+        createdAt,
+        true,
+      ),
+      ...current,
+    ]);
+    if (platform && platform !== draft.platform) {
+      setPlatform(undefined);
+      setCurrentPage(1);
+    }
+    setIsAddContactOpen(false);
+  }
+
   return (
     <section className="border border-gray-200 bg-white p-6 sm:p-8">
       <div className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -96,6 +132,7 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
         </h2>
         <button
           type="button"
+          onClick={() => setIsAddContactOpen(true)}
           className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
         >
           Agregar Contacto +
@@ -119,6 +156,11 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
           </p>
         )}
 
+        {!errorMessage &&
+          visibleAddedContacts.map((contact) => (
+            <ContactCard key={contact.id} contact={contact} />
+          ))}
+
         {!isLoading &&
           !errorMessage &&
           contacts.map((contact) => (
@@ -138,7 +180,10 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
           </div>
         )}
 
-        {!isLoading && !errorMessage && contacts.length === 0 && (
+        {!isLoading &&
+          !errorMessage &&
+          visibleAddedContacts.length === 0 &&
+          contacts.length === 0 && (
           <p className="py-10 text-center text-sm text-gray-400">
             No se encontraron contactos.
           </p>
@@ -154,6 +199,13 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
           className="mt-6"
         />
       )}
+
+      {isAddContactOpen ? (
+        <AddContactModal
+          onClose={() => setIsAddContactOpen(false)}
+          onCreate={handleCreateContact}
+        />
+      ) : null}
     </section>
   );
 }
