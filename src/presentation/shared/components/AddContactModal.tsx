@@ -25,10 +25,17 @@ export type AddContactDraft = {
 
 type AddContactModalProps = {
   onClose: () => void;
-  onCreate: (contact: AddContactDraft) => void;
+  onCreate: (contact: AddContactDraft) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 };
 
-function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
+function AddContactModal({
+  onClose,
+  onCreate,
+  errorMessage = null,
+  isSubmitting = false,
+}: AddContactModalProps) {
   const platformId = useId();
   const urlId = useId();
   const [platform, setPlatform] = useState<string | null>(null);
@@ -58,7 +65,7 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
         {
           label: "Crear",
           variant: "primary",
-          disabled: !canCreate,
+          disabled: !canCreate || isSubmitting,
           onClick: handleCreate,
         },
       ]}
@@ -99,6 +106,11 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
           />
         </div>
       </div>
+      {errorMessage ? (
+        <p role="alert" className="pb-5 text-sm font-semibold text-red-800">
+          {errorMessage}
+        </p>
+      ) : null}
     </Modal>
   );
 }

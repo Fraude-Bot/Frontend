@@ -5,6 +5,8 @@ import type {
   PublicApiPort,
 } from "@/application/ports/public-api.port";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
+import type { CreateOrganizationContactRequest } from "@/core/domain/contact/models/create-organization-contact.request";
+import type { CreateScammerContactRequest } from "@/core/domain/contact/models/create-scammer-contact.request";
 import type FindContactsByPartyResult from "@/core/domain/contact/models/find-contacts-by-party.model";
 import PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/payment-method-summary.entity";
 import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
@@ -67,6 +69,26 @@ const PAYMENT_TYPE_FROM_API: Record<string, number> = {
   wallet: 4,
   other: 5,
 };
+
+function toApiContactPlatform(platform: string): string {
+  const key = platform.trim().toLowerCase();
+  return key === "webpage" ? "url" : key;
+}
+
+function isCreatedContact(contact: ContactDto): boolean {
+  const id = typeof contact.id === "number" ? contact.id : Number(contact.id);
+
+  return (
+    Number.isInteger(id) &&
+    id >= 1 &&
+    typeof contact.reference === "string" &&
+    contact.reference.trim() !== "" &&
+    typeof contact.platform === "string" &&
+    contact.platform.trim() !== "" &&
+    typeof contact.created_at === "string" &&
+    contact.created_at.trim() !== ""
+  );
+}
 
 function paymentTypeQuery(paymentType: string | undefined): string | undefined {
   if (!paymentType) {
@@ -205,10 +227,7 @@ class PublicApiAdapter implements PublicApiPort {
       organization: API_ROUTES.public.organizations.contacts,
     });
     const url = route.replace("{id}", encodeURIComponent(id));
-    const platformQuery =
-      platform?.toLowerCase() === "webpage"
-        ? "url"
-        : platform?.toLowerCase();
+    const platformQuery = platform ? toApiContactPlatform(platform) : undefined;
 
     try {
       const { data, status } = await Http.get<ContactsDto>(url, {
@@ -244,6 +263,61 @@ class PublicApiAdapter implements PublicApiPort {
       }
       throw error;
     }
+  }
+
+  public async createScammerContact(
+    id: string,
+    request: CreateScammerContactRequest,
+    signal: AbortSignal,
+  ): Promise<ContactSummaryEntity> {
+    return this.createContact(
+      API_ROUTES.public.scammers.contacts,
+      id,
+      request,
+      signal,
+    );
+  }
+
+  public async createOrganizationContact(
+    id: string,
+    request: CreateOrganizationContactRequest,
+    signal: AbortSignal,
+  ): Promise<ContactSummaryEntity> {
+    return this.createContact(
+      API_ROUTES.public.organizations.contacts,
+      id,
+      request,
+      signal,
+    );
+  }
+
+  private async createContact(
+    route: string,
+    id: string,
+    request: CreateScammerContactRequest | CreateOrganizationContactRequest,
+    signal: AbortSignal,
+  ): Promise<ContactSummaryEntity> {
+    const platform = toApiContactPlatform(request.platform);
+    const reference = request.reference.trim();
+    const url = route.replace("{id}", encodeURIComponent(id));
+    const { data, status } = await Http.post<ContactDto>(
+      url,
+      { platform, reference },
+      { signal },
+    );
+
+    if (status !== 201 || !isCreatedContact(data)) {
+      throw new Error("The contact was not created.");
+    }
+
+    return new ContactSummaryEntity(
+      String(data.id),
+      data.name ?? data.reference,
+      data.reference,
+      data.platform,
+      data.created_at,
+      Boolean(data.is_active),
+    );
   }
 
   public async findPaymentMethodsByParty(
