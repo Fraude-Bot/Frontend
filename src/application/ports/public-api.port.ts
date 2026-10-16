@@ -2,6 +2,9 @@ import type ScammerSummaryEntity from "@/core/domain/scammer/entities/scammer-su
 import type OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
 import type MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
 import type SearchReportResult from "@/core/domain/report/models/search-report.model";
+import type ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
+import type { CreateOrganizationContactRequest } from "@/core/domain/contact/models/create-organization-contact.request";
+import type { CreateScammerContactRequest } from "@/core/domain/contact/models/create-scammer-contact.request";
 import type FindContactsByPartyResult from "@/core/domain/contact/models/find-contacts-by-party.model";
 import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
 import type FindReportsByPartyResult from "@/core/domain/report/models/find-reports-by-party.model";
@@ -58,6 +61,16 @@ export interface PublicApiPort {
     platform: string | undefined,
     signal: AbortSignal,
   ): Promise<FindContactsByPartyResult>;
+  createScammerContact(
+    id: string,
+    request: CreateScammerContactRequest,
+    signal: AbortSignal,
+  ): Promise<ContactSummaryEntity>;
+  createOrganizationContact(
+    id: string,
+    request: CreateOrganizationContactRequest,
+    signal: AbortSignal,
+  ): Promise<ContactSummaryEntity>;
   findPaymentMethodsByParty(
     id: string,
     type: PartyType,

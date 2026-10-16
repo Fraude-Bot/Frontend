@@ -4,7 +4,6 @@ import {
   SOCIAL_FILTERS,
 } from "@/presentation/pages/report/components/contact-platform";
 import { getPlatformIconSrc } from "@/presentation/pages/report/components/platform-icons";
-import type { ReportFormContactDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
 import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
 
@@ -19,12 +18,24 @@ const PLATFORM_OPTIONS = SOCIAL_FILTERS.map((filter) => ({
   iconSrc: getPlatformIconSrc(filter.platform),
 }));
 
-type AddContactModalProps = {
-  onClose: () => void;
-  onCreate: (contact: Omit<ReportFormContactDraft, "id">) => void;
+export type AddContactDraft = {
+  platform: string;
+  url: string;
 };
 
-function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
+type AddContactModalProps = {
+  onClose: () => void;
+  onCreate: (contact: AddContactDraft) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
+};
+
+function AddContactModal({
+  onClose,
+  onCreate,
+  errorMessage = null,
+  isSubmitting = false,
+}: AddContactModalProps) {
   const platformId = useId();
   const urlId = useId();
   const [platform, setPlatform] = useState<string | null>(null);
@@ -54,7 +65,7 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
         {
           label: "Crear",
           variant: "primary",
-          disabled: !canCreate,
+          disabled: !canCreate || isSubmitting,
           onClick: handleCreate,
         },
       ]}
@@ -95,6 +106,11 @@ function AddContactModal({ onClose, onCreate }: AddContactModalProps) {
           />
         </div>
       </div>
+      {errorMessage ? (
+        <p role="alert" className="pb-5 text-sm font-semibold text-red-800">
+          {errorMessage}
+        </p>
+      ) : null}
     </Modal>
   );
 }

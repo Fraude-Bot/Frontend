@@ -12,7 +12,7 @@ Canonical files:
 - `src/presentation/shared/components/Modal.tsx` — shell
 - `src/presentation/shared/components/SearchableSelect.tsx` — searchable closed list
 - `src/presentation/pages/report-form/components/DiscardChangesModal.tsx` — confirmation
-- `src/presentation/pages/report-form/components/AddContactModal.tsx` — form
+- `src/presentation/shared/components/AddContactModal.tsx` — form
 - `src/presentation/pages/report-form/components/EditContactModal.tsx` — form, prefilled, opened from a contact card
 - `src/presentation/pages/report-form/components/AddPaymentModal.tsx` — form
 - `src/presentation/pages/report-form/components/EditPaymentModal.tsx` — form, prefilled, opened from a payment card

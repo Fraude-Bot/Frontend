@@ -1,4 +1,6 @@
 import type FindContactsByPartyUsecase from "@/application/usecases/contact/find-contacts-by-party.usecase";
+import type CreateOrganizationContactUsecase from "@/application/usecases/contact/create-organization-contact.usecase";
+import type CreateScammerContactUsecase from "@/application/usecases/contact/create-scammer-contact.usecase";
 import type FindPaymentMethodsByPartyUsecase from "@/application/usecases/payment-method/find-payment-methods-by-party.usecase";
 import type FindRelationshipMapByPartyUsecase from "@/application/usecases/map/find-relationship-map-by-party.usecase";
 import type FindOrganizationSummaryByIdUsecase from "@/application/usecases/organization/find-organization-summary-by-id.usecase";
@@ -26,6 +28,8 @@ export type Dependencies = {
   searchReportStubUseCase: PublicInterface<SearchReportStubUsecase>;
   findMonthlyReportCountsUseCase: PublicInterface<FindMonthlyReportCountsUsecase>;
   findContactsByPartyUseCase: PublicInterface<FindContactsByPartyUsecase>;
+  createScammerContactUseCase: PublicInterface<CreateScammerContactUsecase>;
+  createOrganizationContactUseCase: PublicInterface<CreateOrganizationContactUsecase>;
   findPaymentMethodsByPartyUseCase: PublicInterface<FindPaymentMethodsByPartyUsecase>;
   findReportsByPartyUseCase: PublicInterface<FindReportsByPartyUsecase>;
   findRelationshipMapByPartyUseCase: PublicInterface<FindRelationshipMapByPartyUsecase>;

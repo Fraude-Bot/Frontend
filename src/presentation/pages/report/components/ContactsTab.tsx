@@ -1,10 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 import ContactCard from "@presentation/pages/report/components/ContactCard";
 import PlatformFilterRow from "@presentation/pages/report/components/PlatformFilterRow";
-import { isCanceledError } from "@/common/utils/http-error.util";
+import { getHttpStatus, isCanceledError } from "@/common/utils/http-error.util";
+import AddContactModal, {
+  type AddContactDraft,
+} from "@/presentation/shared/components/AddContactModal";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
+
+function contactPlatformKey(platform: string) {
+  const key = platform.trim().toLowerCase();
+  return key === "webpage" || key === "url" ? "url" : key;
+}
+
+function createContactErrorMessage(
+  error: unknown,
+  partyType: "scammer" | "organization",
+) {
+  const status = getHttpStatus(error);
+
+  if (status === 422) {
+    return "Revisa el contacto. La plataforma o la referencia no es válida.";
+  }
+
+  if (status === 404) {
+    return partyType === "organization"
+      ? "No encontramos esta empresa."
+      : "No encontramos este estafador.";
+  }
+
+  if (status === 429) {
+    return "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
+  }
+
+  return "No pudimos agregar el contacto. Inténtalo de nuevo.";
+}
 
 interface ContactsTabProps {
   partyId: string;
@@ -12,14 +43,27 @@ interface ContactsTabProps {
 }
 
 function ContactsTab({ partyId, partyType }: ContactsTabProps) {
-  const { findContactsByPartyUseCase } = useDependencies();
+  const {
+    findContactsByPartyUseCase,
+    createScammerContactUseCase,
+    createOrganizationContactUseCase,
+  } = useDependencies();
   const [currentPage, setCurrentPage] = useState(1);
   const [platform, setPlatform] = useState<string | undefined>();
   const [contacts, setContacts] = useState<ContactSummaryEntity[]>([]);
+  const [addedContacts, setAddedContacts] = useState<ContactSummaryEntity[]>(
+    [],
+  );
   const [totalResults, setTotalResults] = useState(0);
   const [pageSize, setPageSize] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [isCreatingContact, setIsCreatingContact] = useState(false);
+  const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(
+    null,
+  );
+  const isCreatingContactRef = useRef(false);
   const requestKey = `${partyId}:${partyType}:${currentPage}:${platform ?? ""}:${requestVersion}`;
   const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
     null,
@@ -27,6 +71,12 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
   const isLoading = loadedRequestKey !== requestKey;
+  const visibleAddedContacts = addedContacts.filter(
+    (contact) =>
+      !contacts.some((existing) => existing.id === contact.id) &&
+      (!platform ||
+        contactPlatformKey(contact.platform) === contactPlatformKey(platform)),
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -73,6 +123,13 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
     requestVersion,
   ]);
 
+  useEffect(() => {
+    return () => {
+      createScammerContactUseCase.cancel();
+      createOrganizationContactUseCase.cancel();
+    };
+  }, [createOrganizationContactUseCase, createScammerContactUseCase]);
+
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) {
       return;
@@ -88,6 +145,62 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
     setCurrentPage(1);
   };
 
+  function closeAddContact() {
+    isCreatingContactRef.current = false;
+    createScammerContactUseCase.cancel();
+    createOrganizationContactUseCase.cancel();
+    setIsCreatingContact(false);
+    setCreateErrorMessage(null);
+    setIsAddContactOpen(false);
+  }
+
+  async function handleCreateContact(draft: AddContactDraft) {
+    if (isCreatingContactRef.current) {
+      return;
+    }
+
+    isCreatingContactRef.current = true;
+    setIsCreatingContact(true);
+    setCreateErrorMessage(null);
+
+    try {
+      const request = {
+        platform: draft.platform,
+        reference: draft.url,
+      };
+      const contact =
+        partyType === "scammer"
+          ? await createScammerContactUseCase.execute(partyId, request)
+          : await createOrganizationContactUseCase.execute(partyId, request);
+
+      if (!isCreatingContactRef.current) {
+        return;
+      }
+
+      setAddedContacts((current) => [contact, ...current]);
+      if (
+        platform &&
+        contactPlatformKey(contact.platform) !== contactPlatformKey(platform)
+      ) {
+        setPlatform(undefined);
+        setCurrentPage(1);
+      }
+      setIsAddContactOpen(false);
+      setCreateErrorMessage(null);
+    } catch (error: unknown) {
+      if (!isCreatingContactRef.current || isCanceledError(error)) {
+        return;
+      }
+
+      setCreateErrorMessage(createContactErrorMessage(error, partyType));
+    } finally {
+      if (isCreatingContactRef.current) {
+        isCreatingContactRef.current = false;
+        setIsCreatingContact(false);
+      }
+    }
+  }
+
   return (
     <section className="border border-gray-200 bg-white p-6 sm:p-8">
       <div className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -96,6 +209,10 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
         </h2>
         <button
           type="button"
+          onClick={() => {
+            setCreateErrorMessage(null);
+            setIsAddContactOpen(true);
+          }}
           className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
         >
           Agregar Contacto +
@@ -119,6 +236,11 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
           </p>
         )}
 
+        {!errorMessage &&
+          visibleAddedContacts.map((contact) => (
+            <ContactCard key={contact.id} contact={contact} />
+          ))}
+
         {!isLoading &&
           !errorMessage &&
           contacts.map((contact) => (
@@ -138,7 +260,10 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
           </div>
         )}
 
-        {!isLoading && !errorMessage && contacts.length === 0 && (
+        {!isLoading &&
+          !errorMessage &&
+          visibleAddedContacts.length === 0 &&
+          contacts.length === 0 && (
           <p className="py-10 text-center text-sm text-gray-400">
             No se encontraron contactos.
           </p>
@@ -154,6 +279,15 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
           className="mt-6"
         />
       )}
+
+      {isAddContactOpen ? (
+        <AddContactModal
+          onClose={closeAddContact}
+          onCreate={handleCreateContact}
+          errorMessage={createErrorMessage}
+          isSubmitting={isCreatingContact}
+        />
+      ) : null}
     </section>
   );
 }
