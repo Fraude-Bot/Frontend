@@ -4,7 +4,6 @@ import {
   PAYMENT_TYPE_OPTIONS,
 } from "@/presentation/pages/report/components/payment-method.util";
 import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
-import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
 import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
 import Formatter from "@/presentation/shared/utils/formatter";
@@ -20,9 +19,14 @@ const TYPE_OPTIONS = PAYMENT_TYPE_OPTIONS.map((option) => ({
   iconSrc: getPaymentIconSrc(option.value),
 }));
 
+export type AddPaymentDraft = {
+  reference: string;
+  type: string;
+};
+
 type AddPaymentModalProps = {
   onClose: () => void;
-  onCreate: (payment: Omit<ReportFormPaymentDraft, "id">) => void;
+  onCreate: (payment: AddPaymentDraft) => void;
 };
 
 function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {

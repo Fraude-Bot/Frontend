@@ -4,6 +4,9 @@ import { useDependencies } from "@/presentation/providers/useDependencies";
 import PaymentMethodCard from "@presentation/pages/report/components/PaymentMethodCard";
 import PaymentTypeFilterRow from "@presentation/pages/report/components/PaymentTypeFilterRow";
 import { isCanceledError } from "@/common/utils/http-error.util";
+import AddPaymentModal, {
+  type AddPaymentDraft,
+} from "@/presentation/shared/components/AddPaymentModal";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
 
 interface PaymentMethodsTabProps {
@@ -18,10 +21,14 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
   const [paymentMethods, setPaymentMethods] = useState<
     PaymentMethodSummaryEntity[]
   >([]);
+  const [addedPaymentMethods, setAddedPaymentMethods] = useState<
+    PaymentMethodSummaryEntity[]
+  >([]);
   const [totalResults, setTotalResults] = useState(0);
   const [pageSize, setPageSize] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const requestKey = `${partyId}:${partyType}:${currentPage}:${paymentType ?? ""}:${requestVersion}`;
   const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
     null,
@@ -29,6 +36,11 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
   const isLoading = loadedRequestKey !== requestKey;
+  const visibleAddedPaymentMethods = paymentType
+    ? addedPaymentMethods.filter(
+        (paymentMethod) => String(paymentMethod.paymentType) === paymentType,
+      )
+    : addedPaymentMethods;
 
   useEffect(() => {
     let ignore = false;
@@ -90,6 +102,31 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
     setCurrentPage(1);
   };
 
+  function handleCreatePayment(draft: AddPaymentDraft) {
+    const now = new Date();
+    const createdAt = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    setAddedPaymentMethods((current) => [
+      new PaymentMethodSummaryEntity(
+        crypto.randomUUID(),
+        draft.reference,
+        Number(draft.type),
+        createdAt,
+        true,
+      ),
+      ...current,
+    ]);
+    if (paymentType && paymentType !== draft.type) {
+      setPaymentType(undefined);
+      setCurrentPage(1);
+    }
+    setIsAddPaymentOpen(false);
+  }
+
   return (
     <section className="border border-gray-200 bg-white p-6 sm:p-8">
       <div className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -98,6 +135,7 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
         </h2>
         <button
           type="button"
+          onClick={() => setIsAddPaymentOpen(true)}
           className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
         >
           Agregar Método de Pago +
@@ -121,6 +159,14 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
           </p>
         )}
 
+        {!errorMessage &&
+          visibleAddedPaymentMethods.map((paymentMethod) => (
+            <PaymentMethodCard
+              key={paymentMethod.id}
+              paymentMethod={paymentMethod}
+            />
+          ))}
+
         {!isLoading &&
           !errorMessage &&
           paymentMethods.map((paymentMethod) => (
@@ -143,11 +189,14 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
           </div>
         )}
 
-        {!isLoading && !errorMessage && paymentMethods.length === 0 && (
-          <p className="py-10 text-center text-sm text-gray-400">
-            No se encontraron métodos de pago.
-          </p>
-        )}
+        {!isLoading &&
+          !errorMessage &&
+          visibleAddedPaymentMethods.length === 0 &&
+          paymentMethods.length === 0 && (
+            <p className="py-10 text-center text-sm text-gray-400">
+              No se encontraron métodos de pago.
+            </p>
+          )}
       </div>
 
       {!isLoading && !errorMessage && (
@@ -159,6 +208,13 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
           className="mt-6"
         />
       )}
+
+      {isAddPaymentOpen ? (
+        <AddPaymentModal
+          onClose={() => setIsAddPaymentOpen(false)}
+          onCreate={handleCreatePayment}
+        />
+      ) : null}
     </section>
   );
 }
