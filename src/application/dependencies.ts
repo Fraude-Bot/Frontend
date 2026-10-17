@@ -10,6 +10,7 @@ import type SuggestOrganizationNamesUsecase from "@/application/usecases/organiz
 import type CreateOrganizationReportUsecase from "@/application/usecases/report/create-organization-report.usecase";
 import type CreateScammerReportUsecase from "@/application/usecases/report/create-scammer-report.usecase";
 import type FindMonthlyReportCountsUsecase from "@/application/usecases/report/find-monthly-report-counts.usecase";
+import type FindAssociationsByPartyUsecase from "@/application/usecases/association/find-associations-by-party.usecase";
 import type FindReportsByPartyUsecase from "@/application/usecases/report/find-reports-by-party.usecase";
 import type SearchReportUsecase from "@/application/usecases/report/search-report.usecase";
 import type SearchReportStubUsecase from "@/application/usecases/report/stub/search-report.stub";
@@ -36,6 +37,7 @@ export type Dependencies = {
   createScammerPaymentMethodUseCase: PublicInterface<CreateScammerPaymentMethodUsecase>;
   createOrganizationPaymentMethodUseCase: PublicInterface<CreateOrganizationPaymentMethodUsecase>;
   findReportsByPartyUseCase: PublicInterface<FindReportsByPartyUsecase>;
+  findAssociationsByPartyUseCase: PublicInterface<FindAssociationsByPartyUsecase>;
   findRelationshipMapByPartyUseCase: PublicInterface<FindRelationshipMapByPartyUsecase>;
   storeTemporaryProfilePictureUseCase: PublicInterface<StoreTemporaryProfilePictureUsecase>;
   storeTemporaryProofsUseCase: PublicInterface<StoreTemporaryProofsUsecase>;

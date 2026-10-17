@@ -41,6 +41,7 @@ const API_ROUTES = {
       contacts: "/public/scammers/{id}/contacts",
       paymentMethods: "/public/scammers/{id}/payment-methods",
       reports: "/public/scammers/{id}/reports",
+      organizations: "/public/scammers/{id}/organizations",
       map: "/public/scammers/{id}/map",
     },
     organizations: {
@@ -50,6 +51,7 @@ const API_ROUTES = {
       contacts: "/public/organizations/{id}/contacts",
       paymentMethods: "/public/organizations/{id}/payment-methods",
       reports: "/public/organizations/{id}/reports",
+      scammers: "/public/organizations/{id}/scammers",
       map: "/public/organizations/{id}/map",
     },
   },

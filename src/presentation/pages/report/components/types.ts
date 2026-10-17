@@ -28,13 +28,31 @@ export type ReportHeroProps = {
   profilePicture?: string | null;
 };
 
-export const reportTabs = [
+const reportTabsBeforeAssociations = [
   "General",
   "Reportes",
   "Contactos",
   "Métodos de pago",
-  "Mapa",
-  "Soporte",
 ] as const;
 
-export type ReportTab = (typeof reportTabs)[number];
+const reportTabsAfterAssociations = ["Mapa", "Soporte"] as const;
+
+export const associationTabByParty = {
+  scammer: "Empresas",
+  organization: "Estafadores",
+} as const;
+
+export type ReportTab =
+  | (typeof reportTabsBeforeAssociations)[number]
+  | (typeof associationTabByParty)[keyof typeof associationTabByParty]
+  | (typeof reportTabsAfterAssociations)[number];
+
+export function reportTabsFor(
+  partyType: keyof typeof associationTabByParty,
+): ReportTab[] {
+  return [
+    ...reportTabsBeforeAssociations,
+    associationTabByParty[partyType],
+    ...reportTabsAfterAssociations,
+  ];
+}
