@@ -4,7 +4,6 @@ import {
   PAYMENT_TYPE_OPTIONS,
 } from "@/presentation/pages/report/components/payment-method.util";
 import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
-import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
 import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
 import Formatter from "@/presentation/shared/utils/formatter";
@@ -20,12 +19,24 @@ const TYPE_OPTIONS = PAYMENT_TYPE_OPTIONS.map((option) => ({
   iconSrc: getPaymentIconSrc(option.value),
 }));
 
-type AddPaymentModalProps = {
-  onClose: () => void;
-  onCreate: (payment: Omit<ReportFormPaymentDraft, "id">) => void;
+export type AddPaymentDraft = {
+  reference: string;
+  type: string;
 };
 
-function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
+type AddPaymentModalProps = {
+  onClose: () => void;
+  onCreate: (payment: AddPaymentDraft) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
+};
+
+function AddPaymentModal({
+  onClose,
+  onCreate,
+  errorMessage = null,
+  isSubmitting = false,
+}: AddPaymentModalProps) {
   const referenceId = useId();
   const typeId = useId();
   const [reference, setReference] = useState("");
@@ -55,7 +66,7 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
         {
           label: "Crear",
           variant: "primary",
-          disabled: !canCreate,
+          disabled: !canCreate || isSubmitting,
           onClick: handleCreate,
         },
       ]}
@@ -100,6 +111,11 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
           />
         </div>
       </div>
+      {errorMessage ? (
+        <p role="alert" className="pb-5 text-sm font-semibold text-red-800">
+          {errorMessage}
+        </p>
+      ) : null}
     </Modal>
   );
 }

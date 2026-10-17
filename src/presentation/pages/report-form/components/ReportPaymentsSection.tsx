@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getPaymentLabel } from "@/presentation/pages/report/components/payment-method.util";
 import { getPaymentIconSrc } from "@/presentation/pages/report/components/payment-icons";
-import AddPaymentModal from "@/presentation/pages/report-form/components/AddPaymentModal";
+import AddPaymentModal from "@/presentation/shared/components/AddPaymentModal";
 import EditPaymentModal from "@/presentation/pages/report-form/components/EditPaymentModal";
 import ReportAddTile from "@/presentation/pages/report-form/components/ReportAddTile";
 import type { ReportFormPaymentDraft } from "@/presentation/pages/report-form/components/types";

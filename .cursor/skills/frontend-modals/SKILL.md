@@ -14,7 +14,7 @@ Canonical files:
 - `src/presentation/pages/report-form/components/DiscardChangesModal.tsx` — confirmation
 - `src/presentation/shared/components/AddContactModal.tsx` — form
 - `src/presentation/pages/report-form/components/EditContactModal.tsx` — form, prefilled, opened from a contact card
-- `src/presentation/pages/report-form/components/AddPaymentModal.tsx` — form
+- `src/presentation/shared/components/AddPaymentModal.tsx` — form
 - `src/presentation/pages/report-form/components/EditPaymentModal.tsx` — form, prefilled, opened from a payment card
 - `DESIGN.md` — visual rules (Modal section)
 

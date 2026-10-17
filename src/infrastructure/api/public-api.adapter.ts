@@ -9,6 +9,8 @@ import type { CreateOrganizationContactRequest } from "@/core/domain/contact/mod
 import type { CreateScammerContactRequest } from "@/core/domain/contact/models/create-scammer-contact.request";
 import type FindContactsByPartyResult from "@/core/domain/contact/models/find-contacts-by-party.model";
 import PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/payment-method-summary.entity";
+import type { CreateOrganizationPaymentMethodRequest } from "@/core/domain/payment-method/models/create-organization-payment-method.request";
+import type { CreateScammerPaymentMethodRequest } from "@/core/domain/payment-method/models/create-scammer-payment-method.request";
 import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
 import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-relationship-map.model";
 import OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
@@ -30,6 +32,7 @@ import {
 import Http from "@/infrastructure/http/http";
 import type {
   ContactsDto,
+  PaymentMethodDto,
   PaymentMethodsDto,
   CreatedOrganizationReportDto,
   CreatedScammerReportDto,
@@ -96,6 +99,29 @@ function paymentTypeQuery(paymentType: string | undefined): string | undefined {
   }
 
   return PAYMENT_TYPE_QUERY[paymentType.trim().toLowerCase()];
+}
+
+function toApiPaymentType(type: string): string {
+  const key = type.trim().toLowerCase();
+  return PAYMENT_TYPE_QUERY[key] ?? key;
+}
+
+function isCreatedPaymentMethod(paymentMethod: PaymentMethodDto): boolean {
+  const id =
+    typeof paymentMethod.id === "number"
+      ? paymentMethod.id
+      : Number(paymentMethod.id);
+
+  return (
+    Number.isInteger(id) &&
+    id >= 1 &&
+    typeof paymentMethod.reference === "string" &&
+    paymentMethod.reference.trim() !== "" &&
+    typeof paymentMethod.type === "string" &&
+    paymentMethod.type.trim() !== "" &&
+    typeof paymentMethod.created_at === "string" &&
+    paymentMethod.created_at.trim() !== ""
+  );
 }
 
 function paymentTypeFromApi(type: string): number {
@@ -367,6 +393,62 @@ class PublicApiAdapter implements PublicApiPort {
       }
       throw error;
     }
+  }
+
+  public async createScammerPaymentMethod(
+    id: string,
+    request: CreateScammerPaymentMethodRequest,
+    signal: AbortSignal,
+  ): Promise<PaymentMethodSummaryEntity> {
+    return this.createPaymentMethod(
+      API_ROUTES.public.scammers.paymentMethods,
+      id,
+      request,
+      signal,
+    );
+  }
+
+  public async createOrganizationPaymentMethod(
+    id: string,
+    request: CreateOrganizationPaymentMethodRequest,
+    signal: AbortSignal,
+  ): Promise<PaymentMethodSummaryEntity> {
+    return this.createPaymentMethod(
+      API_ROUTES.public.organizations.paymentMethods,
+      id,
+      request,
+      signal,
+    );
+  }
+
+  private async createPaymentMethod(
+    route: string,
+    id: string,
+    request:
+      | CreateScammerPaymentMethodRequest
+      | CreateOrganizationPaymentMethodRequest,
+    signal: AbortSignal,
+  ): Promise<PaymentMethodSummaryEntity> {
+    const type = toApiPaymentType(request.type);
+    const reference = request.reference.trim();
+    const url = route.replace("{id}", encodeURIComponent(id));
+    const { data, status } = await Http.post<PaymentMethodDto>(
+      url,
+      { type, reference },
+      { signal },
+    );
+
+    if (status !== 201 || !isCreatedPaymentMethod(data)) {
+      throw new Error("The payment method was not created.");
+    }
+
+    return new PaymentMethodSummaryEntity(
+      String(data.id),
+      data.reference,
+      paymentTypeFromApi(data.type),
+      data.created_at,
+      Boolean(data.is_active),
+    );
   }
 
   public async findReportsByParty(
