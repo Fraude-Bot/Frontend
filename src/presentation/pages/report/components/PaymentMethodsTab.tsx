@@ -16,7 +16,7 @@ function createPaymentMethodErrorMessage(
   const status = getHttpStatus(error);
 
   if (status === 422) {
-    return "Este método de pago ya está registrado, o el tipo y la referencia no son válidos.";
+    return "Este método de pago ya está registrado, o la referencia no es válida.";
   }
 
   if (status === 404) {
@@ -164,7 +164,6 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
 
     try {
       const request = {
-        type: draft.type,
         reference: draft.reference,
       };
       const paymentMethod =

@@ -77,6 +77,8 @@ Closed lists with search use `SearchableSelect`:
 
 Do not allow free-text values unless the design says so. Platform options for contacts come from `SOCIAL_FILTERS` in `contact-platform.ts` (icons via `getPlatformIconSrc`). Payment method types come from `PAYMENT_TYPE_OPTIONS` in `payment-method.util.ts` (icons via `getPaymentIconSrc`).
 
+`AddContactModal`, `EditContactModal`, `AddPaymentModal`, and `EditPaymentModal` do not show these lists. They collect the reference only. `detectContactPlatform` / `detectPaymentType` run on create or save, and the contact or payment card shows the inferred platform or type.
+
 ## Page wrapper
 
 1. Add a page-level component (e.g. `AddPaymentModal.tsx`) that renders `Modal`.

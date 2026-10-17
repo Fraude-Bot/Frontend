@@ -33,14 +33,12 @@ describe("CreateOrganizationContactUsecase", () => {
     } as never);
 
     const result = await useCase.execute("4", {
-      platform: "Instagram",
       reference: " https://instagram.com/ecohuertas ",
     });
 
     expect(mockedHttp.post).toHaveBeenCalledWith(
       API_ROUTES.public.organizations.contacts.replace("{id}", "4"),
       {
-        platform: "instagram",
         reference: "https://instagram.com/ecohuertas",
       },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),

@@ -101,11 +101,6 @@ function paymentTypeQuery(paymentType: string | undefined): string | undefined {
   return PAYMENT_TYPE_QUERY[paymentType.trim().toLowerCase()];
 }
 
-function toApiPaymentType(type: string): string {
-  const key = type.trim().toLowerCase();
-  return PAYMENT_TYPE_QUERY[key] ?? key;
-}
-
 function isCreatedPaymentMethod(paymentMethod: PaymentMethodDto): boolean {
   const id =
     typeof paymentMethod.id === "number"
@@ -323,12 +318,11 @@ class PublicApiAdapter implements PublicApiPort {
     request: CreateScammerContactRequest | CreateOrganizationContactRequest,
     signal: AbortSignal,
   ): Promise<ContactSummaryEntity> {
-    const platform = toApiContactPlatform(request.platform);
     const reference = request.reference.trim();
     const url = route.replace("{id}", encodeURIComponent(id));
     const { data, status } = await Http.post<ContactDto>(
       url,
-      { platform, reference },
+      { reference },
       { signal },
     );
 
@@ -429,12 +423,11 @@ class PublicApiAdapter implements PublicApiPort {
       | CreateOrganizationPaymentMethodRequest,
     signal: AbortSignal,
   ): Promise<PaymentMethodSummaryEntity> {
-    const type = toApiPaymentType(request.type);
     const reference = request.reference.trim();
     const url = route.replace("{id}", encodeURIComponent(id));
     const { data, status } = await Http.post<PaymentMethodDto>(
       url,
-      { type, reference },
+      { reference },
       { signal },
     );
 

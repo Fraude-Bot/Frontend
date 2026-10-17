@@ -33,13 +33,12 @@ describe("CreateOrganizationPaymentMethodUsecase", () => {
     } as never);
 
     const result = await useCase.execute("4", {
-      type: "1",
       reference: " 4111111111111111 ",
     });
 
     expect(mockedHttp.post).toHaveBeenCalledWith(
       API_ROUTES.public.organizations.paymentMethods.replace("{id}", "4"),
-      { type: "card_number", reference: "4111111111111111" },
+      { reference: "4111111111111111" },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     expect(result).toBeInstanceOf(PaymentMethodSummaryEntity);
