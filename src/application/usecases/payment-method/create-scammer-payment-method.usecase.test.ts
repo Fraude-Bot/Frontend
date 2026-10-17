@@ -33,13 +33,12 @@ describe("CreateScammerPaymentMethodUsecase", () => {
     } as never);
 
     const result = await useCase.execute("1", {
-      type: "2",
       reference: " 012345678901234567 ",
     });
 
     expect(mockedHttp.post).toHaveBeenCalledWith(
       API_ROUTES.public.scammers.paymentMethods.replace("{id}", "1"),
-      { type: "clabe", reference: "012345678901234567" },
+      { reference: "012345678901234567" },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     expect(result).toBeInstanceOf(PaymentMethodSummaryEntity);
@@ -57,7 +56,7 @@ describe("CreateScammerPaymentMethodUsecase", () => {
     } as never);
 
     await expect(
-      useCase.execute("1", { type: "clabe", reference: "012345678901234567" }),
+      useCase.execute("1", { reference: "012345678901234567" }),
     ).rejects.toThrow("The payment method was not created.");
   });
 
@@ -70,7 +69,7 @@ describe("CreateScammerPaymentMethodUsecase", () => {
       return new Promise(() => undefined);
     });
 
-    void useCase.execute("1", { type: "clabe", reference: "012345678901234567" });
+    void useCase.execute("1", { reference: "012345678901234567" });
     useCase.cancel();
 
     expect(capturedSignal?.aborted).toBe(true);

@@ -1,23 +1,12 @@
 import { useId, useState } from "react";
-import {
-  detectContactPlatform,
-  SOCIAL_FILTERS,
-} from "@/presentation/pages/report/components/contact-platform";
-import { getPlatformIconSrc } from "@/presentation/pages/report/components/platform-icons";
+import { detectContactPlatform } from "@/presentation/pages/report/components/contact-platform";
 import type { ReportFormContactDraft } from "@/presentation/pages/report-form/components/types";
 import Modal from "@/presentation/shared/components/Modal";
-import SearchableSelect from "@/presentation/shared/components/SearchableSelect";
 
 const FIELD_CLASS =
   "h-11 w-full rounded-md border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
 
 const LABEL_CLASS = "mb-2 block font-bold text-gray-900";
-
-const PLATFORM_OPTIONS = SOCIAL_FILTERS.map((filter) => ({
-  value: filter.platform,
-  label: filter.label,
-  iconSrc: getPlatformIconSrc(filter.platform),
-}));
 
 type EditContactModalProps = {
   contact: ReportFormContactDraft;
@@ -26,20 +15,20 @@ type EditContactModalProps = {
 };
 
 function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
-  const platformId = useId();
   const urlId = useId();
-  const [platform, setPlatform] = useState<string | null>(contact.platform);
   const [url, setUrl] = useState(contact.url);
-  const canSave = platform !== null && url.trim().length > 0;
+  const trimmedUrl = url.trim();
+  const canSave = trimmedUrl.length > 0;
 
   function handleSave() {
+    const platform = detectContactPlatform(trimmedUrl);
     if (!canSave || platform === null) {
       return;
     }
 
     onSave({
       platform,
-      url: url.trim(),
+      url: trimmedUrl,
     });
   }
 
@@ -60,41 +49,19 @@ function EditContactModal({ contact, onClose, onSave }: EditContactModalProps) {
         },
       ]}
     >
-      <div className="grid items-start gap-x-8 gap-y-5 py-5 sm:grid-cols-3">
-        <div className="sm:col-span-2">
-          <label htmlFor={urlId} className={LABEL_CLASS}>
-            URL
-          </label>
-          <input
-            id={urlId}
-            type="text"
-            value={url}
-            autoComplete="off"
-            placeholder="https://website.org"
-            onChange={(event) => {
-              const nextUrl = event.currentTarget.value;
-              setUrl(nextUrl);
-              setPlatform(detectContactPlatform(nextUrl));
-            }}
-            className={FIELD_CLASS}
-          />
-        </div>
-
-        <div>
-          <label htmlFor={platformId} className={LABEL_CLASS}>
-            Plataforma
-          </label>
-          <SearchableSelect
-            id={platformId}
-            value={platform}
-            options={PLATFORM_OPTIONS}
-            onChange={setPlatform}
-            placeholder="Selecciona una plataforma"
-            listLabel="Plataformas"
-            noResultsText="No hay plataformas con ese nombre"
-            disabled
-          />
-        </div>
+      <div className="py-5">
+        <label htmlFor={urlId} className={LABEL_CLASS}>
+          Número telefónico, Facebook, Instagram, URL...
+        </label>
+        <input
+          id={urlId}
+          type="text"
+          value={url}
+          autoComplete="off"
+          placeholder="Ej. (6623145124, https://website.org...)"
+          onChange={(event) => setUrl(event.currentTarget.value)}
+          className={FIELD_CLASS}
+        />
       </div>
     </Modal>
   );

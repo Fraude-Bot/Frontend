@@ -30,44 +30,14 @@ export type ReportCommandDraft = {
   contactEmail: string;
 };
 
-const CONTACT_PLATFORMS: Record<string, string> = {
-  whatsapp: "whatsapp",
-  facebook: "facebook",
-  youtube: "youtube",
-  tiktok: "tiktok",
-  email: "email",
-  cellphone: "cellphone",
-  telegram: "telegram",
-  instagram: "instagram",
-  webpage: "url",
-  url: "url",
-  other: "other",
-};
-
-const PAYMENT_TYPES: Record<string, number | string> = {
-  "1": 1,
-  "2": 2,
-  "3": 3,
-  "4": 4,
-  "5": 5,
-  card_number: "card_number",
-  clabe: "clabe",
-  account_number: "account_number",
-  wallet: "wallet",
-  other: "other",
-};
-
 function toContact(contact: ContactDraft): ReportContactPayload {
   return {
-    platform:
-      CONTACT_PLATFORMS[contact.platform.trim().toLowerCase()] ?? "other",
     reference: contact.url.trim(),
   };
 }
 
 function toPaymentMethod(payment: PaymentDraft): ReportPaymentMethodPayload {
   return {
-    type: PAYMENT_TYPES[payment.type.trim().toLowerCase()] ?? "other",
     reference: payment.reference.trim(),
   };
 }

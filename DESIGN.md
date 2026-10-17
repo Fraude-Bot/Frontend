@@ -242,7 +242,7 @@ Do not put a gray or red footer button on this shell. Single-button dialogs stay
 | Leave step 1 | `DiscardChangesModal` | `md`, no header divider, centered body copy, **Regresar** (leave) + **Continuar** (stay) |
 | Add contact | `AddContactModal` | `lg`, `headerDivider`, form fields, **Cerrar** + **Crear** |
 | Edit contact | `EditContactModal` | Same form as add contact, prefilled. Opens from a contact card. **Cerrar** + **Guardar** |
-| Add payment method | `AddPaymentModal` | `lg`, `headerDivider`, form fields, **Cerrar** + **Crear**. Type list uses `SearchableSelect` with `PAYMENT_TYPE_OPTIONS` |
+| Add payment method | `AddPaymentModal` | `lg`, `headerDivider`, reference field only, **Cerrar** + **Crear**. The type is inferred when the method is added to the list |
 | Edit payment method | `EditPaymentModal` | Same form as add payment, prefilled. Opens from a payment card. **Cerrar** + **Guardar** |
 | Add collaborator | `AddCollaboratorModal` | `lg`, `headerDivider`, optional photo (`PartyPhotoInput`, same temporary profile API) above the name. The name uses `PartyNameInput` with organization suggestions. Optional payment and contact rows. **Cerrar** + **Crear** |
 | Edit collaborator | `EditCollaboratorModal` | Same form as add collaborator, prefilled. Opens from a collaborator card. **Cerrar** + **Guardar** |

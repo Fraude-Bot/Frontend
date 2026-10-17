@@ -33,13 +33,12 @@ describe("CreateScammerContactUsecase", () => {
     } as never);
 
     const result = await useCase.execute("1", {
-      platform: "Webpage",
       reference: " https://facebook.com/ruja ",
     });
 
     expect(mockedHttp.post).toHaveBeenCalledWith(
       API_ROUTES.public.scammers.contacts.replace("{id}", "1"),
-      { platform: "url", reference: "https://facebook.com/ruja" },
+      { reference: "https://facebook.com/ruja" },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     expect(result).toBeInstanceOf(ContactSummaryEntity);
@@ -58,7 +57,7 @@ describe("CreateScammerContactUsecase", () => {
     } as never);
 
     await expect(
-      useCase.execute("1", { platform: "Facebook", reference: "ruja" }),
+      useCase.execute("1", { reference: "ruja" }),
     ).rejects.toThrow("The contact was not created.");
   });
 
@@ -71,7 +70,7 @@ describe("CreateScammerContactUsecase", () => {
       return new Promise(() => undefined);
     });
 
-    void useCase.execute("1", { platform: "Facebook", reference: "ruja" });
+    void useCase.execute("1", { reference: "ruja" });
     useCase.cancel();
 
     expect(capturedSignal?.aborted).toBe(true);

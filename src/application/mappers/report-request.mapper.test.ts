@@ -51,19 +51,19 @@ describe("report request mapper", () => {
       proofs: ["proofs/a.png"],
       organization: { name: "Acme" },
       contacts: [
-        { platform: "url", reference: "https://example.com" },
-        { platform: "other", reference: "value" },
+        { reference: "https://example.com" },
+        { reference: "value" },
       ],
       payment_methods: [
-        { type: 1, reference: "4111111111111111" },
-        { type: "other", reference: "wallet" },
+        { reference: "4111111111111111" },
+        { reference: "wallet" },
       ],
       products: ["Crypto", "Stocks"],
       scammers: [
         {
           name: "Bob",
           profile_picture: "profiles/bob.png",
-          contacts: [{ platform: "email", reference: "bob@example.com" }],
+          contacts: [{ reference: "bob@example.com" }],
         },
       ],
     });
@@ -78,7 +78,7 @@ describe("report request mapper", () => {
       {
         name: "Example Corp",
         profile_picture: "profiles/org.png",
-        payment_methods: [{ type: "wallet", reference: "0x123" }],
+        payment_methods: [{ reference: "0x123" }],
       },
     ]);
   });

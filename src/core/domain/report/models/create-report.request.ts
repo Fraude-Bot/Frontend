@@ -1,10 +1,8 @@
 export type ReportContactPayload = {
-  platform: string;
   reference: string;
 };
 
 export type ReportPaymentMethodPayload = {
-  type: number | string;
   reference: string;
 };
 

@@ -21,7 +21,7 @@ function createContactErrorMessage(
   const status = getHttpStatus(error);
 
   if (status === 422) {
-    return "Revisa el contacto. La plataforma o la referencia no es válida.";
+    return "Revisa el contacto. La referencia no es válida.";
   }
 
   if (status === 404) {
@@ -165,7 +165,6 @@ function ContactsTab({ partyId, partyType }: ContactsTabProps) {
 
     try {
       const request = {
-        platform: draft.platform,
         reference: draft.url,
       };
       const contact =
