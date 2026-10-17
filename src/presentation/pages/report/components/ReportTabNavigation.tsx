@@ -1,11 +1,12 @@
 import { useRef, type KeyboardEvent } from "react";
 import reportIcons from "@presentation/pages/report/components/icons";
 import {
-  reportTabs,
+  reportTabsFor,
   ReportTab,
 } from "@presentation/pages/report/components/types";
 
 interface ReportTabNavigationProps {
+  partyType: "scammer" | "organization";
   activeTab: ReportTab;
   onTabChange: (tab: ReportTab) => void;
 }
@@ -15,14 +16,18 @@ const tabIcons: Record<ReportTab, string> = {
   Reportes: reportIcons.reportes,
   Contactos: reportIcons.contactos,
   "Métodos de pago": reportIcons.paymentMethods,
+  Empresas: reportIcons.asociaciones,
+  Estafadores: reportIcons.asociaciones,
   Mapa: reportIcons.mapa,
   Soporte: reportIcons.soporte,
 };
 
 function ReportTabNavigation({
+  partyType,
   activeTab,
   onTabChange,
 }: ReportTabNavigationProps) {
+  const reportTabs = reportTabsFor(partyType);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>, tab: ReportTab) {

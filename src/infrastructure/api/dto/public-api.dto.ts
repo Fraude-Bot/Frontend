@@ -60,6 +60,14 @@ export type PartyReportDto = {
 
 export type PartyReportsDto = PaginatedDto<PartyReportDto>;
 
+export type PartyAssociationDto = {
+  id: string | number;
+  name: string;
+  created_at: string;
+};
+
+export type PartyAssociationsDto = PaginatedDto<PartyAssociationDto>;
+
 export type MonthlyReportCountsDto = Record<string, number | undefined>;
 
 export type RelationshipMapNodeDto =

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Footer from "@presentation/shared/components/Footer";
 import Header from "@presentation/shared/components/Header";
 import ContactsTab from "@presentation/pages/report/components/ContactsTab";
+import AssociationsTab from "@presentation/pages/report/components/AssociationsTab";
 import PaymentMethodsTab from "@presentation/pages/report/components/PaymentMethodsTab";
 import GeneralTab from "@presentation/pages/report/components/GeneralTab";
 import MapTab from "@presentation/pages/report/components/MapTab";
@@ -165,6 +166,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
       <main className="min-h-130 bg-white">
         {loadState === "ready" && (
           <ReportTabNavigation
+            partyType={type}
             activeTab={activeTab}
             onTabChange={setActiveTab}
           />
@@ -233,6 +235,13 @@ function Report({ type }: { type: "scammer" | "organization" }) {
               )}
               {activeTab === "Métodos de pago" && (
                 <PaymentMethodsTab partyId={party.id} partyType={type} />
+              )}
+              {(activeTab === "Empresas" || activeTab === "Estafadores") && (
+                <AssociationsTab
+                  key={`${type}:${party.id}`}
+                  partyId={party.id}
+                  partyType={type}
+                />
               )}
               {activeTab === "Mapa" && (
                 <MapTab partyId={party.id} partyType={type} />

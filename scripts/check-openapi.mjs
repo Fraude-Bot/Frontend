@@ -18,6 +18,7 @@ const requiredOperations = new Map([
   ["GET", "/public/scammers/{id}/payment-methods"],
   ["POST", "/public/scammers/{id}/payment-methods"],
   ["GET", "/public/scammers/{id}/reports"],
+  ["GET", "/public/scammers/{id}/organizations"],
   ["GET", "/public/scammers/{id}/map"],
   ["GET", "/public/organizations/suggest"],
   ["GET", "/public/organizations/{id}"],
@@ -27,6 +28,7 @@ const requiredOperations = new Map([
   ["GET", "/public/organizations/{id}/payment-methods"],
   ["POST", "/public/organizations/{id}/payment-methods"],
   ["GET", "/public/organizations/{id}/reports"],
+  ["GET", "/public/organizations/{id}/scammers"],
   ["GET", "/public/organizations/{id}/map"],
 ].map(([method, path]) => [`${method} ${path}`, { method, path }]));
 

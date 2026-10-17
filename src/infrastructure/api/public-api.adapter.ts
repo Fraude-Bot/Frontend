@@ -4,6 +4,8 @@ import type {
   PartyType,
   PublicApiPort,
 } from "@/application/ports/public-api.port";
+import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
+import type FindAssociationsByPartyResult from "@/core/domain/association/models/find-associations-by-party.model";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
 import type { CreateOrganizationContactRequest } from "@/core/domain/contact/models/create-organization-contact.request";
 import type { CreateScammerContactRequest } from "@/core/domain/contact/models/create-scammer-contact.request";
@@ -37,6 +39,7 @@ import type {
   CreatedOrganizationReportDto,
   CreatedScammerReportDto,
   MonthlyReportCountsDto,
+  PartyAssociationsDto,
   PartyReportsDto,
   PartySummaryDto,
   RelationshipMapDto,
@@ -481,6 +484,48 @@ class PublicApiAdapter implements PublicApiPort {
     } catch (error) {
       if (getHttpStatus(error) === 404) {
         return emptyPage<PartyReportEntity>(page);
+      }
+      throw error;
+    }
+  }
+
+  public async findAssociationsByParty(
+    id: string,
+    type: PartyType,
+    page: number,
+    signal: AbortSignal,
+  ): Promise<FindAssociationsByPartyResult> {
+    const route = partyRoute(type, {
+      scammer: API_ROUTES.public.scammers.organizations,
+      organization: API_ROUTES.public.organizations.scammers,
+    });
+    const url = route.replace("{id}", encodeURIComponent(id));
+
+    try {
+      const { data, status } = await Http.get<PartyAssociationsDto>(url, {
+        signal,
+        params: { p: page },
+      });
+      if (status !== 200) {
+        return emptyPage<PartyAssociationEntity>(page);
+      }
+
+      return {
+        data: data.data.map(
+          (association) =>
+            new PartyAssociationEntity(
+              String(association.id),
+              association.name,
+              association.created_at,
+            ),
+        ),
+        total: data.total,
+        page: data.page,
+        count: data.count,
+      };
+    } catch (error) {
+      if (getHttpStatus(error) === 404) {
+        return emptyPage<PartyAssociationEntity>(page);
       }
       throw error;
     }
