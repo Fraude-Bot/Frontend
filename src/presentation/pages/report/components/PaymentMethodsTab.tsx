@@ -1,13 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/payment-method-summary.entity";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 import PaymentMethodCard from "@presentation/pages/report/components/PaymentMethodCard";
 import PaymentTypeFilterRow from "@presentation/pages/report/components/PaymentTypeFilterRow";
-import { isCanceledError } from "@/common/utils/http-error.util";
+import { getHttpStatus, isCanceledError } from "@/common/utils/http-error.util";
 import AddPaymentModal, {
   type AddPaymentDraft,
 } from "@/presentation/shared/components/AddPaymentModal";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
+
+function createPaymentMethodErrorMessage(
+  error: unknown,
+  partyType: "scammer" | "organization",
+) {
+  const status = getHttpStatus(error);
+
+  if (status === 422) {
+    return "Este método de pago ya está registrado, o el tipo y la referencia no son válidos.";
+  }
+
+  if (status === 404) {
+    return partyType === "organization"
+      ? "No encontramos esta empresa."
+      : "No encontramos este estafador.";
+  }
+
+  if (status === 429) {
+    return "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
+  }
+
+  return "No pudimos agregar el método de pago. Inténtalo de nuevo.";
+}
 
 interface PaymentMethodsTabProps {
   partyId: string;
@@ -15,7 +38,11 @@ interface PaymentMethodsTabProps {
 }
 
 function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
-  const { findPaymentMethodsByPartyUseCase } = useDependencies();
+  const {
+    findPaymentMethodsByPartyUseCase,
+    createScammerPaymentMethodUseCase,
+    createOrganizationPaymentMethodUseCase,
+  } = useDependencies();
   const [currentPage, setCurrentPage] = useState(1);
   const [paymentType, setPaymentType] = useState<string | undefined>();
   const [paymentMethods, setPaymentMethods] = useState<
@@ -29,6 +56,11 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestVersion, setRequestVersion] = useState(0);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(
+    null,
+  );
+  const isCreatingPaymentRef = useRef(false);
   const requestKey = `${partyId}:${partyType}:${currentPage}:${paymentType ?? ""}:${requestVersion}`;
   const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
     null,
@@ -36,11 +68,11 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
   const isLoading = loadedRequestKey !== requestKey;
-  const visibleAddedPaymentMethods = paymentType
-    ? addedPaymentMethods.filter(
-        (paymentMethod) => String(paymentMethod.paymentType) === paymentType,
-      )
-    : addedPaymentMethods;
+  const visibleAddedPaymentMethods = addedPaymentMethods.filter(
+    (paymentMethod) =>
+      !paymentMethods.some((existing) => existing.id === paymentMethod.id) &&
+      (!paymentType || String(paymentMethod.paymentType) === paymentType),
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -87,6 +119,16 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
     requestVersion,
   ]);
 
+  useEffect(() => {
+    return () => {
+      createScammerPaymentMethodUseCase.cancel();
+      createOrganizationPaymentMethodUseCase.cancel();
+    };
+  }, [
+    createOrganizationPaymentMethodUseCase,
+    createScammerPaymentMethodUseCase,
+  ]);
+
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) {
       return;
@@ -102,29 +144,65 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
     setCurrentPage(1);
   };
 
-  function handleCreatePayment(draft: AddPaymentDraft) {
-    const now = new Date();
-    const createdAt = [
-      now.getFullYear(),
-      String(now.getMonth() + 1).padStart(2, "0"),
-      String(now.getDate()).padStart(2, "0"),
-    ].join("-");
-
-    setAddedPaymentMethods((current) => [
-      new PaymentMethodSummaryEntity(
-        crypto.randomUUID(),
-        draft.reference,
-        Number(draft.type),
-        createdAt,
-        true,
-      ),
-      ...current,
-    ]);
-    if (paymentType && paymentType !== draft.type) {
-      setPaymentType(undefined);
-      setCurrentPage(1);
-    }
+  function closeAddPayment() {
+    isCreatingPaymentRef.current = false;
+    createScammerPaymentMethodUseCase.cancel();
+    createOrganizationPaymentMethodUseCase.cancel();
+    setIsCreatingPayment(false);
+    setCreateErrorMessage(null);
     setIsAddPaymentOpen(false);
+  }
+
+  async function handleCreatePayment(draft: AddPaymentDraft) {
+    if (isCreatingPaymentRef.current) {
+      return;
+    }
+
+    isCreatingPaymentRef.current = true;
+    setIsCreatingPayment(true);
+    setCreateErrorMessage(null);
+
+    try {
+      const request = {
+        type: draft.type,
+        reference: draft.reference,
+      };
+      const paymentMethod =
+        partyType === "scammer"
+          ? await createScammerPaymentMethodUseCase.execute(partyId, request)
+          : await createOrganizationPaymentMethodUseCase.execute(
+              partyId,
+              request,
+            );
+
+      if (!isCreatingPaymentRef.current) {
+        return;
+      }
+
+      setAddedPaymentMethods((current) => [paymentMethod, ...current]);
+      if (
+        paymentType &&
+        String(paymentMethod.paymentType) !== paymentType
+      ) {
+        setPaymentType(undefined);
+        setCurrentPage(1);
+      }
+      setIsAddPaymentOpen(false);
+      setCreateErrorMessage(null);
+    } catch (error: unknown) {
+      if (!isCreatingPaymentRef.current || isCanceledError(error)) {
+        return;
+      }
+
+      setCreateErrorMessage(
+        createPaymentMethodErrorMessage(error, partyType),
+      );
+    } finally {
+      if (isCreatingPaymentRef.current) {
+        isCreatingPaymentRef.current = false;
+        setIsCreatingPayment(false);
+      }
+    }
   }
 
   return (
@@ -135,7 +213,10 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
         </h2>
         <button
           type="button"
-          onClick={() => setIsAddPaymentOpen(true)}
+          onClick={() => {
+            setCreateErrorMessage(null);
+            setIsAddPaymentOpen(true);
+          }}
           className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
         >
           Agregar Método de Pago +
@@ -211,8 +292,10 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
 
       {isAddPaymentOpen ? (
         <AddPaymentModal
-          onClose={() => setIsAddPaymentOpen(false)}
+          onClose={closeAddPayment}
           onCreate={handleCreatePayment}
+          errorMessage={createErrorMessage}
+          isSubmitting={isCreatingPayment}
         />
       ) : null}
     </section>

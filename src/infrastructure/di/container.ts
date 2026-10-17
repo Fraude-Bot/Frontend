@@ -9,6 +9,8 @@ import SearchReportStubUsecase from "@/application/usecases/report/stub/search-r
 import FindContactsByPartyUsecase from "@/application/usecases/contact/find-contacts-by-party.usecase";
 import CreateOrganizationContactUsecase from "@/application/usecases/contact/create-organization-contact.usecase";
 import CreateScammerContactUsecase from "@/application/usecases/contact/create-scammer-contact.usecase";
+import CreateOrganizationPaymentMethodUsecase from "@/application/usecases/payment-method/create-organization-payment-method.usecase";
+import CreateScammerPaymentMethodUsecase from "@/application/usecases/payment-method/create-scammer-payment-method.usecase";
 import FindPaymentMethodsByPartyUsecase from "@/application/usecases/payment-method/find-payment-methods-by-party.usecase";
 import FindRelationshipMapByPartyUsecase from "@/application/usecases/map/find-relationship-map-by-party.usecase";
 import CreateOrganizationReportUsecase from "@/application/usecases/report/create-organization-report.usecase";
@@ -41,6 +43,11 @@ export function createDependencies(): Dependencies {
     findPaymentMethodsByPartyUseCase: new FindPaymentMethodsByPartyUsecase(
       publicApi,
     ),
+    createScammerPaymentMethodUseCase: new CreateScammerPaymentMethodUsecase(
+      publicApi,
+    ),
+    createOrganizationPaymentMethodUseCase:
+      new CreateOrganizationPaymentMethodUsecase(publicApi),
     findReportsByPartyUseCase: new FindReportsByPartyUsecase(publicApi),
     findRelationshipMapByPartyUseCase:
       new FindRelationshipMapByPartyUsecase(publicApi),

@@ -26,10 +26,17 @@ export type AddPaymentDraft = {
 
 type AddPaymentModalProps = {
   onClose: () => void;
-  onCreate: (payment: AddPaymentDraft) => void;
+  onCreate: (payment: AddPaymentDraft) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 };
 
-function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
+function AddPaymentModal({
+  onClose,
+  onCreate,
+  errorMessage = null,
+  isSubmitting = false,
+}: AddPaymentModalProps) {
   const referenceId = useId();
   const typeId = useId();
   const [reference, setReference] = useState("");
@@ -59,7 +66,7 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
         {
           label: "Crear",
           variant: "primary",
-          disabled: !canCreate,
+          disabled: !canCreate || isSubmitting,
           onClick: handleCreate,
         },
       ]}
@@ -104,6 +111,11 @@ function AddPaymentModal({ onClose, onCreate }: AddPaymentModalProps) {
           />
         </div>
       </div>
+      {errorMessage ? (
+        <p role="alert" className="pb-5 text-sm font-semibold text-red-800">
+          {errorMessage}
+        </p>
+      ) : null}
     </Modal>
   );
 }
