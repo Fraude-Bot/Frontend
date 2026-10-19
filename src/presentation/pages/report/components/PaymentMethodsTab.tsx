@@ -223,8 +223,9 @@ function PaymentMethodsTab({ partyId, partyType }: PaymentMethodsTabProps) {
       </div>
 
       <p className="mt-4 text-base leading-6 text-gray-900">
-        Los métodos de pago que este estafador/empresa ha utilizado a lo largo
-        del tiempo.
+        Los métodos de pago que{" "}
+        {partyType === "organization" ? "esta empresa" : "este estafador"} ha
+        utilizado a lo largo del tiempo.
       </p>
 
       <PaymentTypeFilterRow
