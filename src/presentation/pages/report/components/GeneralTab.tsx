@@ -1,7 +1,10 @@
 import { KeyboardEvent, useEffect, useState } from "react";
 import reportIcons from "@presentation/pages/report/components/icons";
 import MonthlyReportsChart from "@presentation/pages/report/components/MonthlyReportsChart";
-import { ReportTab } from "@presentation/pages/report/components/types";
+import {
+  associationTabByParty,
+  ReportTab,
+} from "@presentation/pages/report/components/types";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
 import { isCanceledError } from "@/common/utils/http-error.util";
@@ -72,9 +75,6 @@ const CALENDAR_YEARS = Array.from(
 
 const panelClassName =
   "group grid h-full w-full cursor-pointer text-left transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gray-300 lg:row-span-4 lg:grid-rows-subgrid";
-
-const widePanelClassName =
-  "group w-full cursor-pointer text-left transition-colors hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-gray-300";
 
 const panelGridClassName =
   "grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto] lg:divide-x lg:divide-gray-200";
@@ -150,6 +150,36 @@ function GeneralTab({
   const chartState: "loading" | "ready" | "error" =
     chart?.key !== requestKey ? "loading" : chart.status;
   const monthlyCounts = chartState === "ready" ? chart?.monthlyCounts : null;
+  const associationPanel =
+    partyType === "scammer"
+      ? {
+          tab: associationTabByParty.scammer,
+          title: "Empresas:",
+          description: (
+            <>
+              Descubre las organizaciones a las que pertenece este{" "}
+              <span className="font-extrabold text-gray-900">estafador</span>:
+            </>
+          ),
+          illustration: reportIcons.company,
+          illustrationLabel: "Ilustración de empresas",
+          footnote: "Empresas reportadas en relación con este perfil.",
+        }
+      : {
+          tab: associationTabByParty.organization,
+          title: "Estafadores:",
+          description: (
+            <>
+              Descubre los estafadores asociados a esta{" "}
+              <span className="font-extrabold text-gray-900">empresa</span>:
+            </>
+          ),
+          illustration: reportIcons.individual,
+          illustrationLabel: "Ilustración de estafadores",
+          footnote: "Personas reportadas en relación con este perfil.",
+        };
+  const partyArticle = partyType === "organization" ? "esta" : "este";
+  const partyNoun = partyType === "organization" ? "empresa" : "estafador";
 
   return (
     <div className="divide-y divide-gray-200 border border-gray-200 bg-white">
@@ -202,10 +232,8 @@ function GeneralTab({
               <PanelHeader title="Contactos:" showExternalLink />
             </div>
             <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
-              Descubre los perfiles que utiliza esta{" "}
-              <span className="font-extrabold text-gray-900">
-                empresa/estafador
-              </span>
+              Descubre los perfiles que utiliza {partyArticle}{" "}
+              <span className="font-extrabold text-gray-900">{partyNoun}</span>
               :
             </p>
             <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
@@ -233,6 +261,78 @@ function GeneralTab({
           <div
             role="button"
             tabIndex={0}
+            onClick={() => onNavigateTab(associationPanel.tab)}
+            onKeyDown={(event) =>
+              activatePanel(event, () => onNavigateTab(associationPanel.tab))
+            }
+            className={`${panelClassName} lg:col-start-1`}
+          >
+            <div className="px-6 pt-6 sm:px-8 sm:pt-8">
+              <PanelHeader title={associationPanel.title} showExternalLink />
+            </div>
+            <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
+              {associationPanel.description}
+            </p>
+            <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
+              {associationPanel.illustration ? (
+                <img
+                  src={associationPanel.illustration}
+                  alt=""
+                  aria-hidden
+                  className="h-32 w-32 object-contain"
+                />
+              ) : (
+                <div className="flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
+                  {associationPanel.illustrationLabel}
+                </div>
+              )}
+            </div>
+            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
+              {associationPanel.footnote}
+            </p>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onNavigateTab("Métodos de pago")}
+            onKeyDown={(event) =>
+              activatePanel(event, () => onNavigateTab("Métodos de pago"))
+            }
+            className={`${panelClassName} lg:col-start-2`}
+          >
+            <div className="px-6 pt-6 sm:px-8 sm:pt-8">
+              <PanelHeader title="Métodos de pago:" showExternalLink />
+            </div>
+            <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
+              Descubre los métodos de pago que utiliza {partyArticle}{" "}
+              <span className="font-extrabold text-gray-900">{partyNoun}</span>
+              :
+            </p>
+            <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
+              {reportIcons.paymentIllustration ? (
+                <img
+                  src={reportIcons.paymentIllustration}
+                  alt=""
+                  aria-hidden
+                  className="h-32 w-32 object-contain"
+                />
+              ) : (
+                <div className="flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
+                  Ilustración de métodos de pago
+                </div>
+              )}
+            </div>
+            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
+              Tarjetas, CLABEs, cuentas y wallets reportadas para este perfil.
+            </p>
+          </div>
+        </div>
+
+        <div className={panelGridClassName}>
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => onNavigateTab("Mapa")}
             onKeyDown={(event) =>
               activatePanel(event, () => onNavigateTab("Mapa"))
@@ -244,10 +344,8 @@ function GeneralTab({
             </div>
             <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
               Explora las conexiones entre perfiles, reportes y entidades
-              relacionadas con esta{" "}
-              <span className="font-extrabold text-gray-900">
-                empresa/estafador
-              </span>
+              relacionadas con {partyArticle}{" "}
+              <span className="font-extrabold text-gray-900">{partyNoun}</span>
               :
             </p>
             <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
@@ -272,80 +370,37 @@ function GeneralTab({
           <div
             role="button"
             tabIndex={0}
-            onClick={() => onNavigateTab("Métodos de pago")}
+            onClick={() => onNavigateTab("Soporte")}
             onKeyDown={(event) =>
-              activatePanel(event, () => onNavigateTab("Métodos de pago"))
+              activatePanel(event, () => onNavigateTab("Soporte"))
             }
             className={`${panelClassName} lg:col-start-2`}
           >
             <div className="px-6 pt-6 sm:px-8 sm:pt-8">
-              <PanelHeader title="Métodos de pago:" showExternalLink />
+              <PanelHeader title="Soporte:" showExternalLink />
             </div>
             <p className="px-6 pt-3 text-base leading-6 text-gray-600 sm:px-8">
-              Descubre los métodos de pago que utiliza esta{" "}
-              <span className="font-extrabold text-gray-900">
-                empresa/estafador
-              </span>
-              :
+              Obtén ayuda y recursos para reportar o consultar sobre este
+              perfil:
             </p>
             <div className="flex items-start justify-center px-6 pt-5 sm:px-8">
-              {reportIcons.paymentIllustration ? (
+              {reportIcons.soporte ? (
                 <img
-                  src={reportIcons.paymentIllustration}
+                  src={reportIcons.soporte}
                   alt=""
                   aria-hidden
                   className="h-32 w-32 object-contain"
                 />
               ) : (
                 <div className="flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
-                  Ilustración de métodos de pago
-                </div>
-              )}
-            </div>
-            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
-              Tarjetas, CLABEs, cuentas y wallets reportadas para este perfil.
-            </p>
-          </div>
-        </div>
-
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => onNavigateTab("Soporte")}
-          onKeyDown={(event) =>
-            activatePanel(event, () => onNavigateTab("Soporte"))
-          }
-          className={widePanelClassName}
-        >
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 px-6 py-6 sm:px-8 sm:py-8">
-            <div className="min-w-0">
-              <h2 className="text-xl font-extrabold leading-none text-gray-900">
-                Soporte:
-              </h2>
-              <p className="pt-3 text-base leading-6 text-gray-600">
-                Obtén ayuda y recursos para reportar o consultar sobre este
-                perfil:
-              </p>
-              <p className="pt-4 text-sm text-gray-400">
-                Encuentra ayuda jurídica y canales para contactar a
-                especialistas.
-              </p>
-            </div>
-            <div className="flex flex-col items-end">
-              <ExternalLinkIcon />
-              {reportIcons.soporte ? (
-                <img
-                  src={reportIcons.soporte}
-                  alt=""
-                  aria-hidden
-                  className="mt-4 h-32 w-32 object-contain"
-                />
-              ) : (
-                <div className="mt-4 flex h-32 w-32 items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50 text-sm text-gray-400">
                   Ilustración de soporte
                 </div>
               )}
             </div>
+            <p className="px-6 pb-6 pt-4 text-sm text-gray-400 sm:px-8 sm:pb-8">
+              Encuentra ayuda jurídica y canales para contactar a
+              especialistas.
+            </p>
           </div>
         </div>
       </div>

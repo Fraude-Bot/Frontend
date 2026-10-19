@@ -55,12 +55,17 @@ function GeneralPanelsSkeleton() {
             <div className="mx-auto h-32 w-32 animate-pulse rounded-lg bg-gray-200" />
           </div>
         </div>
-        <div className="flex flex-col gap-4 px-6 py-6 sm:px-8 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-4">
+        <div className="grid lg:grid-cols-2 lg:divide-x lg:divide-gray-200">
+          <div className="space-y-4 px-6 py-6 sm:px-8 sm:py-8">
             <div className="h-6 w-32 animate-pulse rounded bg-gray-200" />
             <div className="h-4 w-full max-w-sm animate-pulse rounded bg-gray-200" />
+            <div className="mx-auto h-32 w-32 animate-pulse rounded-lg bg-gray-200" />
           </div>
-          <div className="mx-auto h-32 w-32 animate-pulse rounded-lg bg-gray-200 lg:mx-0" />
+          <div className="space-y-4 px-6 py-6 sm:px-8 sm:py-8">
+            <div className="h-6 w-32 animate-pulse rounded bg-gray-200" />
+            <div className="h-4 w-full max-w-xs animate-pulse rounded bg-gray-200" />
+            <div className="mx-auto h-32 w-32 animate-pulse rounded-lg bg-gray-200" />
+          </div>
         </div>
       </div>
       <div className="p-6 sm:p-8">
