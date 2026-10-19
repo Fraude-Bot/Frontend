@@ -1,3 +1,5 @@
+import { useRobotsDirective } from "@/presentation/shared/hooks/useRobotsDirective";
+
 type ProfileSeoProps = {
   id: string;
   name: string;
@@ -19,6 +21,10 @@ function ProfileSeo({
   createdAt,
   image,
 }: ProfileSeoProps) {
+  useRobotsDirective(
+    active ? "index,follow,max-image-preview:large" : "noindex,follow",
+  );
+
   const kind = type === "scammer" ? "estafador reportado" : "empresa reportada";
   const path = type === "scammer" ? `/estafadores/${id}` : `/empresas/${id}`;
   const canonicalUrl = new URL(path, window.location.origin).toString();
@@ -50,10 +56,6 @@ function ProfileSeo({
     <>
       <title>{`${name}: reportes de fraude | FraudeBot`}</title>
       <meta name="description" content={description} />
-      <meta
-        name="robots"
-        content={active ? "index,follow,max-image-preview:large" : "noindex,follow"}
-      />
       <link rel="canonical" href={canonicalUrl} />
       <meta property="og:type" content="profile" />
       <meta property="og:title" content={`${name} | FraudeBot`} />
