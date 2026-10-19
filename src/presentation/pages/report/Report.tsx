@@ -22,6 +22,7 @@ import {
   getHttpStatus,
 } from "@/common/utils/http-error.util";
 import { useCancellableQuery } from "@/presentation/shared/hooks/useCancellableQuery";
+import { useRobotsDirective } from "@/presentation/shared/hooks/useRobotsDirective";
 import ProfileSeo from "@/presentation/shared/components/ProfileSeo";
 
 function GeneralPanelsSkeleton() {
@@ -130,6 +131,12 @@ function Report({ type }: { type: "scammer" | "organization" }) {
         ? "FraudeBot - Error"
         : "FraudeBot";
 
+  useRobotsDirective(
+    !party && (loadState === "not-found" || loadState === "error")
+      ? "noindex,follow"
+      : null,
+  );
+
   return (
     <div className="font-[Nunito]">
       {party ? (
@@ -146,9 +153,6 @@ function Report({ type }: { type: "scammer" | "organization" }) {
       ) : (
         <>
           <title>{title}</title>
-          {(loadState === "not-found" || loadState === "error") && (
-            <meta name="robots" content="noindex,follow" />
-          )}
         </>
       )}
       <Header />
