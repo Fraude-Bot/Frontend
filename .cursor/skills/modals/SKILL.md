@@ -1,5 +1,5 @@
 ---
-name: frontend-modals
+name: modals
 description: Implements confirmation and form dialogs on the shared Modal shell (native dialog, orange footer actions, optional SearchableSelect). Use when adding a modal, dialog, overlay, confirmation, combobox-in-dialog, or add-contact / add-payment style form in this frontend.
 ---
 

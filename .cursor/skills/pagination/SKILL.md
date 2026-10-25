@@ -1,5 +1,5 @@
 ---
-name: frontend-pagination
+name: pagination
 description: Implements and maintains server-driven React pagination using this project's Search page and Report Contactos tab patterns. Use when adding pagination, changing page navigation, synchronizing search pages with URL parameters, resetting pagination after filters, or working with paginated API results.
 ---
 
