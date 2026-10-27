@@ -1,5 +1,6 @@
 import SearchReportUsecase from "@/application/usecases/report/search-report.usecase";
 import FindMonthlyReportCountsUsecase from "@/application/usecases/report/find-monthly-report-counts.usecase";
+import CreateOrganizationScammerUsecase from "@/application/usecases/association/create-organization-scammer.usecase";
 import FindAssociationsByPartyUsecase from "@/application/usecases/association/find-associations-by-party.usecase";
 import FindReportsByPartyUsecase from "@/application/usecases/report/find-reports-by-party.usecase";
 import FindScammerSummaryByIdUsecase from "@/application/usecases/scammer/find-scammer-summary-by-id.usecase";
@@ -51,6 +52,9 @@ export function createDependencies(): Dependencies {
       new CreateOrganizationPaymentMethodUsecase(publicApi),
     findReportsByPartyUseCase: new FindReportsByPartyUsecase(publicApi),
     findAssociationsByPartyUseCase: new FindAssociationsByPartyUsecase(
+      publicApi,
+    ),
+    createOrganizationScammerUseCase: new CreateOrganizationScammerUsecase(
       publicApi,
     ),
     findRelationshipMapByPartyUseCase:
