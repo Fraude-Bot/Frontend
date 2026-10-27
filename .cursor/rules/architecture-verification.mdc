@@ -6,8 +6,7 @@ alwaysApply: false
 
 # Architecture Verification
 
-Add focused tests when the user requests tests or the task explicitly includes test coverage.
-Otherwise follow `agent.mdc` and do not add component or E2E tests unsolicited.
+Add focused tests when the user requests tests or the task explicitly includes test coverage. Do not add component or E2E tests unsolicited.
 
 - Unit-test pure mappers, adapters, typed errors, cache behavior, and reusable hooks.
 - Test use cases with injected fakes or ports; do not mock concrete infrastructure from
