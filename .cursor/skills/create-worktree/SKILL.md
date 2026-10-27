@@ -2,7 +2,7 @@
 name: create-worktree
 description: >-
   Creates a Fraudebot frontend Git worktree when this chat is still on the
-  main checkout, checks out the branch the user names, and starts that
+  main checkout, moves this session onto that worktree, and starts that
   checkout's Vite container on the frontend and backend ports they give.
   Use when the user runs /create-worktree, asks for a frontend worktree
   container, or gives a branch plus a frontend port and a backend port.
@@ -12,9 +12,9 @@ icon: git-branch
 
 # Cursor agent worktrees
 
-When the user runs `/create-worktree`, get the branch and both ports, make sure a frontend worktree is on that branch, then start its container. Do this before editing application code.
+When the user runs `/create-worktree`, get the branch and both ports, make sure a frontend worktree is on that branch, move this session from the main checkout onto that worktree, then start its container. Do this before editing application code.
 
-The worktree button sometimes opens the agent already inside a new checkout. `/create-worktree` typed in the main repo does not. There is no hidden checkout to find. Create one, then start the container from this same chat.
+The worktree button sometimes opens the agent already inside a new checkout. `/create-worktree` typed in the main repo does not. There is no hidden checkout to find. Create one, move this session onto it, then start the container from this same chat.
 
 Leave the main Compose project running. The main API stays on port 9000. This skill does not start backend containers.
 
@@ -76,11 +76,22 @@ git -C "<worktree>" rev-parse --show-toplevel
 git -C "<worktree>" branch --show-current
 ```
 
-Stay in this conversation. Pass that worktree path as the last argument to the start script. Do not ask the user to switch sessions, chats, or windows, and do not tell them to press the worktree button.
+Stay in this conversation. Do not ask the user to switch sessions, chats, or windows, and do not tell them to press the worktree button.
 
-Do not call `move_agent_to_root` for this branch. That tool fetches the branch from origin, and a branch just created locally is not there, so the move fails. Later edits in this chat still use the worktree path. Do not edit application code in the main checkout.
+When this session is still on the main checkout, move it onto the new worktree before starting the container or editing anything. Call `move_agent_to_cloned_root` with the worktree's absolute path. That switches the workspace root to the new checkout and does not fetch the branch. Do not call `move_agent_to_root`. That tool runs `git fetch origin <branch>`, and a branch that exists only locally is not on origin, so the move fails. When `git rev-parse --show-toplevel` is already the worktree, skip this move.
 
-**Example.** The user says `/create-worktree branch feature/organization-to-scammer, port 5172 and backend port 9002` while this chat is on the main checkout. The slug is `organization-to-scammer`. Create `/home/cedano/.cursor/worktrees/fraudebot-frontend__WSL__Ubuntu_/organization-to-scammer` on `feature/organization-to-scammer`, then start the container with `5172`, `9002`, and that path. A checkout on some other feature branch is not this one.
+After the move, confirm the session itself is on the worktree:
+
+```bash
+git rev-parse --show-toplevel
+git branch --show-current
+```
+
+Both commands must report the new worktree path and the requested branch. If they still report the main checkout, stop and move the session again. Do not keep working from `main`.
+
+Start the container from the worktree. Pass that path as the last argument to the start script. Do not edit application code in the main checkout.
+
+**Example.** The user says `/create-worktree branch feature/organization-to-scammer, port 5172 and backend port 9002` while this chat is on the main checkout. The slug is `organization-to-scammer`. Create `/home/cedano/.cursor/worktrees/fraudebot-frontend__WSL__Ubuntu_/organization-to-scammer` on `feature/organization-to-scammer`, call `move_agent_to_cloned_root` with that path, confirm this session is on `feature/organization-to-scammer`, then start the container with `5172`, `9002`, and that path. A checkout on some other feature branch is not this one.
 
 ## Start the container
 
@@ -90,7 +101,7 @@ Execute this script. Do not rebuild the `docker run` flags by hand.
 bash .cursor/skills/create-worktree/scripts/start-worktree.sh <frontend-port> <backend-port> <worktree-dir>
 ```
 
-Run it from the main checkout or from the worktree. The script reads the branch of `<worktree-dir>`. It refuses the main worktree, so a missing path is not something to fix by editing the script.
+Run it from the worktree this session just moved to. The script reads the branch of `<worktree-dir>`. It refuses the main worktree, so a missing path is not something to fix by editing the script.
 
 Ignore `~/.cursor/skills/create-worktree` and `start-worktree.py`. This repo's shell script is the one that takes both ports.
 
