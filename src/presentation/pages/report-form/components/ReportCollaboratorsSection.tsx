@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import AddCollaboratorModal from "@/presentation/pages/report-form/components/AddCollaboratorModal";
-import AddOrganizationModal from "@/presentation/pages/report-form/components/AddOrganizationModal";
 import EditCollaboratorModal from "@/presentation/pages/report-form/components/EditCollaboratorModal";
 import EditOrganizationModal from "@/presentation/pages/report-form/components/EditOrganizationModal";
 import ReportAddTile from "@/presentation/pages/report-form/components/ReportAddTile";
 import type { ReportFormCollaboratorDraft } from "@/presentation/pages/report-form/components/types";
+import AddCollaboratorModal from "@/presentation/shared/components/AddCollaboratorModal";
+import AddOrganizationModal from "@/presentation/shared/components/AddOrganizationModal";
 
 type ReportCollaboratorsSectionProps = {
   collaborators: ReportFormCollaboratorDraft[];

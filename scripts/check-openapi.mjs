@@ -19,6 +19,7 @@ const requiredOperations = new Map([
   ["POST", "/public/scammers/{id}/payment-methods"],
   ["GET", "/public/scammers/{id}/reports"],
   ["GET", "/public/scammers/{id}/organizations"],
+  ["POST", "/public/scammers/{id}/organizations"],
   ["GET", "/public/scammers/{id}/map"],
   ["GET", "/public/organizations/suggest"],
   ["GET", "/public/organizations/{id}"],

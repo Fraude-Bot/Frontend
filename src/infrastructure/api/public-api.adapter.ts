@@ -6,6 +6,7 @@ import type {
 } from "@/application/ports/public-api.port";
 import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import type { CreateOrganizationScammerRequest } from "@/core/domain/association/models/create-organization-scammer.request";
+import type { CreateScammerOrganizationRequest } from "@/core/domain/association/models/create-scammer-organization.request";
 import type FindAssociationsByPartyResult from "@/core/domain/association/models/find-associations-by-party.model";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
 import type { CreateOrganizationContactRequest } from "@/core/domain/contact/models/create-organization-contact.request";
@@ -83,18 +84,18 @@ function toApiContactPlatform(platform: string): string {
   return key === "webpage" ? "url" : key;
 }
 
-function organizationScammerReferences(
-  entries: { reference: string }[] | undefined,
-) {
+function associationReferences(entries: { reference: string }[] | undefined) {
   return (entries ?? [])
     .map((entry) => ({ reference: entry.reference.trim() }))
     .filter((entry) => entry.reference !== "");
 }
 
-function organizationScammerBody(request: CreateOrganizationScammerRequest) {
+function associationCreateBody(
+  request: CreateOrganizationScammerRequest | CreateScammerOrganizationRequest,
+) {
   const picture = request.profile_picture_path?.trim();
-  const contacts = organizationScammerReferences(request.contacts);
-  const paymentMethods = organizationScammerReferences(request.payment_methods);
+  const contacts = associationReferences(request.contacts);
+  const paymentMethods = associationReferences(request.payment_methods);
 
   return {
     name: request.name.trim(),
@@ -581,12 +582,38 @@ class PublicApiAdapter implements PublicApiPort {
     );
     const { data, status } = await Http.post<PartyAssociationDto>(
       url,
-      organizationScammerBody(request),
+      associationCreateBody(request),
       { signal },
     );
 
     if (status !== 201 || !isCreatedAssociation(data)) {
       throw new Error("The scammer was not created.");
+    }
+
+    return new PartyAssociationEntity(
+      String(data.id),
+      data.name,
+      data.created_at,
+    );
+  }
+
+  public async createScammerOrganization(
+    id: string,
+    request: CreateScammerOrganizationRequest,
+    signal: AbortSignal,
+  ): Promise<PartyAssociationEntity> {
+    const url = API_ROUTES.public.scammers.organizations.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } = await Http.post<PartyAssociationDto>(
+      url,
+      associationCreateBody(request),
+      { signal },
+    );
+
+    if (status !== 201 || !isCreatedAssociation(data)) {
+      throw new Error("The organization was not created.");
     }
 
     return new PartyAssociationEntity(

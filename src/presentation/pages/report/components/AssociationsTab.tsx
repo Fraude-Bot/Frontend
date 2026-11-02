@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import { useDependencies } from "@/presentation/providers/useDependencies";
-import AddCollaboratorModal from "@/presentation/pages/report-form/components/AddCollaboratorModal";
 import type { ReportFormCollaboratorDraft } from "@/presentation/pages/report-form/components/types";
 import AssociationCard from "@presentation/pages/report/components/AssociationCard";
 import { getHttpStatus, isCanceledError } from "@/common/utils/http-error.util";
+import AddCollaboratorModal from "@/presentation/shared/components/AddCollaboratorModal";
+import AddOrganizationModal from "@/presentation/shared/components/AddOrganizationModal";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
 
 interface AssociationsTabProps {
@@ -35,7 +36,10 @@ const copyByPartyType = {
   },
 } as const;
 
-function createScammerErrorMessage(error: unknown) {
+function createAssociationErrorMessage(
+  error: unknown,
+  partyType: AssociationsTabProps["partyType"],
+) {
   const status = getHttpStatus(error);
 
   if (status === 422) {
@@ -43,19 +47,26 @@ function createScammerErrorMessage(error: unknown) {
   }
 
   if (status === 404) {
-    return "No encontramos esta empresa.";
+    return partyType === "scammer"
+      ? "No encontramos este estafador."
+      : "No encontramos esta empresa.";
   }
 
   if (status === 429) {
     return "Demasiados intentos. Espera un momento e inténtalo de nuevo.";
   }
 
-  return "No pudimos agregar el estafador. Inténtalo de nuevo.";
+  return partyType === "scammer"
+    ? "No pudimos agregar la empresa. Inténtalo de nuevo."
+    : "No pudimos agregar el estafador. Inténtalo de nuevo.";
 }
 
 function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
-  const { findAssociationsByPartyUseCase, createOrganizationScammerUseCase } =
-    useDependencies();
+  const {
+    findAssociationsByPartyUseCase,
+    createOrganizationScammerUseCase,
+    createScammerOrganizationUseCase,
+  } = useDependencies();
   const [currentPage, setCurrentPage] = useState(1);
   const [associations, setAssociations] = useState<PartyAssociationEntity[]>(
     [],
@@ -63,12 +74,12 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
   const [addedAssociations, setAddedAssociations] = useState<
     PartyAssociationEntity[]
   >([]);
-  const [isAddCollaboratorOpen, setIsAddCollaboratorOpen] = useState(false);
-  const [isCreatingScammer, setIsCreatingScammer] = useState(false);
+  const [isAddAssociationOpen, setIsAddAssociationOpen] = useState(false);
+  const [isCreatingAssociation, setIsCreatingAssociation] = useState(false);
   const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(
     null,
   );
-  const isCreatingScammerRef = useRef(false);
+  const isCreatingAssociationRef = useRef(false);
   const [totalResults, setTotalResults] = useState(0);
   const [pageSize, setPageSize] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -132,8 +143,9 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
   useEffect(() => {
     return () => {
       createOrganizationScammerUseCase.cancel();
+      createScammerOrganizationUseCase.cancel();
     };
-  }, [createOrganizationScammerUseCase]);
+  }, [createOrganizationScammerUseCase, createScammerOrganizationUseCase]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages || page === currentPage) {
@@ -143,23 +155,24 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
     setCurrentPage(page);
   };
 
-  function closeAddCollaborator() {
-    isCreatingScammerRef.current = false;
+  function closeAddAssociation() {
+    isCreatingAssociationRef.current = false;
     createOrganizationScammerUseCase.cancel();
-    setIsCreatingScammer(false);
+    createScammerOrganizationUseCase.cancel();
+    setIsCreatingAssociation(false);
     setCreateErrorMessage(null);
-    setIsAddCollaboratorOpen(false);
+    setIsAddAssociationOpen(false);
   }
 
-  async function handleCreateCollaborator(
+  async function handleCreateAssociation(
     collaborator: Omit<ReportFormCollaboratorDraft, "id">,
   ) {
-    if (isCreatingScammerRef.current) {
+    if (isCreatingAssociationRef.current) {
       return;
     }
 
-    isCreatingScammerRef.current = true;
-    setIsCreatingScammer(true);
+    isCreatingAssociationRef.current = true;
+    setIsCreatingAssociation(true);
     setCreateErrorMessage(null);
 
     try {
@@ -172,19 +185,20 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
         .filter((reference) => reference !== "")
         .map((reference) => ({ reference }));
       const picture = collaborator.avatarPath?.trim();
-      const association = await createOrganizationScammerUseCase.execute(
-        partyId,
-        {
-          name: collaborator.name,
-          ...(picture ? { profile_picture_path: picture } : {}),
-          ...(contacts.length > 0 ? { contacts } : {}),
-          ...(paymentMethods.length > 0
-            ? { payment_methods: paymentMethods }
-            : {}),
-        },
-      );
+      const request = {
+        name: collaborator.name,
+        ...(picture ? { profile_picture_path: picture } : {}),
+        ...(contacts.length > 0 ? { contacts } : {}),
+        ...(paymentMethods.length > 0
+          ? { payment_methods: paymentMethods }
+          : {}),
+      };
+      const association =
+        partyType === "organization"
+          ? await createOrganizationScammerUseCase.execute(partyId, request)
+          : await createScammerOrganizationUseCase.execute(partyId, request);
 
-      if (!isCreatingScammerRef.current) {
+      if (!isCreatingAssociationRef.current) {
         return;
       }
 
@@ -193,23 +207,23 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
           ? current
           : [association, ...current],
       );
-      setIsAddCollaboratorOpen(false);
+      setIsAddAssociationOpen(false);
       setCreateErrorMessage(null);
     } catch (error: unknown) {
-      if (!isCreatingScammerRef.current || isCanceledError(error)) {
+      if (!isCreatingAssociationRef.current || isCanceledError(error)) {
         return;
       }
 
-      setCreateErrorMessage(createScammerErrorMessage(error));
+      setCreateErrorMessage(
+        createAssociationErrorMessage(error, partyType),
+      );
     } finally {
-      if (isCreatingScammerRef.current) {
-        isCreatingScammerRef.current = false;
-        setIsCreatingScammer(false);
+      if (isCreatingAssociationRef.current) {
+        isCreatingAssociationRef.current = false;
+        setIsCreatingAssociation(false);
       }
     }
   }
-
-  const canAddCollaborator = partyType === "organization";
 
   return (
     <section className="border border-gray-200 bg-white p-6 sm:p-8">
@@ -217,18 +231,16 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
         <h2 className="text-xl font-extrabold leading-none text-gray-900">
           {copy.title}
         </h2>
-        {canAddCollaborator ? (
-          <button
-            type="button"
-            onClick={() => {
-              setCreateErrorMessage(null);
-              setIsAddCollaboratorOpen(true);
-            }}
-            className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
-          >
-            Agregar +
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => {
+            setCreateErrorMessage(null);
+            setIsAddAssociationOpen(true);
+          }}
+          className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
+        >
+          Agregar +
+        </button>
       </div>
       <p className="mt-4 text-base leading-6 text-gray-900">{copy.description}</p>
 
@@ -290,12 +302,20 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
         />
       )}
 
-      {canAddCollaborator && isAddCollaboratorOpen ? (
+      {isAddAssociationOpen && partyType === "organization" ? (
         <AddCollaboratorModal
-          onClose={closeAddCollaborator}
-          onCreate={handleCreateCollaborator}
+          onClose={closeAddAssociation}
+          onCreate={handleCreateAssociation}
           errorMessage={createErrorMessage}
-          isSubmitting={isCreatingScammer}
+          isSubmitting={isCreatingAssociation}
+        />
+      ) : null}
+      {isAddAssociationOpen && partyType === "scammer" ? (
+        <AddOrganizationModal
+          onClose={closeAddAssociation}
+          onCreate={handleCreateAssociation}
+          errorMessage={createErrorMessage}
+          isSubmitting={isCreatingAssociation}
         />
       ) : null}
     </section>
