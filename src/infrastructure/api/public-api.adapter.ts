@@ -83,6 +83,27 @@ function toApiContactPlatform(platform: string): string {
   return key === "webpage" ? "url" : key;
 }
 
+function organizationScammerReferences(
+  entries: { reference: string }[] | undefined,
+) {
+  return (entries ?? [])
+    .map((entry) => ({ reference: entry.reference.trim() }))
+    .filter((entry) => entry.reference !== "");
+}
+
+function organizationScammerBody(request: CreateOrganizationScammerRequest) {
+  const picture = request.profile_picture_path?.trim();
+  const contacts = organizationScammerReferences(request.contacts);
+  const paymentMethods = organizationScammerReferences(request.payment_methods);
+
+  return {
+    name: request.name.trim(),
+    ...(picture ? { profile_picture_path: picture } : {}),
+    ...(contacts.length > 0 ? { contacts } : {}),
+    ...(paymentMethods.length > 0 ? { payment_methods: paymentMethods } : {}),
+  };
+}
+
 function isCreatedAssociation(association: PartyAssociationDto): boolean {
   const id =
     typeof association.id === "number"
@@ -554,14 +575,13 @@ class PublicApiAdapter implements PublicApiPort {
     request: CreateOrganizationScammerRequest,
     signal: AbortSignal,
   ): Promise<PartyAssociationEntity> {
-    const name = request.name.trim();
     const url = API_ROUTES.public.organizations.scammers.replace(
       "{id}",
       encodeURIComponent(id),
     );
     const { data, status } = await Http.post<PartyAssociationDto>(
       url,
-      { name },
+      organizationScammerBody(request),
       { signal },
     );
 

@@ -20,7 +20,7 @@ describe("CreateOrganizationScammerUsecase", () => {
     useCase = new CreateOrganizationScammerUsecase(new PublicApiAdapter());
   });
 
-  it("posts a scammer name and maps the stored association", async () => {
+  it("posts the name, picture path, contacts, and payment methods", async () => {
     mockedHttp.post.mockResolvedValue({
       status: 201,
       data: {
@@ -32,11 +32,22 @@ describe("CreateOrganizationScammerUsecase", () => {
 
     const result = await useCase.execute("4", {
       name: "  Jane Doe  ",
+      profile_picture_path: " /storage/tmp/reports/profiles/8f3c1a.jpg ",
+      contacts: [
+        { reference: " +52 55 1111 2222 " },
+        { reference: "   " },
+      ],
+      payment_methods: [{ reference: " 032180000118359719 " }],
     });
 
     expect(mockedHttp.post).toHaveBeenCalledWith(
       API_ROUTES.public.organizations.scammers.replace("{id}", "4"),
-      { name: "Jane Doe" },
+      {
+        name: "Jane Doe",
+        profile_picture_path: "/storage/tmp/reports/profiles/8f3c1a.jpg",
+        contacts: [{ reference: "+52 55 1111 2222" }],
+        payment_methods: [{ reference: "032180000118359719" }],
+      },
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     expect(result).toBeInstanceOf(PartyAssociationEntity);

@@ -163,9 +163,25 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
     setCreateErrorMessage(null);
 
     try {
+      const contacts = collaborator.contacts
+        .map((contact) => contact.url.trim())
+        .filter((reference) => reference !== "")
+        .map((reference) => ({ reference }));
+      const paymentMethods = collaborator.payments
+        .map((payment) => payment.reference.trim())
+        .filter((reference) => reference !== "")
+        .map((reference) => ({ reference }));
+      const picture = collaborator.avatarPath?.trim();
       const association = await createOrganizationScammerUseCase.execute(
         partyId,
-        { name: collaborator.name },
+        {
+          name: collaborator.name,
+          ...(picture ? { profile_picture_path: picture } : {}),
+          ...(contacts.length > 0 ? { contacts } : {}),
+          ...(paymentMethods.length > 0
+            ? { payment_methods: paymentMethods }
+            : {}),
+        },
       );
 
       if (!isCreatingScammerRef.current) {
