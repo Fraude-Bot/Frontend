@@ -76,9 +76,6 @@ FraudeBot API. Alternatively, set `VITE_API_BASE_URL` at build time to an absolu
 configure that API to allow requests from the frontend origin. The Vite preview server is for
 verification, not production hosting.
 
-See [CLEAN_ARCHITECTURE.md](./CLEAN_ARCHITECTURE.md) for the project structure and import
-conventions.
-
 ## Public profile SEO
 
 The production build can pre-render scammer and organization profiles into crawlable HTML. Set

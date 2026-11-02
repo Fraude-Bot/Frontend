@@ -13,8 +13,7 @@ applyTo: '**/*'
 
 # Architecture
 
-The dependency rules and composition model are defined in `CLEAN_ARCHITECTURE.md`. The main
-source folders are `core`, `application`, `infrastructure`, and `presentation`.
+The main source folders are `core`, `application`, `infrastructure`, and `presentation`.
 
 - `core` is framework- and transport-independent.
 - `application` owns use cases and ports; it must not import infrastructure or presentation.
