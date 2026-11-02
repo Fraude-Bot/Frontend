@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { APP_ROUTES } from "@/common/app-routes";
+import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
+import OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
 import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
 import ScammerSummaryEntity from "@/core/domain/scammer/entities/scammer-summary.entity";
 import Report from "@/presentation/pages/report/Report";
@@ -241,5 +243,112 @@ describe("Report page", () => {
       "aria-selected",
       "true",
     );
+  });
+
+  it("opens General at the top when a listed association is opened", async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const createdAt = new Date("2026-08-10");
+
+    render(
+      <DependencyProvider
+        dependencies={createDependencies()}
+        overrides={{
+          findOrganizationSummaryByIdUseCase: {
+            execute: vi.fn().mockResolvedValue(
+              new OrganizationSummaryEntity(
+                "10",
+                "Acme Fraude",
+                "MX",
+                null,
+                2,
+                ["Phishing"],
+                true,
+                createdAt,
+                createdAt,
+              ),
+            ),
+            cancel: vi.fn(),
+          },
+          findScammerSummaryByIdUseCase: {
+            execute: vi.fn().mockResolvedValue(
+              new ScammerSummaryEntity(
+                "7",
+                "Ada Lovelace",
+                "MX",
+                null,
+                1,
+                ["Phishing"],
+                true,
+                createdAt,
+                createdAt,
+              ),
+            ),
+            cancel: vi.fn(),
+          },
+          findAssociationsByPartyUseCase: {
+            execute: vi.fn().mockResolvedValue({
+              data: [new PartyAssociationEntity("7", "Ada Lovelace", "2026-01-15")],
+              total: 1,
+              page: 1,
+              count: 10,
+            }),
+            cancel: vi.fn(),
+          },
+          findMonthlyReportCountsUseCase: {
+            execute: vi
+              .fn()
+              .mockResolvedValue(
+                new MonthlyReportCountsEntity(2026, Array(12).fill(0)),
+              ),
+            cancel: vi.fn(),
+          },
+        }}
+      >
+        <MemoryRouter initialEntries={["/empresas/10"]}>
+          <Routes>
+            <Route
+              path={APP_ROUTES.organization}
+              element={<Report type="organization" />}
+            />
+            <Route
+              path={APP_ROUTES.scammer}
+              element={<Report type="scammer" />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </DependencyProvider>,
+    );
+
+    await user.click(await screen.findByRole("tab", { name: "Estafadores" }));
+    expect(
+      await screen.findByRole("link", { name: /Ada Lovelace/ }),
+    ).toBeInTheDocument();
+
+    document.documentElement.scrollTop = 480;
+    document.body.scrollTop = 480;
+    scrollTo.mockClear();
+
+    await user.click(screen.getByRole("link", { name: /Ada Lovelace/ }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Ada Lovelace" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "General" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(
+      screen.getByRole("heading", { name: "Reportes:" }),
+    ).toBeInTheDocument();
+    expect(scrollTo).toHaveBeenCalledWith({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+    expect(document.documentElement.scrollTop).toBe(0);
+    expect(document.body.scrollTop).toBe(0);
+
+    scrollTo.mockRestore();
   });
 });
