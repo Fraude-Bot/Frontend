@@ -3,10 +3,19 @@ import type { ReportFormCollaboratorDraft } from "@/presentation/pages/report-fo
 
 type AddCollaboratorModalProps = {
   onClose: () => void;
-  onCreate: (collaborator: Omit<ReportFormCollaboratorDraft, "id">) => void;
+  onCreate: (
+    collaborator: Omit<ReportFormCollaboratorDraft, "id">,
+  ) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 };
 
-function AddCollaboratorModal({ onClose, onCreate }: AddCollaboratorModalProps) {
+function AddCollaboratorModal({
+  onClose,
+  onCreate,
+  errorMessage = null,
+  isSubmitting = false,
+}: AddCollaboratorModalProps) {
   return (
     <CollaboratorFormModal
       title="Agregar Colaborador"
@@ -18,6 +27,8 @@ function AddCollaboratorModal({ onClose, onCreate }: AddCollaboratorModalProps) 
       initialContacts={[]}
       onClose={onClose}
       onSubmit={onCreate}
+      errorMessage={errorMessage}
+      isSubmitting={isSubmitting}
     />
   );
 }

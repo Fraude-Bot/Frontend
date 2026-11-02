@@ -99,7 +99,9 @@ type CollaboratorFormModalProps = {
     avatarPath: string | null;
     payments: ReportFormCollaboratorEntryDraft[];
     contacts: ReportFormContactDraft[];
-  }) => void;
+  }) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 };
 
 function createRowId() {
@@ -435,6 +437,8 @@ function CollaboratorFormModal({
   initialContacts,
   onClose,
   onSubmit,
+  errorMessage = null,
+  isSubmitting = false,
 }: CollaboratorFormModalProps) {
   const photoId = useId();
   const nameId = useId();
@@ -481,7 +485,7 @@ function CollaboratorFormModal({
         {
           label: submitLabel,
           variant: "primary",
-          disabled: !canSubmit,
+          disabled: !canSubmit || isSubmitting,
           onClick: handleSubmit,
         },
       ]}
@@ -538,6 +542,11 @@ function CollaboratorFormModal({
           onChange={setContacts}
         />
       </div>
+      {errorMessage ? (
+        <p role="alert" className="pb-5 text-sm font-semibold text-red-800">
+          {errorMessage}
+        </p>
+      ) : null}
     </Modal>
   );
 }

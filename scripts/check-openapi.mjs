@@ -29,6 +29,7 @@ const requiredOperations = new Map([
   ["POST", "/public/organizations/{id}/payment-methods"],
   ["GET", "/public/organizations/{id}/reports"],
   ["GET", "/public/organizations/{id}/scammers"],
+  ["POST", "/public/organizations/{id}/scammers"],
   ["GET", "/public/organizations/{id}/map"],
 ].map(([method, path]) => [`${method} ${path}`, { method, path }]));
 

@@ -5,6 +5,7 @@ import type {
   PublicApiPort,
 } from "@/application/ports/public-api.port";
 import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
+import type { CreateOrganizationScammerRequest } from "@/core/domain/association/models/create-organization-scammer.request";
 import type FindAssociationsByPartyResult from "@/core/domain/association/models/find-associations-by-party.model";
 import ContactSummaryEntity from "@/core/domain/contact/entities/contact-summary.entity";
 import type { CreateOrganizationContactRequest } from "@/core/domain/contact/models/create-organization-contact.request";
@@ -39,6 +40,7 @@ import type {
   CreatedOrganizationReportDto,
   CreatedScammerReportDto,
   MonthlyReportCountsDto,
+  PartyAssociationDto,
   PartyAssociationsDto,
   PartyReportsDto,
   PartySummaryDto,
@@ -79,6 +81,22 @@ const PAYMENT_TYPE_FROM_API: Record<string, number> = {
 function toApiContactPlatform(platform: string): string {
   const key = platform.trim().toLowerCase();
   return key === "webpage" ? "url" : key;
+}
+
+function isCreatedAssociation(association: PartyAssociationDto): boolean {
+  const id =
+    typeof association.id === "number"
+      ? association.id
+      : Number(association.id);
+
+  return (
+    Number.isInteger(id) &&
+    id >= 1 &&
+    typeof association.name === "string" &&
+    association.name.trim() !== "" &&
+    typeof association.created_at === "string" &&
+    association.created_at.trim() !== ""
+  );
 }
 
 function isCreatedContact(contact: ContactDto): boolean {
@@ -529,6 +547,33 @@ class PublicApiAdapter implements PublicApiPort {
       }
       throw error;
     }
+  }
+
+  public async createOrganizationScammer(
+    id: string,
+    request: CreateOrganizationScammerRequest,
+    signal: AbortSignal,
+  ): Promise<PartyAssociationEntity> {
+    const name = request.name.trim();
+    const url = API_ROUTES.public.organizations.scammers.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } = await Http.post<PartyAssociationDto>(
+      url,
+      { name },
+      { signal },
+    );
+
+    if (status !== 201 || !isCreatedAssociation(data)) {
+      throw new Error("The scammer was not created.");
+    }
+
+    return new PartyAssociationEntity(
+      String(data.id),
+      data.name,
+      data.created_at,
+    );
   }
 
   public async findRelationshipMapByParty(
