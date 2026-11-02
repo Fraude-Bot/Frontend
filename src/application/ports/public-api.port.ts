@@ -12,6 +12,7 @@ import type PaymentMethodSummaryEntity from "@/core/domain/payment-method/entiti
 import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
 import type FindReportsByPartyResult from "@/core/domain/report/models/find-reports-by-party.model";
 import type { CreateOrganizationScammerRequest } from "@/core/domain/association/models/create-organization-scammer.request";
+import type { CreateScammerOrganizationRequest } from "@/core/domain/association/models/create-scammer-organization.request";
 import type FindAssociationsByPartyResult from "@/core/domain/association/models/find-associations-by-party.model";
 import type PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-relationship-map.model";
@@ -109,6 +110,11 @@ export interface PublicApiPort {
   createOrganizationScammer(
     id: string,
     request: CreateOrganizationScammerRequest,
+    signal: AbortSignal,
+  ): Promise<PartyAssociationEntity>;
+  createScammerOrganization(
+    id: string,
+    request: CreateScammerOrganizationRequest,
     signal: AbortSignal,
   ): Promise<PartyAssociationEntity>;
   findRelationshipMapByParty(

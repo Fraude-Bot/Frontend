@@ -3,10 +3,19 @@ import type { ReportFormCollaboratorDraft } from "@/presentation/pages/report-fo
 
 type AddOrganizationModalProps = {
   onClose: () => void;
-  onCreate: (organization: Omit<ReportFormCollaboratorDraft, "id">) => void;
+  onCreate: (
+    organization: Omit<ReportFormCollaboratorDraft, "id">,
+  ) => void | Promise<void>;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 };
 
-function AddOrganizationModal({ onClose, onCreate }: AddOrganizationModalProps) {
+function AddOrganizationModal({
+  onClose,
+  onCreate,
+  errorMessage = null,
+  isSubmitting = false,
+}: AddOrganizationModalProps) {
   return (
     <CollaboratorFormModal
       title="Agregar Organización"
@@ -19,6 +28,8 @@ function AddOrganizationModal({ onClose, onCreate }: AddOrganizationModalProps) 
       initialContacts={[]}
       onClose={onClose}
       onSubmit={onCreate}
+      errorMessage={errorMessage}
+      isSubmitting={isSubmitting}
     />
   );
 }
