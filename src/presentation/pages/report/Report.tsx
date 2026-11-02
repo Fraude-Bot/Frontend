@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Footer from "@presentation/shared/components/Footer";
 import Header from "@presentation/shared/components/Header";
@@ -77,11 +77,28 @@ function GeneralPanelsSkeleton() {
   );
 }
 
+function scrollReportToTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
 function Report({ type }: { type: "scammer" | "organization" }) {
   const { id } = useParams<{ id: string }>();
   const { findScammerSummaryByIdUseCase, findOrganizationSummaryByIdUseCase } =
     useDependencies();
+  const profileKey = `${type}:${id ?? ""}`;
   const [activeTab, setActiveTab] = useState<ReportTab>("General");
+  const [activeProfileKey, setActiveProfileKey] = useState(profileKey);
+
+  if (activeProfileKey !== profileKey) {
+    setActiveProfileKey(profileKey);
+    setActiveTab("General");
+  }
+
+  useLayoutEffect(() => {
+    scrollReportToTop();
+  }, [profileKey]);
   const query = useCallback(() => {
     if (!id) {
       return Promise.reject(new Error("Missing profile id."));
