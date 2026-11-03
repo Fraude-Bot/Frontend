@@ -64,6 +64,15 @@ gh pr create --fill -B <target-branch> -H <head-branch>
 ```
 
 Where `<target-branch>` is the branch where the changes will be merged and `<head-branch>` the branch we are currently.
+
+The pull request body is only the `Co-Authored-By` line for the model that made the commit. Do not add a summary, test plan, or any other description. `--fill` is correct only when the commit body is already just that line. Otherwise set the body explicitly:
+
+```bash
+gh pr create -B <target-branch> -H <head-branch> \
+  --title "<commit subject>" \
+  --body "Co-Authored-By: Cursor Grok 4.7 <cursoragent@cursor.com>"
+```
+
 The response would be the following:
 
 ```bash
