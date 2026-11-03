@@ -50,6 +50,11 @@ const MIN_NODE_GAP = 24;
 const LAYOUT_CENTER_X = 400;
 const LAYOUT_CENTER_Y = 300;
 const MAX_NODES_PER_ARC = 4;
+const RADIUS_STEP = 14;
+const MAX_RADIUS_OFFSET = 1600;
+const MIN_RING_SPACING = Math.ceil(
+  Math.hypot(NODE_WIDTH, NODE_HEIGHT) + MIN_NODE_GAP,
+);
 
 const NEIGHBOR_RADIUS = 230;
 const NEIGHBOR_OUTER_RADIUS = 310;
@@ -115,8 +120,13 @@ function splitForArcs(ids: string[], maxPerArc: number = MAX_NODES_PER_ARC): str
     return [ids];
   }
 
-  const midpoint = Math.ceil(ids.length / 2);
-  return [ids.slice(0, midpoint), ids.slice(midpoint)];
+  const arcs: string[][] = [];
+
+  for (let index = 0; index < ids.length; index += maxPerArc) {
+    arcs.push(ids.slice(index, index + maxPerArc));
+  }
+
+  return arcs;
 }
 
 function placeOnArc(
@@ -141,8 +151,13 @@ function placeOnArc(
   ids.forEach((id, index) => {
     const random = createSeededRandom(hashString(id));
     const angle = angleStart + angleStep * index;
+    let placed = false;
 
-    for (let radiusOffset = 0; radiusOffset <= 140; radiusOffset += 14) {
+    for (
+      let radiusOffset = 0;
+      radiusOffset <= MAX_RADIUS_OFFSET;
+      radiusOffset += RADIUS_STEP
+    ) {
       const radius = baseRadius + radiusOffset + (random() - 0.5) * 12;
       const position = {
         x: centerX + radius * Math.cos(angle) - NODE_WIDTH / 2,
@@ -156,8 +171,19 @@ function placeOnArc(
       ) {
         positions.set(id, position);
         occupied.push(rect);
+        placed = true;
         break;
       }
+    }
+
+    if (!placed) {
+      const radius = baseRadius + MAX_RADIUS_OFFSET;
+      const position = {
+        x: centerX + radius * Math.cos(angle) - NODE_WIDTH / 2,
+        y: centerY + radius * Math.sin(angle) - NODE_HEIGHT / 2,
+      };
+      positions.set(id, position);
+      occupied.push(toRect(position));
     }
   });
 
@@ -185,9 +211,10 @@ function layoutArcGroup(
 ): Map<string, { x: number; y: number }> {
   const arcs = splitForArcs(ids);
   const result = new Map<string, { x: number; y: number }>();
+  const ringSpacing = Math.max(outerRadius - innerRadius, MIN_RING_SPACING);
 
   arcs.forEach((arcIds, index) => {
-    const radius = index === 0 ? innerRadius : outerRadius;
+    const radius = innerRadius + index * ringSpacing;
     applyPositions(
       result,
       placeOnArc(

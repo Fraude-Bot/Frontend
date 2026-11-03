@@ -408,4 +408,166 @@ describe("buildMapGraphFromApi", () => {
     expect(nodes.find((node) => node.id === "contact:1")).toBeDefined();
     expect(nodes.find((node) => node.id === "payment_method:1")).toBeDefined();
   });
+
+  it("renders every party from a crowded relationship map", () => {
+    const map: FindRelationshipMapResult = {
+      nodes: [
+        {
+          id: "party:organization:1",
+          type: "party",
+          partyId: "1",
+          name: "Onecoin",
+          kind: "organization",
+          isCenter: true,
+        },
+        {
+          id: "party:scammer:1",
+          type: "party",
+          partyId: "1",
+          name: "Ruja Ignatova",
+          kind: "scammer",
+          isCenter: false,
+        },
+        {
+          id: "party:scammer:5",
+          type: "party",
+          partyId: "5",
+          name: "Verificacion Modal",
+          kind: "scammer",
+          isCenter: false,
+        },
+        {
+          id: "party:scammer:6",
+          type: "party",
+          partyId: "6",
+          name: "testing",
+          kind: "scammer",
+          isCenter: false,
+        },
+        {
+          id: "party:scammer:8",
+          type: "party",
+          partyId: "8",
+          name: "Oscar Cedano",
+          kind: "scammer",
+          isCenter: false,
+        },
+        {
+          id: "party:scammer:9",
+          type: "party",
+          partyId: "9",
+          name: "Pavi",
+          kind: "scammer",
+          isCenter: false,
+        },
+        {
+          id: "contact:1",
+          type: "contact",
+          contactId: "1",
+          label: "Other",
+          detail: "https://onecoin.eu",
+          platform: "Other",
+        },
+        {
+          id: "contact:9",
+          type: "contact",
+          contactId: "9",
+          label: "Other",
+          detail: "https://en.wikipedia.org/wiki/OneCoin",
+          platform: "Other",
+        },
+        {
+          id: "contact:10",
+          type: "contact",
+          contactId: "10",
+          label: "Instagram",
+          detail: "onecoin.check",
+          platform: "Instagram",
+        },
+        {
+          id: "contact:11",
+          type: "contact",
+          contactId: "11",
+          label: "Instagram",
+          detail: "onecoinerdecorazon._",
+          platform: "Instagram",
+        },
+        {
+          id: "contact:12",
+          type: "contact",
+          contactId: "12",
+          label: "Youtube",
+          detail: "@OneCoinOficial",
+          platform: "Youtube",
+        },
+        {
+          id: "payment_method:3",
+          type: "payment_method",
+          paymentMethodId: "3",
+          label: "4",
+          detail: "bc1qn73jrur5qw4cvywd83qvhsyxfhy42y43vutya9",
+        },
+        {
+          id: "payment_method:5",
+          type: "payment_method",
+          paymentMethodId: "5",
+          label: "2",
+          detail: "4152 3144 1421 4331 23",
+        },
+        {
+          id: "payment_method:6",
+          type: "payment_method",
+          paymentMethodId: "6",
+          label: "1",
+          detail: "4153 3123 4123 4123",
+        },
+        {
+          id: "payment_method:8",
+          type: "payment_method",
+          paymentMethodId: "8",
+          label: "1",
+          detail: "4152 3134 2132 3123",
+        },
+      ],
+      edges: [
+        { id: "e1", source: "contact:1", target: "party:organization:1", kind: "contact" },
+        { id: "e2", source: "contact:9", target: "party:organization:1", kind: "contact" },
+        { id: "e3", source: "contact:10", target: "party:organization:1", kind: "contact" },
+        { id: "e4", source: "contact:11", target: "party:organization:1", kind: "contact" },
+        { id: "e5", source: "contact:12", target: "party:organization:1", kind: "contact" },
+        { id: "e6", source: "payment_method:3", target: "party:organization:1", kind: "payment" },
+        { id: "e7", source: "payment_method:5", target: "party:organization:1", kind: "payment" },
+        { id: "e8", source: "payment_method:6", target: "party:organization:1", kind: "payment" },
+        { id: "e9", source: "payment_method:8", target: "party:organization:1", kind: "payment" },
+        { id: "e10", source: "party:organization:1", target: "party:scammer:1", kind: "linked" },
+        { id: "e11", source: "party:organization:1", target: "party:scammer:5", kind: "linked" },
+        { id: "e12", source: "party:organization:1", target: "party:scammer:6", kind: "linked" },
+        { id: "e13", source: "party:organization:1", target: "party:scammer:8", kind: "linked" },
+        { id: "e14", source: "party:organization:1", target: "party:scammer:9", kind: "linked" },
+      ],
+    };
+
+    const { nodes, edges } = buildMapGraphFromApi(map, "1", "organization");
+    const center = nodes.find((node) => node.id === "party:organization:1");
+    const parties = nodes.filter((node) => node.type === "party");
+
+    expect(nodes).toHaveLength(map.nodes.length);
+    expect(edges).toHaveLength(map.edges.length);
+    expect(parties.map((node) => node.data.name)).toEqual([
+      "Onecoin",
+      "Ruja Ignatova",
+      "Verificacion Modal",
+      "testing",
+      "Oscar Cedano",
+      "Pavi",
+    ]);
+
+    for (const party of parties) {
+      if (party.id === center?.id) {
+        continue;
+      }
+
+      expect(party.position.y).toBeLessThan(center?.position.y ?? 0);
+    }
+  });
 });
