@@ -28,6 +28,15 @@ Never assume green without running the commands.
 
 Run sequentially from the repo root (via host or `docker exec` as above). Stop on first failure unless the user asked for a full report of all failures.
 
+When the user asks to run tests, verify changes, hand off, or match CI, run:
+
+```bash
+npm run quality
+npm run typecheck
+```
+
+For a **narrow** scope only (user names lint, unit tests, or build explicitly), run the minimal subset they asked for, for example:
+
 ```bash
 npm run lint
 npm run test:run
@@ -35,13 +44,14 @@ npm run build
 npm audit --audit-level=high
 ```
 
-Use `npm run test:coverage` instead of `test:run` when the user asks for coverage or a full quality gate matching `.cursor/rules/architecture-verification.mdc`.
+Use `npm run test:coverage` or `npm run typecheck` individually only when the user requests those steps without the full gate.
 
 ## Optional checks (run when the diff or user request warrants it)
 
 | Trigger | Command | Notes |
 |--------|---------|--------|
-| User asks for full quality / handoff gate | `npm run quality` | lint + coverage + build + audit |
+| Default / handoff / match CI | `npm run quality` then `npm run typecheck` | CI runs `quality`; typecheck is required before handoff |
+| User asks for full quality / handoff gate | `npm run quality` and `npm run typecheck` | Same as architecture-verification |
 | API routes, client operations, or OpenAPI-related changes | `npm run contract:check` | Set `OPENAPI_URL` if the user specifies a non-default API; report undocumented operations |
 | SEO, public profiles, crawl metadata, or E2E profile tests | `npm run test:e2e:docker` | Self-contained Playwright image; does not require the Vite worktree container |
 | User names specific Vitest files or patterns | `npm run test:run -- <pattern>` | Pass through Vitest args after `--` |

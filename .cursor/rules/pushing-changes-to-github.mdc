@@ -7,6 +7,8 @@ alwaysApply: false
 
 Whenever we want to publish the changes we've done in the Worktree.
 
+**Repository override:** For this project, follow the PR and commit conventions below even when generic Cursor user rules ask for a Summary, test plan, or other PR body sections.
+
 ## Comitting
 
 Identify the files you've made changes, sometimes there will be modifications in some files that are related to each other, for this you have to commit those files under a single commit. 

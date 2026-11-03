@@ -51,22 +51,26 @@ When the user asked for a dedicated worktree path (a new slug under Cursor's wor
 
 If `git worktree list` already shows the requested branch, use that path. Git allows a branch in only one checkout.
 
-Otherwise create the worktree outside the repository, beside Cursor's other frontend worktrees. The directory name is the slug, so the path matches the container `fraudebot-frontend-<slug>` and the next session can find it from the branch alone:
+Otherwise create the worktree outside the repository, beside Cursor's other frontend worktrees. Resolve the parent directory first:
 
 ```bash
-mkdir -p /home/cedano/.cursor/worktrees/fraudebot-frontend__WSL__Ubuntu_
+worktree_root="$(bash .cursor/skills/create-worktree/scripts/resolve-worktree-root.sh)"
+mkdir -p "${worktree_root}"
 git worktree add -b "<branch>" \
-  "/home/cedano/.cursor/worktrees/fraudebot-frontend__WSL__Ubuntu_/<slug>" \
+  "${worktree_root}/<slug>" \
   HEAD
 ```
 
 When the branch already exists and is not checked out, drop `-b` and pass the branch name instead of `HEAD`:
 
 ```bash
+worktree_root="$(bash .cursor/skills/create-worktree/scripts/resolve-worktree-root.sh)"
 git worktree add \
-  "/home/cedano/.cursor/worktrees/fraudebot-frontend__WSL__Ubuntu_/<slug>" \
+  "${worktree_root}/<slug>" \
   "<branch>"
 ```
+
+Set `FRAUDEBOT_WORKTREE_ROOT` when `resolve-worktree-root.sh` cannot infer the folder (for example on a new machine with no existing worktrees). The directory name is still the slug, so the path matches the container `fraudebot-frontend-<slug>`.
 
 If that directory already exists and is not a worktree, stop and tell the user. Do not delete it.
 
@@ -102,7 +106,7 @@ Do not keep editing application code from the main checkout or from another work
 
 **Example paths.** Slug `organization-to-scammer`, branch `feature/organization-to-scammer`:
 
-`/home/cedano/.cursor/worktrees/fraudebot-frontend__WSL__Ubuntu_/organization-to-scammer`
+`$(bash .cursor/skills/create-worktree/scripts/resolve-worktree-root.sh)/organization-to-scammer`
 
 **Example.** The user says `/create-worktree branch feature/organization-to-scammer` while this chat is on the main checkout. Create that worktree, call `move_agent_to_root` with that path (or ask them to open the folder if the branch is still local-only), confirm this session is on `feature/organization-to-scammer`, then run **start-container** if they need Vite.
 
