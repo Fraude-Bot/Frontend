@@ -697,7 +697,11 @@ class PublicApiAdapter implements PublicApiPort {
     if (status !== 201 || typeof data.path !== "string" || !data.path) {
       throw new Error("The profile picture was not stored.");
     }
-    return data.path;
+    const displayUrl = resolveCdnUrl(data.path);
+    if (!displayUrl) {
+      throw new Error("The profile picture was not stored.");
+    }
+    return { path: data.path, displayUrl };
   }
 
   public async storeTemporaryProofs(
