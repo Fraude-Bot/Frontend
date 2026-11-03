@@ -1,6 +1,6 @@
 ---
 name: code-reviewer 
-model: grok-4.7[context=256k,reasoning_effort=high,fast=false]
+model: composer-2.5[fast=false]
 description: Independent second pass on uncommitted or branch diff after the main agent edits fraudebot-frontend. Use only when the user manually asks to review agent changes, run agent-change-reviewer, or review what the agent just did.
 ---
 
