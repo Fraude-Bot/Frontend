@@ -37,7 +37,10 @@ describe("write and suggestion use cases", () => {
   it("delegates profile and proof uploads", async () => {
     const file = new File(["image"], "proof.png", { type: "image/png" });
     const profileApi = {
-      storeTemporaryProfilePicture: vi.fn().mockResolvedValue("profiles/a.png"),
+      storeTemporaryProfilePicture: vi.fn().mockResolvedValue({
+        path: "profiles/a.png",
+        displayUrl: "http://localhost:9000/storage/profiles/a.png",
+      }),
     };
     const proofsApi = {
       storeTemporaryProofs: vi.fn().mockResolvedValue(["proofs/a.png"]),
@@ -45,7 +48,10 @@ describe("write and suggestion use cases", () => {
 
     await expect(
       new StoreTemporaryProfilePictureUsecase(profileApi).execute(file),
-    ).resolves.toBe("profiles/a.png");
+    ).resolves.toEqual({
+      path: "profiles/a.png",
+      displayUrl: "http://localhost:9000/storage/profiles/a.png",
+    });
     await expect(
       new StoreTemporaryProofsUsecase(proofsApi).execute([file]),
     ).resolves.toEqual(["proofs/a.png"]);

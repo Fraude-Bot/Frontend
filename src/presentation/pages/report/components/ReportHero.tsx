@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { isCanceledError } from "@/common/utils/http-error.util";
 import {
   organizationPath,
   reportPartyPath,
@@ -14,6 +15,11 @@ import reportIcons from "@presentation/pages/report/components/icons";
 import { ReportHeroProps } from "@presentation/pages/report/components/types";
 import DropdownButton from "@presentation/shared/components/DropdownButton";
 import { DropdownOption } from "@presentation/shared/components/types";
+import { useDependencies } from "@/presentation/providers/useDependencies";
+import {
+  profilePictureUploadErrorMessage,
+  validateProfilePicture,
+} from "@/presentation/shared/utils/profile-picture-file.util";
 
 async function copyTextToClipboard(text: string) {
   if (!navigator.clipboard?.writeText) {
@@ -99,6 +105,42 @@ export function ReportHeroSkeleton() {
   );
 }
 
+function ProfilePictureEditButton({
+  fileInputId,
+  isUploading,
+  onClick,
+}: {
+  fileInputId: string;
+  isUploading: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={isUploading}
+      aria-controls={fileInputId}
+      aria-label="Cambiar foto de perfil"
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      className="absolute -right-1 -top-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:border-orange-400 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:cursor-wait disabled:opacity-70"
+    >
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    </button>
+  );
+}
+
 function ReportHero({
   id,
   name,
@@ -109,13 +151,107 @@ function ReportHero({
   reports,
   categories,
   profilePicture,
+  onProfilePictureChange,
 }: ReportHeroProps) {
+  const { storeTemporaryProfilePictureUseCase } = useDependencies();
+  const fileInputId = useId();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const requestId = useRef(0);
+  const isMounted = useRef(true);
+  const pendingBlobRef = useRef<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
-  const imageSrc = profilePicture || defaultAvatar;
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(
+    null,
+  );
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadErrorMessage, setUploadErrorMessage] = useState<string | null>(
+    null,
+  );
+  const imageSrc = pendingPreviewUrl || profilePicture || defaultAvatar;
   const closePreview = useCallback(() => {
     setIsPreviewOpen(false);
   }, []);
+
+  function revokePendingPreview() {
+    if (pendingBlobRef.current?.startsWith("blob:")) {
+      URL.revokeObjectURL(pendingBlobRef.current);
+    }
+
+    pendingBlobRef.current = null;
+    setPendingPreviewUrl(null);
+  }
+
+  function showPendingPreview(localPreviewUrl: string) {
+    if (pendingBlobRef.current?.startsWith("blob:")) {
+      URL.revokeObjectURL(pendingBlobRef.current);
+    }
+
+    pendingBlobRef.current = localPreviewUrl;
+    setPendingPreviewUrl(localPreviewUrl);
+  }
+
+  useEffect(() => {
+    isMounted.current = true;
+
+    return () => {
+      isMounted.current = false;
+      storeTemporaryProfilePictureUseCase.cancel();
+      revokePendingPreview();
+    };
+  }, [storeTemporaryProfilePictureUseCase]);
+
+  function openFileSelector() {
+    fileInputRef.current?.click();
+  }
+
+  function finishUpload(currentRequestId: number) {
+    if (!isMounted.current || currentRequestId !== requestId.current) {
+      return;
+    }
+
+    setIsUploading(false);
+  }
+
+  function upload(nextFile: File) {
+    const validationMessage = validateProfilePicture(nextFile);
+    if (validationMessage) {
+      setUploadErrorMessage(validationMessage);
+      return;
+    }
+
+    const currentRequestId = ++requestId.current;
+    setUploadErrorMessage(null);
+    setIsUploading(true);
+
+    const localPreviewUrl = URL.createObjectURL(nextFile);
+    showPendingPreview(localPreviewUrl);
+
+    void storeTemporaryProfilePictureUseCase
+      .execute(nextFile)
+      .then(({ path, displayUrl }) => {
+        if (currentRequestId !== requestId.current) {
+          return;
+        }
+
+        revokePendingPreview();
+        onProfilePictureChange?.({ path, displayUrl });
+        finishUpload(currentRequestId);
+      })
+      .catch((error: unknown) => {
+        if (currentRequestId !== requestId.current) {
+          return;
+        }
+
+        revokePendingPreview();
+
+        if (!isCanceledError(error) && isMounted.current) {
+          setUploadErrorMessage(profilePictureUploadErrorMessage(error));
+        }
+
+        finishUpload(currentRequestId);
+      });
+  }
 
   const formattedDate = formatReportDate(reportDate);
   const shareUrl = `${window.location.origin}${getProfilePath(id, partyType)}`;
@@ -144,20 +280,60 @@ function ReportHero({
     >
       <article className="mx-auto max-w-5xl rounded-2xl bg-white p-5 shadow-xl sm:p-7">
         <div className="flex flex-col gap-6 lg:flex-row">
-          <button
-            type="button"
-            className="mx-auto h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-gray-100 p-0 sm:h-32 sm:w-32 lg:mx-0"
-            aria-haspopup="dialog"
-            aria-expanded={isPreviewOpen}
-            aria-label={`Ver foto de ${name}`}
-            onClick={() => setIsPreviewOpen(true)}
-          >
-            <img
-              src={imageSrc}
-              alt=""
-              className="h-full w-full object-cover"
+          <div className="mx-auto flex flex-col items-center lg:mx-0">
+            <div className="relative shrink-0">
+              <button
+              type="button"
+              className="relative h-28 w-28 cursor-pointer overflow-hidden rounded-2xl border border-gray-100 p-0 sm:h-32 sm:w-32"
+              aria-haspopup="dialog"
+              aria-expanded={isPreviewOpen}
+              aria-busy={isUploading}
+              aria-label={`Ver foto de ${name}`}
+              onClick={() => setIsPreviewOpen(true)}
+            >
+              <img
+                src={imageSrc}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+              {isUploading ? (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-xs font-bold text-white">
+                  Subiendo…
+                </span>
+              ) : null}
+            </button>
+            <ProfilePictureEditButton
+              fileInputId={fileInputId}
+              isUploading={isUploading}
+              onClick={openFileSelector}
             />
-          </button>
+            <input
+              ref={fileInputRef}
+              id={fileInputId}
+              type="file"
+              accept="image/jpeg,image/png"
+              tabIndex={-1}
+              disabled={isUploading}
+              aria-label="Cambiar foto de perfil"
+              className="sr-only"
+              onChange={(event) => {
+                const nextFile = event.currentTarget.files?.[0] ?? null;
+                event.currentTarget.value = "";
+                if (nextFile) {
+                  upload(nextFile);
+                }
+              }}
+            />
+            </div>
+            {uploadErrorMessage ? (
+              <p
+                role="alert"
+                className="mt-2 max-w-xs text-center text-xs font-semibold text-orange-800"
+              >
+                {uploadErrorMessage}
+              </p>
+            ) : null}
+          </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-start justify-between gap-3">

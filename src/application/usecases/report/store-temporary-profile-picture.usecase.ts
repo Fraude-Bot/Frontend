@@ -1,3 +1,4 @@
+import type { StoredProfilePicture } from "@/application/models/stored-profile-picture.model";
 import ApiCallerInterface from "@/core/base/api-caller.interface";
 import type { PublicApiMethod } from "@/application/ports/public-api.port";
 import RequestCanceler from "@/application/shared/request-canceler";
@@ -9,7 +10,7 @@ class StoreTemporaryProfilePictureUsecase implements ApiCallerInterface {
     private readonly publicApi: PublicApiMethod<"storeTemporaryProfilePicture">,
   ) {}
 
-  public async execute(file: File): Promise<string> {
+  public async execute(file: File): Promise<StoredProfilePicture> {
     const signal = this.requestCanceller.prepareSignal();
 
     return this.publicApi.storeTemporaryProfilePicture(file, signal);

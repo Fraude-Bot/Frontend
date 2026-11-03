@@ -16,6 +16,10 @@ export interface ReportProfile {
   contacts: Contact[];
 }
 
+import type { StoredProfilePicture } from "@/application/models/stored-profile-picture.model";
+
+export type ProfilePictureUploadResult = StoredProfilePicture;
+
 export type ReportHeroProps = {
   id: string;
   name: string;
@@ -26,6 +30,7 @@ export type ReportHeroProps = {
   reports: number;
   categories: string[];
   profilePicture?: string | null;
+  onProfilePictureChange?: (result: ProfilePictureUploadResult) => void;
 };
 
 const reportTabsBeforeAssociations = [

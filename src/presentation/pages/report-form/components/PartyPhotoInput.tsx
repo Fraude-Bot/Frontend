@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getHttpStatus, isCanceledError } from "@/common/utils/http-error.util";
+import { isCanceledError } from "@/common/utils/http-error.util";
 import ImageLightbox from "@/presentation/pages/report/components/ImageLightbox";
 import { useDependencies } from "@/presentation/providers/useDependencies";
-
-const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
+import {
+  profilePictureUploadErrorMessage,
+  validateProfilePicture,
+} from "@/presentation/shared/utils/profile-picture-file.util";
 
 type PartyPhotoInputProps = {
   id: string;
@@ -16,34 +18,6 @@ type PartyPhotoInputProps = {
   describedBy?: string;
   required?: boolean;
 };
-
-function isJpegOrPng(file: File) {
-  if (file.type === "image/jpeg" || file.type === "image/png") {
-    return true;
-  }
-
-  return /\.(jpe?g|png)$/i.test(file.name);
-}
-
-function validateProfilePicture(file: File) {
-  if (!isJpegOrPng(file)) {
-    return "Usa una imagen JPG o PNG.";
-  }
-
-  if (file.size > MAX_PROFILE_PICTURE_BYTES) {
-    return "La imagen no puede superar 5 MB.";
-  }
-
-  return null;
-}
-
-function uploadErrorMessage(error: unknown) {
-  if (getHttpStatus(error) === 422) {
-    return "Usa una imagen JPG o PNG de hasta 5 MB.";
-  }
-
-  return "No se pudo subir la foto. Inténtalo de nuevo.";
-}
 
 function PartyPhotoInput({
   id,
@@ -122,7 +96,7 @@ function PartyPhotoInput({
 
     void storeTemporaryProfilePictureUseCase
       .execute(nextFile)
-      .then((path) => {
+      .then(({ path }) => {
         if (currentRequestId !== requestId.current) {
           return;
         }
@@ -139,7 +113,7 @@ function PartyPhotoInput({
         }
 
         if (isMounted.current) {
-          setErrorMessage(uploadErrorMessage(error));
+          setErrorMessage(profilePictureUploadErrorMessage(error));
         }
 
         finishUpload(currentRequestId);

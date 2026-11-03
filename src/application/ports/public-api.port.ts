@@ -6,6 +6,7 @@ import type ContactSummaryEntity from "@/core/domain/contact/entities/contact-su
 import type { CreateOrganizationContactRequest } from "@/core/domain/contact/models/create-organization-contact.request";
 import type { CreateScammerContactRequest } from "@/core/domain/contact/models/create-scammer-contact.request";
 import type FindContactsByPartyResult from "@/core/domain/contact/models/find-contacts-by-party.model";
+import type { StoredProfilePicture } from "@/application/models/stored-profile-picture.model";
 import type { CreateOrganizationPaymentMethodRequest } from "@/core/domain/payment-method/models/create-organization-payment-method.request";
 import type { CreateScammerPaymentMethodRequest } from "@/core/domain/payment-method/models/create-scammer-payment-method.request";
 import type PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/payment-method-summary.entity";
@@ -127,7 +128,7 @@ export interface PublicApiPort {
   storeTemporaryProfilePicture(
     file: File,
     signal: AbortSignal,
-  ): Promise<string>;
+  ): Promise<StoredProfilePicture>;
   storeTemporaryProofs(
     files: File[],
     signal: AbortSignal,

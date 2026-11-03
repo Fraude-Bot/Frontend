@@ -24,6 +24,7 @@ import {
 import { useCancellableQuery } from "@/presentation/shared/hooks/useCancellableQuery";
 import { useRobotsDirective } from "@/presentation/shared/hooks/useRobotsDirective";
 import ProfileSeo from "@/presentation/shared/components/ProfileSeo";
+import type { ProfilePictureUploadResult } from "@/presentation/pages/report/components/types";
 
 function GeneralPanelsSkeleton() {
   return (
@@ -90,10 +91,20 @@ function Report({ type }: { type: "scammer" | "organization" }) {
   const profileKey = `${type}:${id ?? ""}`;
   const [activeTab, setActiveTab] = useState<ReportTab>("General");
   const [activeProfileKey, setActiveProfileKey] = useState(profileKey);
+  const [profilePictureOverride, setProfilePictureOverride] =
+    useState<ProfilePictureUploadResult | null>(null);
+
+  const handleProfilePictureChange = useCallback(
+    (result: ProfilePictureUploadResult) => {
+      setProfilePictureOverride(result);
+    },
+    [],
+  );
 
   if (activeProfileKey !== profileKey) {
     setActiveProfileKey(profileKey);
     setActiveTab("General");
+    setProfilePictureOverride(null);
   }
 
   useLayoutEffect(() => {
@@ -139,6 +150,11 @@ function Report({ type }: { type: "scammer" | "organization" }) {
         ? "loading"
         : result.status;
   const party = result.status === "ready" ? result.data : null;
+  const heroProfilePicture =
+    profilePictureOverride?.displayUrl ??
+    party?.profilePicture ??
+    defaultAvatar;
+  const seoProfilePicture = party?.profilePicture ?? null;
 
   const title = party
     ? `FraudeBot - ${party.name}`
@@ -165,7 +181,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
           categories={party.categories}
           active={party.isActive}
           createdAt={party.createdAt}
-          image={party.profilePicture}
+          image={seoProfilePicture}
         />
       ) : (
         <>
@@ -183,7 +199,8 @@ function Report({ type }: { type: "scammer" | "organization" }) {
           status={party.isActive ? "Activo" : "Inactivo"}
           reports={party.reports}
           categories={party.categories}
-          profilePicture={party.profilePicture || defaultAvatar}
+          profilePicture={heroProfilePicture}
+          onProfilePictureChange={handleProfilePictureChange}
         />
       ) : loadState === "loading" ? (
         <ReportHeroSkeleton />
