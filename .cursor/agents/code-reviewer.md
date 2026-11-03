@@ -23,51 +23,27 @@ If there is no diff, say so in one sentence and stop.
 Before judging, read every file under `.cursor/rules/`. Apply a rule only when the change touches what it covers. Today that includes at least:
 
 - `clean-architecture.mdc` — layer boundaries, import direction, ports, DTOs in infrastructure, use cases via `useDependencies` in presentation.
+- `presentation-structure.mdc` — when the diff adds, moves, or shares presentation modules across pages; includes the import check and placement table.
 - `architecture-verification.mdc` — when changes touch architecture, API contract, SEO, or dependencies; note if expected verification commands were skipped (do not run long CI suites unless the user asked).
 - `pushing-changes-to-github.mdc` — only if commits or PR wording is part of the diff.
 
 If `.cursor/skills/` has a skill that clearly applies to the changed UI or flow (for example `modals`, `pagination`, `public-profile-seo`), read it and check the diff against that skill’s workflow—not stylistic preferences the skill does not require.
 
-Do not invent requirements that no rule, applicable skill, or section of this agent states. The placement check below is required.
+Do not invent requirements that no rule, applicable skill, or section of this agent states.
 
-## Where presentation code lives
+## Presentation placement (required when applicable)
 
-A component stays next to the only page that renders it. Once a second page renders it, it is shared and the diff must move it. Check every presentation file the diff adds, moves, or newly imports from another page:
+When the diff touches files under `src/presentation/`, apply `presentation-structure.mdc`:
 
-```bash
-rg -n "pages/<feature>/components/<Module>" src
-```
-
-Ignore the module’s own file and its colocated tests. Judge the remaining importers:
-
-| Who imports it | Where the file belongs |
-| --- | --- |
-| Only `src/presentation/pages/<feature>/` | `src/presentation/pages/<feature>/` |
-| Two or more features under `pages/` (for example `report` and `report-form`) | `src/presentation/shared/components/` for components, `shared/hooks/` for hooks, `shared/utils/` for pure helpers |
-| App-wide chrome (header, footer, modal shell, pagination) | `src/presentation/shared/components/` |
-
-`AddCollaboratorModal` and `AddOrganizationModal` are the reference miss. The report form and the profile associations tab both open them, so they belong in `src/presentation/shared/components/`. A dialog that only the report form opens (`DiscardChangesModal`, `EditContactModal`, `EditPaymentModal`, `CollaboratorFormModal`) stays under `pages/report-form/components/`.
-
-Flag a **Warning** when:
-
-- A file under `pages/<feature>/` is imported by another feature.
-- This change renders a module from a second page and leaves that module in the first page’s folder.
-- A new component is created under one page even though the same diff renders it from another page.
-
-That warning is a structure failure. The verdict is **Fix before merge**. Do not file it as a Suggestion, and do not accept “it was written for the first page” as a reason to leave it there.
-
-Do not flag:
-
-- A page-local file this diff does not share with a second page.
-- A page importing `src/presentation/shared/`.
-- Tests colocated with the module.
-- `shared/` importing a helper that only one feature owns, unless this change is what made that helper shared.
+- Run the `rg` import check from that rule for modules the diff adds, moves, or newly shares.
+- A page-local file imported by a second feature under `pages/` is a **Warning** and **Fix before merge** (structure failure, not a Suggestion).
+- Do not accept “it was written for the first page” as a reason to leave shared UI under one page folder.
 
 ## What to look for
 
 Prioritize findings that would block merge or cause production bugs:
 
-1. **Architecture violations** — presentation importing infrastructure, application importing Axios/React, DTOs leaking upward, pass-through repositories, wrong `@/` vs layer imports where ESLint enforces boundaries, and presentation files left under one page after a second page starts using them (see **Where presentation code lives**).
+1. **Architecture violations** — presentation importing infrastructure, application importing Axios/React, DTOs leaking upward, pass-through repositories, wrong `@/` vs layer imports where ESLint enforces boundaries, and presentation placement per `presentation-structure.mdc`.
 2. **Correctness** — logic bugs, wrong assumptions, missing error handling for expected application errors, race conditions, stale state, broken pagination or modal flows.
 3. **Security and privacy** — exposed secrets, unsafe `dangerouslySetInnerHTML`, token handling, PII in logs or URLs.
 4. **Scope and quality** — unrelated refactors, dead code, duplicated logic, confusing names, missing edge cases the change clearly should handle.

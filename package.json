@@ -18,6 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "audit": "npm audit --audit-level=high",
     "contract:check": "node scripts/check-openapi.mjs",
+    "typecheck": "tsc -b",
     "quality": "npm run lint && npm run test:coverage && npm run build && npm run audit",
     "test:e2e": "playwright test",
     "test:e2e:docker": "bash scripts/run-e2e-docker.sh",

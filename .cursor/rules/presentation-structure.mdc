@@ -1,0 +1,34 @@
+---
+description: Where presentation components, hooks, and helpers live under pages/ vs shared/
+globs: "src/presentation/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Presentation file placement
+
+Keep UI next to the **only** page that renders it. When a second page under `src/presentation/pages/` imports the same module, it is **shared** and must live under `src/presentation/shared/` (components, hooks, or utils as appropriate).
+
+## Check imports
+
+For any module the diff adds, moves, or newly shares across pages:
+
+```bash
+rg -n "pages/<feature>/components/<Module>" src
+```
+
+Ignore the module file itself and colocated tests. Classify remaining importers:
+
+| Who imports it | Where the file belongs |
+| --- | --- |
+| Only `src/presentation/pages/<feature>/` | Stay under that page folder |
+| Two or more features under `pages/` (e.g. `report` and `report-form`) | `shared/components/`, `shared/hooks/`, or `shared/utils/` |
+| App-wide chrome (header, footer, modal shell, pagination) | `shared/components/` |
+
+## Reference examples
+
+- **Shared:** `AddCollaboratorModal`, `AddOrganizationModal` — used from report form and profile associations; belong in `shared/components/`.
+- **Page-local:** `DiscardChangesModal`, `EditContactModal`, `EditPaymentModal`, `CollaboratorFormModal` — only the report form; stay under `pages/report-form/components/`.
+
+When a change renders an existing page-local module from a second page, **move** it to `shared/` in the same change. Do not leave it under the first page because it was written there first.
+
+Tests stay colocated with the module. Page code may import `shared/` freely. Do not flag `shared/` importing a helper that only one feature owns unless this change is what made that helper shared.

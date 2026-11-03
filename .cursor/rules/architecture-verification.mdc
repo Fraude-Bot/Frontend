@@ -17,15 +17,24 @@ Add focused tests when the user requests tests or the task explicitly includes t
 - Use API route interception in E2E tests so profile fixtures are deterministic.
 - Do not start a new dev server. Use the running worktree container for browser checks.
 
-Before handoff, run proportionate checks:
+Before handoff or opening a PR, run the CI gate plus a project typecheck:
+
+```bash
+npm run quality
+npm run typecheck
+```
+
+`quality` runs lint, coverage tests, production build, and `npm audit --audit-level=high`.
+`typecheck` runs `tsc -b` (also documented in README).
+
+For a faster local check after small edits:
 
 ```bash
 npm run lint
 npm run test:run
-npm run test:coverage
-npm run build
-npm audit --audit-level=high
 ```
+
+When the user asks for the full gate, the execute-tests subagent, or a PR handoff, run `npm run quality` and `npm run typecheck` unless they narrow scope.
 
 When API operations change, load `/api/public/openapi` and run `npm run contract:check` with
 `OPENAPI_URL`. Report undocumented frontend operations; do not silently weaken the validator.

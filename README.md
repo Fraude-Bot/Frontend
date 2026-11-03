@@ -49,12 +49,14 @@ Restart the development server after changing environment files. Do not put secr
 ## Verification
 
 ```bash
-npx tsc -b                   # Type-check application and Vite configuration
-npm run test:run             # Unit and component tests
-npm run test:coverage        # Tests with V8 coverage
+npm run quality              # CI gate: lint, coverage, build, audit
+npm run typecheck            # tsc -b — run before handoff
+npm run test:run             # Unit and component tests only
 npm run build                # Production build in dist/
 npm run test:e2e             # Chromium end-to-end tests
 ```
+
+Agent sessions may run ESLint on edited `src/` files when the agent stops; see `.cursor/hooks.json`.
 
 Playwright starts a production preview on port `4173`. Install its browser once with
 `npx playwright install chromium` if it is not already available. Docker-based end-to-end
