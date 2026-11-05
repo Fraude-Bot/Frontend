@@ -20,7 +20,6 @@ function renderSatelliteNode(data: MapSatelliteNodeType["data"]) {
           positionAbsoluteX={0}
           positionAbsoluteY={0}
           isConnectable={false}
-          position={{ x: 0, y: 0 }}
           data={data}
         />
       </ReactFlowProvider>

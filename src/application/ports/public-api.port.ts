@@ -129,6 +129,12 @@ export interface PublicApiPort {
     file: File,
     signal: AbortSignal,
   ): Promise<StoredProfilePicture>;
+  updatePartyProfilePicture(
+    id: string,
+    type: PartyType,
+    profilePicture: string,
+    signal: AbortSignal,
+  ): Promise<StoredProfilePicture>;
   storeTemporaryProofs(
     files: File[],
     signal: AbortSignal,

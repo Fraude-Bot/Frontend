@@ -122,13 +122,13 @@ fi
 
 lint_ok=0
 if [[ -n "$container" ]]; then
-  echo "ESLint hook: docker exec -w ${workdir} ${container} npm run lint -- --max-warnings 0 (${#rel_files[@]} files)" >&2
-  if docker exec -w "$workdir" "$container" npm run lint -- --max-warnings 0 "${rel_files[@]}" >&2; then
+  echo "ESLint hook: docker exec -w ${workdir} ${container} npx eslint --max-warnings 0 (${#rel_files[@]} files)" >&2
+  if docker exec -w "$workdir" "$container" npx eslint --max-warnings 0 "${rel_files[@]}" >&2; then
     lint_ok=1
   fi
 else
-  echo "ESLint hook: npm run lint -- --max-warnings 0 (${#rel_files[@]} files)" >&2
-  if (cd "$root" && npm run lint -- --max-warnings 0 "${rel_files[@]}") >&2; then
+  echo "ESLint hook: npx eslint --max-warnings 0 (${#rel_files[@]} files)" >&2
+  if (cd "$root" && npx eslint --max-warnings 0 "${rel_files[@]}") >&2; then
     lint_ok=1
   fi
 fi
