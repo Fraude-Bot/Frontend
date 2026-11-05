@@ -39,13 +39,24 @@ function renderHero(
 
 describe("ReportHero profile picture", () => {
   it("uploads a selected image through the temporary profile picture use case", async () => {
-    const execute = vi.fn().mockResolvedValue({
-      path: "profiles/new-photo.jpg",
-      displayUrl: "http://localhost:9000/storage/profiles/new-photo.jpg",
+    const storeExecute = vi.fn().mockResolvedValue({
+      path: "/storage/tmp/reports/profiles/new-photo.jpg",
+      displayUrl: "http://localhost:9000/storage/tmp/reports/profiles/new-photo.jpg",
+    });
+    const updateExecute = vi.fn().mockResolvedValue({
+      path: "http://localhost:9000/storage/reports/scammers/profiles/new-photo.jpg",
+      displayUrl: "http://localhost:9000/storage/reports/scammers/profiles/new-photo.jpg",
     });
     const user = userEvent.setup();
     const { onProfilePictureChange } = renderHero({
-      storeTemporaryProfilePictureUseCase: { execute, cancel: vi.fn() },
+      storeTemporaryProfilePictureUseCase: {
+        execute: storeExecute,
+        cancel: vi.fn(),
+      },
+      updatePartyProfilePictureUseCase: {
+        execute: updateExecute,
+        cancel: vi.fn(),
+      },
     });
 
     const file = new File(["photo"], "ruja.png", { type: "image/png" });
@@ -58,12 +69,21 @@ describe("ReportHero profile picture", () => {
     await user.upload(input as HTMLInputElement, file);
 
     await waitFor(() => {
-      expect(execute).toHaveBeenCalledWith(file);
+      expect(storeExecute).toHaveBeenCalledWith(file);
+    });
+
+    await waitFor(() => {
+      expect(updateExecute).toHaveBeenCalledWith(
+        "1",
+        "scammer",
+        "/storage/tmp/reports/profiles/new-photo.jpg",
+      );
     });
 
     expect(onProfilePictureChange).toHaveBeenCalledWith({
-      path: "profiles/new-photo.jpg",
-      displayUrl: "http://localhost:9000/storage/profiles/new-photo.jpg",
+      path: "http://localhost:9000/storage/reports/scammers/profiles/new-photo.jpg",
+      displayUrl:
+        "http://localhost:9000/storage/reports/scammers/profiles/new-photo.jpg",
     });
   });
 });

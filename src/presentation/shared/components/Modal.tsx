@@ -104,10 +104,12 @@ function Modal({
       passive: false,
     });
 
+    const dialogElement = dialog;
+
     function handleCancel(event: Event) {
       event.preventDefault();
       if (
-        dialog.querySelector('[role="combobox"][aria-expanded="true"]')
+        dialogElement.querySelector('[role="combobox"][aria-expanded="true"]')
       ) {
         return;
       }
@@ -115,16 +117,16 @@ function Modal({
       onClose();
     }
 
-    dialog.addEventListener("cancel", handleCancel);
+    dialogElement.addEventListener("cancel", handleCancel);
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
       document.removeEventListener("wheel", preventBackgroundScroll);
       document.removeEventListener("touchmove", preventBackgroundScroll);
-      dialog.removeEventListener("cancel", handleCancel);
-      if (dialog.open) {
-        dialog.close();
+      dialogElement.removeEventListener("cancel", handleCancel);
+      if (dialogElement.open) {
+        dialogElement.close();
       }
     };
   }, [autoFocusAction, onClose]);

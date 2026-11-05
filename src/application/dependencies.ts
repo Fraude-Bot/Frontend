@@ -18,6 +18,7 @@ import type SearchReportUsecase from "@/application/usecases/report/search-repor
 import type SearchReportStubUsecase from "@/application/usecases/report/stub/search-report.stub";
 import type StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/store-temporary-profile-picture.usecase";
 import type StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
+import type UpdatePartyProfilePictureUsecase from "@/application/usecases/party/update-party-profile-picture.usecase";
 import type FindScammerSummaryByIdUsecase from "@/application/usecases/scammer/find-scammer-summary-by-id.usecase";
 import type SuggestScammerNamesUsecase from "@/application/usecases/scammer/suggest-scammer-names.usecase";
 import type { SearchReportCachePort } from "@/application/ports/search-report-cache.port";
@@ -44,6 +45,7 @@ export type Dependencies = {
   createScammerOrganizationUseCase: PublicInterface<CreateScammerOrganizationUsecase>;
   findRelationshipMapByPartyUseCase: PublicInterface<FindRelationshipMapByPartyUsecase>;
   storeTemporaryProfilePictureUseCase: PublicInterface<StoreTemporaryProfilePictureUsecase>;
+  updatePartyProfilePictureUseCase: PublicInterface<UpdatePartyProfilePictureUsecase>;
   storeTemporaryProofsUseCase: PublicInterface<StoreTemporaryProofsUsecase>;
   createOrganizationReportUseCase: PublicInterface<CreateOrganizationReportUsecase>;
   createScammerReportUseCase: PublicInterface<CreateScammerReportUsecase>;

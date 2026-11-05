@@ -4,6 +4,7 @@ import type {
   PartyType,
   PublicApiPort,
 } from "@/application/ports/public-api.port";
+import type { StoredProfilePicture } from "@/application/models/stored-profile-picture.model";
 import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import type { CreateOrganizationScammerRequest } from "@/core/domain/association/models/create-organization-scammer.request";
 import type { CreateScammerOrganizationRequest } from "@/core/domain/association/models/create-scammer-organization.request";
@@ -36,6 +37,7 @@ import {
 import Http from "@/infrastructure/http/http";
 import type {
   ContactsDto,
+  ContactDto,
   PaymentMethodDto,
   PaymentMethodsDto,
   CreatedOrganizationReportDto,
@@ -49,6 +51,7 @@ import type {
   SearchReportsDto,
   StoredImagePathDto,
   StoredImagePathsDto,
+  UpdateProfilePictureResponseDto,
 } from "@/infrastructure/api/dto/public-api.dto";
 
 const emptyPage = <T>(page: number) => ({
@@ -686,11 +689,11 @@ class PublicApiAdapter implements PublicApiPort {
   public async storeTemporaryProfilePicture(
     file: File,
     signal: AbortSignal,
-  ): Promise<string> {
+  ): Promise<StoredProfilePicture> {
     const body = new FormData();
     body.append("image", file);
     const { data, status } = await Http.post<StoredImagePathDto>(
-      API_ROUTES.public.reports.profilePicture,
+      API_ROUTES.public.media.profilePicture,
       body,
       { signal, headers: { "Content-Type": "multipart/form-data" } },
     );
@@ -702,6 +705,37 @@ class PublicApiAdapter implements PublicApiPort {
       throw new Error("The profile picture was not stored.");
     }
     return { path: data.path, displayUrl };
+  }
+
+  public async updatePartyProfilePicture(
+    id: string,
+    type: PartyType,
+    profilePicture: string,
+    signal: AbortSignal,
+  ): Promise<StoredProfilePicture> {
+    const route =
+      type === "scammer"
+        ? API_ROUTES.public.scammers.profilePicture
+        : API_ROUTES.public.organizations.profilePicture;
+    const url = route.replace("{id}", encodeURIComponent(id));
+    const { data, status } = await Http.patch<UpdateProfilePictureResponseDto>(
+      url,
+      { profile_picture: profilePicture.trim() },
+      { signal },
+    );
+    if (
+      status !== 200 ||
+      typeof data.profile_picture_path !== "string" ||
+      !data.profile_picture_path.trim()
+    ) {
+      throw new Error("The profile picture was not updated.");
+    }
+    const path = data.profile_picture_path.trim();
+    const displayUrl = resolveCdnUrl(path);
+    if (!displayUrl) {
+      throw new Error("The profile picture was not updated.");
+    }
+    return { path, displayUrl };
   }
 
   public async storeTemporaryProofs(

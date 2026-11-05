@@ -547,7 +547,7 @@ function buildMapGraphFromApi(
     );
   }
 
-  const flowNodes: MapNode[] = map.nodes.flatMap((node) => {
+  const flowNodes: MapNode[] = map.nodes.flatMap((node): MapNode[] => {
     const flowId = getFlowNodeId(node);
     const position = positions.get(flowId);
     if (!position) {

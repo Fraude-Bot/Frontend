@@ -20,6 +20,7 @@ import CreateOrganizationReportUsecase from "@/application/usecases/report/creat
 import CreateScammerReportUsecase from "@/application/usecases/report/create-scammer-report.usecase";
 import StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/store-temporary-profile-picture.usecase";
 import StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
+import UpdatePartyProfilePictureUsecase from "@/application/usecases/party/update-party-profile-picture.usecase";
 import type { Dependencies } from "@/application/dependencies";
 import PublicApiAdapter from "@/infrastructure/api/public-api.adapter";
 import { BrowserSearchReportCache } from "@/infrastructure/cache/browser-search-report-cache";
@@ -65,6 +66,8 @@ export function createDependencies(): Dependencies {
       new FindRelationshipMapByPartyUsecase(publicApi),
     storeTemporaryProfilePictureUseCase:
       new StoreTemporaryProfilePictureUsecase(publicApi),
+    updatePartyProfilePictureUseCase:
+      new UpdatePartyProfilePictureUsecase(publicApi),
     storeTemporaryProofsUseCase: new StoreTemporaryProofsUsecase(publicApi),
     createOrganizationReportUseCase:
       new CreateOrganizationReportUsecase(publicApi),
