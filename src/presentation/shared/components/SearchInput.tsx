@@ -3,6 +3,7 @@ interface SearchInputProps {
   value: string;
   onInput: (event: React.InputEvent<HTMLInputElement>) => void;
   accent?: "orange" | "red";
+  placeholder?: string;
 }
 
 function SearchInput({
@@ -10,6 +11,7 @@ function SearchInput({
   value,
   onInput,
   accent = "orange",
+  placeholder = "Número de cuenta, tarjeta, teléfono o URL",
 }: SearchInputProps) {
   const focusColor =
     accent === "red"
@@ -30,7 +32,7 @@ function SearchInput({
         value={value}
         onInput={onInput}
         autoComplete="off"
-        placeholder="Número de cuenta, tarjeta, teléfono o URL"
+        placeholder={placeholder}
         className="min-w-0 grow px-4 py-4 text-lg text-gray-900 outline-none placeholder:text-gray-500 font-[Nunito]"
       />
       <button

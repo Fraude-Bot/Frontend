@@ -11,7 +11,7 @@ function LookupForm({ onSubmit, onInputChange, query }: LookupFormProps) {
     <form
       onSubmit={handleSubmit}
       role="search"
-      className="mx-auto mb-8 mt-28 flex w-full max-w-3xl flex-col px-4"
+      className="mx-auto mb-8 flex w-full max-w-3xl flex-col px-4"
     >
       <label htmlFor="report-search" className="sr-only">
         Buscar por número de cuenta, tarjeta, teléfono o URL
