@@ -183,7 +183,10 @@ function Search() {
       <Header />
 
       <SearchContainer>
-        <h1 className="sr-only">Buscar reportes de fraude</h1>
+        {/* mt-28 clears the absolute header (h-20); matches /reportes */}
+        <h1 className="mb-8 mt-28 px-4 text-center font-[Nunito] text-3xl font-extrabold text-gray-900 sm:text-4xl">
+          Buscar reportes de fraude
+        </h1>
         <LookupForm
           onSubmit={handleSubmit}
           onInputChange={handleInputChange}

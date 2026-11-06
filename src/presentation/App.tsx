@@ -6,6 +6,9 @@ import { APP_ROUTES } from "@/common/app-routes";
 const Home = lazy(() => import("@presentation/pages/home/Home"));
 const Contact = lazy(() => import("@presentation/pages/contact/Contact"));
 const Search = lazy(() => import("@presentation/pages/search/Search"));
+const ReportsSearch = lazy(
+  () => import("@presentation/pages/reports-search/ReportsSearch"),
+);
 const NotFound = lazy(() => import("@presentation/pages/404/NotFound"));
 const Report = lazy(() => import("@presentation/pages/report/Report"));
 const ReportForm = lazy(() => import("@presentation/pages/report-form/ReportForm"));
@@ -31,6 +34,7 @@ function App() {
             <Route path={APP_ROUTES.home} element={<Home />} />
             <Route path={APP_ROUTES.contact} element={<Contact />} />
             <Route path={APP_ROUTES.search} element={<Search />} />
+            <Route path={APP_ROUTES.reportsSearch} element={<ReportsSearch />} />
             <Route path={APP_ROUTES.report} element={<ReportForm />} />
             <Route path={APP_ROUTES.terms} element={<TermsOfUse />} />
             <Route
