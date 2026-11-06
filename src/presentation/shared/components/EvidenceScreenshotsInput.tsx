@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getHttpStatus, isCanceledError } from "@/common/utils/http-error.util";
 import ImageLightbox from "@/presentation/pages/report/components/ImageLightbox";
+import useObjectUrl from "@/presentation/shared/hooks/useObjectUrl";
 import { useDependencies } from "@/presentation/providers/useDependencies";
 
 const MAX_PROOF_BYTES = 5 * 1024 * 1024;
@@ -15,6 +16,7 @@ type EvidenceScreenshotsInputProps = {
   files: File[];
   paths: string[];
   onChange: (files: File[], paths: string[]) => void;
+  onUploadingChange?: (uploading: boolean) => void;
 };
 
 function isJpegOrPng(file: File) {
@@ -50,20 +52,11 @@ function EvidenceShot({
   onRemove: () => void;
   busy?: boolean;
 }) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewUrl = useObjectUrl(file);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const closePreview = useCallback(() => {
     setIsPreviewOpen(false);
   }, []);
-
-  useEffect(() => {
-    const nextUrl = URL.createObjectURL(file);
-    setPreviewUrl(nextUrl);
-
-    return () => {
-      URL.revokeObjectURL(nextUrl);
-    };
-  }, [file]);
 
   function remove() {
     setIsPreviewOpen(false);
@@ -81,9 +74,7 @@ function EvidenceShot({
         aria-busy={busy}
         className={`${TILE_CLASS} relative cursor-pointer p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600`}
       >
-        {previewUrl ? (
-          <img src={previewUrl} alt="" className="h-full w-full object-cover" />
-        ) : null}
+        <img src={previewUrl} alt="" className="h-full w-full object-cover" />
         {busy ? (
           <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-1 text-center text-[10px] font-bold leading-tight text-white">
             Subiendo…
@@ -98,7 +89,7 @@ function EvidenceShot({
       >
         ×
       </button>
-      {isPreviewOpen && previewUrl ? (
+      {isPreviewOpen ? (
         <ImageLightbox
           src={previewUrl}
           alt={viewLabel}
@@ -114,6 +105,7 @@ function EvidenceScreenshotsInput({
   files,
   paths,
   onChange,
+  onUploadingChange,
 }: EvidenceScreenshotsInputProps) {
   const { storeTemporaryProofsUseCase } = useDependencies();
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -122,19 +114,24 @@ function EvidenceScreenshotsInput({
   const isMounted = useRef(true);
   const filesRef = useRef(files);
   const pathsRef = useRef(paths);
+  const onUploadingChangeRef = useRef(onUploadingChange);
 
   useEffect(() => {
     filesRef.current = files;
     pathsRef.current = paths;
-  }, [files, paths]);
+    onUploadingChangeRef.current = onUploadingChange;
+  }, [files, onUploadingChange, paths]);
 
   useEffect(() => {
     isMounted.current = true;
 
     return () => {
       isMounted.current = false;
+      requestId.current += 1;
+      storeTemporaryProofsUseCase.cancel();
+      onUploadingChangeRef.current?.(false);
     };
-  }, []);
+  }, [storeTemporaryProofsUseCase]);
 
   function finishUpload(currentRequestId: number) {
     if (!isMounted.current || currentRequestId !== requestId.current) {
@@ -142,6 +139,7 @@ function EvidenceScreenshotsInput({
     }
 
     setPendingFiles([]);
+    onUploadingChangeRef.current?.(false);
   }
 
   function upload(selected: File[]) {
@@ -161,10 +159,12 @@ function EvidenceScreenshotsInput({
     const currentRequestId = ++requestId.current;
     setPendingFiles(accepted);
 
+    onUploadingChangeRef.current?.(true);
+
     void storeTemporaryProofsUseCase
       .execute(accepted)
       .then((storedPaths) => {
-        if (currentRequestId !== requestId.current) {
+        if (!isMounted.current || currentRequestId !== requestId.current) {
           return;
         }
 
@@ -194,6 +194,7 @@ function EvidenceScreenshotsInput({
     requestId.current += 1;
     storeTemporaryProofsUseCase.cancel();
     setPendingFiles([]);
+    onUploadingChangeRef.current?.(false);
   }
 
   function removeShot(index: number) {

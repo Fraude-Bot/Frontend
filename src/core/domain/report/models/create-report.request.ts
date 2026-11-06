@@ -28,6 +28,14 @@ export type CreateOrganizationReportRequest = {
   scammers?: ReportLinkedPartyPayload[];
 };
 
+export type CreateAttachedReportRequest = {
+  email: string;
+  title: string;
+  description: string;
+  products: string[];
+  proofs?: string[];
+};
+
 export type CreateScammerReportRequest = {
   email: string;
   title: string;

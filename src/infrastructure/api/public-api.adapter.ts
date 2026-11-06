@@ -1,4 +1,6 @@
 import type {
+  CreatedAttachedOrganizationReport,
+  CreatedAttachedScammerReport,
   CreatedOrganizationReport,
   CreatedScammerReport,
   PartyType,
@@ -23,6 +25,7 @@ import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-rep
 import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
 import ReportSummaryEntity from "@/core/domain/report/entities/report-summary.entity";
 import type {
+  CreateAttachedReportRequest,
   CreateOrganizationReportRequest,
   CreateScammerReportRequest,
 } from "@/core/domain/report/models/create-report.request";
@@ -40,6 +43,8 @@ import type {
   ContactDto,
   PaymentMethodDto,
   PaymentMethodsDto,
+  CreatedAttachedOrganizationReportDto,
+  CreatedAttachedScammerReportDto,
   CreatedOrganizationReportDto,
   CreatedScammerReportDto,
   MonthlyReportCountsDto,
@@ -800,6 +805,57 @@ class PublicApiAdapter implements PublicApiPort {
       throw new Error("The scammer report was not created.");
     }
     return { reportId: data.id, scammerId: data.scammer_id };
+  }
+
+  public async createReportForScammer(
+    id: string,
+    request: CreateAttachedReportRequest,
+    signal: AbortSignal,
+  ): Promise<CreatedAttachedScammerReport> {
+    const url = API_ROUTES.public.scammers.reports.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } = await Http.post<CreatedAttachedScammerReportDto>(
+      url,
+      request,
+      { signal },
+    );
+    if (
+      status !== 201 ||
+      !Number.isInteger(data.id) ||
+      data.id < 1 ||
+      !Number.isInteger(data.scammer_id) ||
+      data.scammer_id < 1
+    ) {
+      throw new Error("The scammer report was not created.");
+    }
+    return { reportId: data.id, scammerId: data.scammer_id };
+  }
+
+  public async createReportForOrganization(
+    id: string,
+    request: CreateAttachedReportRequest,
+    signal: AbortSignal,
+  ): Promise<CreatedAttachedOrganizationReport> {
+    const url = API_ROUTES.public.organizations.reports.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } =
+      await Http.post<CreatedAttachedOrganizationReportDto>(url, request, {
+        signal,
+      });
+    if (
+      status !== 201 ||
+      !Number.isInteger(data.id) ||
+      data.id < 1 ||
+      !Number.isInteger(data.organization_id) ||
+      data.organization_id < 1
+    ) {
+      throw new Error("The organization report was not created.");
+    }
+    return { reportId: data.id, organizationId: data.organization_id };
   }
 
   private async findPartySummary(

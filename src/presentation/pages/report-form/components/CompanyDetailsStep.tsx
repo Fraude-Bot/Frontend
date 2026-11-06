@@ -7,7 +7,7 @@ import {
 } from "react-tag-autocomplete";
 import CompanyNameInput from "@/presentation/pages/report-form/components/CompanyNameInput";
 import ReportDetailsActions from "@/presentation/pages/report-form/components/ReportDetailsActions";
-import EvidenceScreenshotsInput from "@/presentation/pages/report-form/components/EvidenceScreenshotsInput";
+import EvidenceScreenshotsInput from "@/presentation/shared/components/EvidenceScreenshotsInput";
 import PartyPhotoInput from "@/presentation/pages/report-form/components/PartyPhotoInput";
 import ReportCollaboratorsSection from "@/presentation/pages/report-form/components/ReportCollaboratorsSection";
 import ReportContactsSection from "@/presentation/pages/report-form/components/ReportContactsSection";
@@ -18,7 +18,7 @@ import ReportFieldError, {
 import ReportPaymentsSection from "@/presentation/pages/report-form/components/ReportPaymentsSection";
 import { useReportDetailsAttempt } from "@/presentation/pages/report-form/components/report-details-validation";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
-import "@/presentation/pages/report-form/components/report-tags.css";
+import "@/presentation/shared/styles/report-tags.css";
 
 const PRODUCT_TAG_CLASS_NAMES: ClassNames = {
   root: "report-product-tags",

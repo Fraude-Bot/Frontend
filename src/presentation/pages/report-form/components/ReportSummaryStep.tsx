@@ -17,7 +17,8 @@ import {
 } from "@/application/mappers/report-request.mapper";
 import type { ReportFormStepProps } from "@/presentation/pages/report-form/components/types";
 import { useDependencies } from "@/presentation/providers/useDependencies";
-import "@/presentation/pages/report-form/components/report-tags.css";
+import useObjectUrl from "@/presentation/shared/hooks/useObjectUrl";
+import "@/presentation/shared/styles/report-tags.css";
 
 const FIELD_CLASS =
   "h-11 w-full border border-gray-300 px-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500";
@@ -63,24 +64,11 @@ function FileImage({
   className: string;
   label: string;
 }) {
-  const [url, setUrl] = useState<string | null>(null);
+  const url = useObjectUrl(file);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const closePreview = useCallback(() => {
     setIsPreviewOpen(false);
   }, []);
-
-  useEffect(() => {
-    const nextUrl = URL.createObjectURL(file);
-    setUrl(nextUrl);
-
-    return () => {
-      URL.revokeObjectURL(nextUrl);
-    };
-  }, [file]);
-
-  if (!url) {
-    return null;
-  }
 
   return (
     <>

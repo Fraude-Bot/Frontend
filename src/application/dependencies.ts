@@ -8,6 +8,8 @@ import type FindRelationshipMapByPartyUsecase from "@/application/usecases/map/f
 import type FindOrganizationSummaryByIdUsecase from "@/application/usecases/organization/find-organization-summary-by-id.usecase";
 import type SuggestOrganizationNamesUsecase from "@/application/usecases/organization/suggest-organization-names.usecase";
 import type CreateOrganizationReportUsecase from "@/application/usecases/report/create-organization-report.usecase";
+import type CreateReportForOrganizationUsecase from "@/application/usecases/report/create-report-for-organization.usecase";
+import type CreateReportForScammerUsecase from "@/application/usecases/report/create-report-for-scammer.usecase";
 import type CreateScammerReportUsecase from "@/application/usecases/report/create-scammer-report.usecase";
 import type FindMonthlyReportCountsUsecase from "@/application/usecases/report/find-monthly-report-counts.usecase";
 import type CreateOrganizationScammerUsecase from "@/application/usecases/association/create-organization-scammer.usecase";
@@ -49,5 +51,7 @@ export type Dependencies = {
   storeTemporaryProofsUseCase: PublicInterface<StoreTemporaryProofsUsecase>;
   createOrganizationReportUseCase: PublicInterface<CreateOrganizationReportUsecase>;
   createScammerReportUseCase: PublicInterface<CreateScammerReportUsecase>;
+  createReportForScammerUseCase: PublicInterface<CreateReportForScammerUsecase>;
+  createReportForOrganizationUseCase: PublicInterface<CreateReportForOrganizationUsecase>;
   searchReportCache: SearchReportCachePort;
 };
