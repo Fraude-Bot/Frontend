@@ -6,7 +6,9 @@ if (!openApiUrl) {
 
 const requiredOperations = new Map([
   ["GET", "/public/reports/"],
-  ["POST", "/public/reports/media/profiles"],
+  ["POST", "/public/media/profiles"],
+  ["PATCH", "/public/scammers/{id}/profiles"],
+  ["PATCH", "/public/organizations/{id}/profiles"],
   ["POST", "/public/reports/media/proofs"],
   ["POST", "/public/reports/organizations"],
   ["POST", "/public/reports/scammers"],
@@ -18,6 +20,7 @@ const requiredOperations = new Map([
   ["GET", "/public/scammers/{id}/payment-methods"],
   ["POST", "/public/scammers/{id}/payment-methods"],
   ["GET", "/public/scammers/{id}/reports"],
+  ["POST", "/public/scammers/{id}/reports"],
   ["GET", "/public/scammers/{id}/organizations"],
   ["POST", "/public/scammers/{id}/organizations"],
   ["GET", "/public/scammers/{id}/map"],
@@ -29,6 +32,7 @@ const requiredOperations = new Map([
   ["GET", "/public/organizations/{id}/payment-methods"],
   ["POST", "/public/organizations/{id}/payment-methods"],
   ["GET", "/public/organizations/{id}/reports"],
+  ["POST", "/public/organizations/{id}/reports"],
   ["GET", "/public/organizations/{id}/scammers"],
   ["POST", "/public/organizations/{id}/scammers"],
   ["GET", "/public/organizations/{id}/map"],

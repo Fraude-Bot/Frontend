@@ -137,9 +137,12 @@ function PartyNameInput({
       return;
     }
 
+    const inputEl = input;
+    const dialogEl = dialog;
+
     function placeMenu() {
-      const rect = input.getBoundingClientRect();
-      setPortalRoot(dialog);
+      const rect = inputEl.getBoundingClientRect();
+      setPortalRoot(dialogEl);
       setMenuStyle({
         position: "fixed",
         top: rect.bottom + 4,
@@ -151,11 +154,11 @@ function PartyNameInput({
 
     placeMenu();
     window.addEventListener("resize", placeMenu);
-    dialog.addEventListener("scroll", placeMenu, true);
+    dialogEl.addEventListener("scroll", placeMenu, true);
 
     return () => {
       window.removeEventListener("resize", placeMenu);
-      dialog.removeEventListener("scroll", placeMenu, true);
+      dialogEl.removeEventListener("scroll", placeMenu, true);
     };
   }, [showDropdown]);
 

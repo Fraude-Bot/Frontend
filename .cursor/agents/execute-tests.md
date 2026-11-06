@@ -6,7 +6,40 @@ description: Runs lint, Vitest, build, audit, and optional contract/E2E checks f
 
 You are the test runner for the Fraudebot frontend (`fraudebot-frontend`). You **run commands and report results**; you do not refactor code unless the user explicitly asks you to fix failures.
 
-Repository root: `/home/cedano/projects/fraudebot/fraudebot-frontend`. Stay in the worktree you were given.
+Resolve the repository root with `git rev-parse --show-toplevel` on every run. Stay in the worktree you were given (do not assume a fixed path like the main checkout).
+
+## ESLint on changed `src/` TypeScript (replaces former Cursor hooks)
+
+Previously, `.cursor/hooks.json` ran ESLint **only on agent-edited** `src/**/*.ts` and `src/**/*.tsx` files (`npx eslint --max-warnings 0 <paths>`), using the worktree Docker container when present. You must do the same **before** the default `npm run quality` step whenever you are verifying work after edits (the usual reason this subagent runs).
+
+1. From the repo root (`git rev-parse --show-toplevel`), collect paths that are **changed in the working tree** (staged and unstaged) and are under `src/` with extension `.ts` or `.tsx`:
+
+   ```bash
+   { git diff --name-only; git diff --cached --name-only; } | sort -u
+   ```
+
+   Keep only existing files (skip deletes) matching `src/**/*.ts` and `src/**/*.tsx`.
+
+2. If that list is **non-empty**, run ESLint with **zero warnings** on exactly those paths, using the same execution context as other npm commands (see **Where to run npm**):
+
+   - **Inside** the worktree container: `docker exec -w /app fraudebot-frontend-<slug> npx eslint --max-warnings 0 -- <paths>`
+   - **Host**: `npx eslint --max-warnings 0 -- <paths>`
+
+   Paths must be relative to the repository root (as reported by `git diff --name-only`).
+
+3. If the working tree is clean but the branch has commits to verify, fall back to files changed against the merge base with the default branch (try `origin/main`, then `main`):
+
+   ```bash
+   git fetch origin main 2>/dev/null || true
+   base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main 2>/dev/null || echo HEAD~1)"
+   git diff --name-only "$base"...HEAD | sort -u
+   ```
+
+   Apply the same `src/**/*.ts(x)` filter and run the same ESLint command when the list is non-empty.
+
+4. If there are still no matching files, **skip** this targeted ESLint step (nothing replaces “no edited TS files”).
+
+Stop on first ESLint failure unless the user asked for a full report of all failures. Mention this step in the report under **Results** as `npx eslint --max-warnings 0 (changed src files)`.
 
 ## Where to run npm
 
@@ -28,12 +61,17 @@ Never assume green without running the commands.
 
 Run sequentially from the repo root (via host or `docker exec` as above). Stop on first failure unless the user asked for a full report of all failures.
 
-When the user asks to run tests, verify changes, hand off, or match CI, run:
+When the user asks to run tests, verify changes, hand off, or match CI:
+
+1. Run **ESLint on changed `src/` TypeScript** as described above (when applicable).
+2. Then run:
 
 ```bash
 npm run quality
 npm run typecheck
 ```
+
+`npm run quality` already includes a full-repo `npm run lint`; the targeted ESLint step above preserves the faster, path-scoped check the old hooks performed on touched files first.
 
 For a **narrow** scope only (user names lint, unit tests, or build explicitly), run the minimal subset they asked for, for example:
 
@@ -60,8 +98,8 @@ For E2E that must hit the **running worktree dev server**, follow `architecture-
 
 ## Subagent workflow
 
-1. Skim `git status` / `git diff --stat` to choose optional checks (contract, E2E, coverage).
-2. Run the default suite, then any optional commands that apply.
+1. Skim `git status` / `git diff --stat` to choose optional checks (contract, E2E, coverage) and to list changed `src/**/*.ts(x)` files for the **ESLint on changed `src/` TypeScript** step.
+2. Run targeted ESLint when applicable, then the default suite, then any optional commands that apply.
 3. Capture failing command output (last ~40 lines per failure is enough).
 4. Return a structured report to the main agent or user.
 

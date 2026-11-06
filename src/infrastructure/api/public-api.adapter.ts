@@ -1,9 +1,12 @@
 import type {
+  CreatedAttachedOrganizationReport,
+  CreatedAttachedScammerReport,
   CreatedOrganizationReport,
   CreatedScammerReport,
   PartyType,
   PublicApiPort,
 } from "@/application/ports/public-api.port";
+import type { StoredProfilePicture } from "@/application/models/stored-profile-picture.model";
 import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import type { CreateOrganizationScammerRequest } from "@/core/domain/association/models/create-organization-scammer.request";
 import type { CreateScammerOrganizationRequest } from "@/core/domain/association/models/create-scammer-organization.request";
@@ -22,6 +25,7 @@ import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-rep
 import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
 import ReportSummaryEntity from "@/core/domain/report/entities/report-summary.entity";
 import type {
+  CreateAttachedReportRequest,
   CreateOrganizationReportRequest,
   CreateScammerReportRequest,
 } from "@/core/domain/report/models/create-report.request";
@@ -36,8 +40,11 @@ import {
 import Http from "@/infrastructure/http/http";
 import type {
   ContactsDto,
+  ContactDto,
   PaymentMethodDto,
   PaymentMethodsDto,
+  CreatedAttachedOrganizationReportDto,
+  CreatedAttachedScammerReportDto,
   CreatedOrganizationReportDto,
   CreatedScammerReportDto,
   MonthlyReportCountsDto,
@@ -49,6 +56,7 @@ import type {
   SearchReportsDto,
   StoredImagePathDto,
   StoredImagePathsDto,
+  UpdateProfilePictureResponseDto,
 } from "@/infrastructure/api/dto/public-api.dto";
 
 const emptyPage = <T>(page: number) => ({
@@ -686,11 +694,11 @@ class PublicApiAdapter implements PublicApiPort {
   public async storeTemporaryProfilePicture(
     file: File,
     signal: AbortSignal,
-  ): Promise<string> {
+  ): Promise<StoredProfilePicture> {
     const body = new FormData();
     body.append("image", file);
     const { data, status } = await Http.post<StoredImagePathDto>(
-      API_ROUTES.public.reports.profilePicture,
+      API_ROUTES.public.media.profilePicture,
       body,
       { signal, headers: { "Content-Type": "multipart/form-data" } },
     );
@@ -702,6 +710,37 @@ class PublicApiAdapter implements PublicApiPort {
       throw new Error("The profile picture was not stored.");
     }
     return { path: data.path, displayUrl };
+  }
+
+  public async updatePartyProfilePicture(
+    id: string,
+    type: PartyType,
+    profilePicture: string,
+    signal: AbortSignal,
+  ): Promise<StoredProfilePicture> {
+    const route =
+      type === "scammer"
+        ? API_ROUTES.public.scammers.profilePicture
+        : API_ROUTES.public.organizations.profilePicture;
+    const url = route.replace("{id}", encodeURIComponent(id));
+    const { data, status } = await Http.patch<UpdateProfilePictureResponseDto>(
+      url,
+      { profile_picture: profilePicture.trim() },
+      { signal },
+    );
+    if (
+      status !== 200 ||
+      typeof data.profile_picture_path !== "string" ||
+      !data.profile_picture_path.trim()
+    ) {
+      throw new Error("The profile picture was not updated.");
+    }
+    const path = data.profile_picture_path.trim();
+    const displayUrl = resolveCdnUrl(path);
+    if (!displayUrl) {
+      throw new Error("The profile picture was not updated.");
+    }
+    return { path, displayUrl };
   }
 
   public async storeTemporaryProofs(
@@ -766,6 +805,57 @@ class PublicApiAdapter implements PublicApiPort {
       throw new Error("The scammer report was not created.");
     }
     return { reportId: data.id, scammerId: data.scammer_id };
+  }
+
+  public async createReportForScammer(
+    id: string,
+    request: CreateAttachedReportRequest,
+    signal: AbortSignal,
+  ): Promise<CreatedAttachedScammerReport> {
+    const url = API_ROUTES.public.scammers.reports.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } = await Http.post<CreatedAttachedScammerReportDto>(
+      url,
+      request,
+      { signal },
+    );
+    if (
+      status !== 201 ||
+      !Number.isInteger(data.id) ||
+      data.id < 1 ||
+      !Number.isInteger(data.scammer_id) ||
+      data.scammer_id < 1
+    ) {
+      throw new Error("The scammer report was not created.");
+    }
+    return { reportId: data.id, scammerId: data.scammer_id };
+  }
+
+  public async createReportForOrganization(
+    id: string,
+    request: CreateAttachedReportRequest,
+    signal: AbortSignal,
+  ): Promise<CreatedAttachedOrganizationReport> {
+    const url = API_ROUTES.public.organizations.reports.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } =
+      await Http.post<CreatedAttachedOrganizationReportDto>(url, request, {
+        signal,
+      });
+    if (
+      status !== 201 ||
+      !Number.isInteger(data.id) ||
+      data.id < 1 ||
+      !Number.isInteger(data.organization_id) ||
+      data.organization_id < 1
+    ) {
+      throw new Error("The organization report was not created.");
+    }
+    return { reportId: data.id, organizationId: data.organization_id };
   }
 
   private async findPartySummary(

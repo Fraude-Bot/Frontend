@@ -18,6 +18,7 @@ import type FindAssociationsByPartyResult from "@/core/domain/association/models
 import type PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-relationship-map.model";
 import type {
+  CreateAttachedReportRequest,
   CreateOrganizationReportRequest,
   CreateScammerReportRequest,
 } from "@/core/domain/report/models/create-report.request";
@@ -30,6 +31,16 @@ export type CreatedScammerReport = {
 };
 
 export type CreatedOrganizationReport = {
+  reportId: number;
+  organizationId: number;
+};
+
+export type CreatedAttachedScammerReport = {
+  reportId: number;
+  scammerId: number;
+};
+
+export type CreatedAttachedOrganizationReport = {
   reportId: number;
   organizationId: number;
 };
@@ -129,6 +140,12 @@ export interface PublicApiPort {
     file: File,
     signal: AbortSignal,
   ): Promise<StoredProfilePicture>;
+  updatePartyProfilePicture(
+    id: string,
+    type: PartyType,
+    profilePicture: string,
+    signal: AbortSignal,
+  ): Promise<StoredProfilePicture>;
   storeTemporaryProofs(
     files: File[],
     signal: AbortSignal,
@@ -141,6 +158,16 @@ export interface PublicApiPort {
     request: CreateScammerReportRequest,
     signal: AbortSignal,
   ): Promise<CreatedScammerReport>;
+  createReportForScammer(
+    id: string,
+    request: CreateAttachedReportRequest,
+    signal: AbortSignal,
+  ): Promise<CreatedAttachedScammerReport>;
+  createReportForOrganization(
+    id: string,
+    request: CreateAttachedReportRequest,
+    signal: AbortSignal,
+  ): Promise<CreatedAttachedOrganizationReport>;
 }
 
 export type PublicApiMethod<K extends keyof PublicApiPort> = Pick<

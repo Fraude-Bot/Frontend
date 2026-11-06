@@ -48,7 +48,8 @@ function MapCanvas({
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
-      fitView={{ padding: 0.15 }}
+      fitView
+      fitViewOptions={{ padding: 0.15 }}
       panOnDrag
       zoomOnScroll
       nodesDraggable={false}

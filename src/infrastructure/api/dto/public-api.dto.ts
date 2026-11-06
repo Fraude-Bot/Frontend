@@ -108,6 +108,9 @@ export type RelationshipMapDto = {
 
 export type StoredImagePathDto = { path: string };
 export type StoredImagePathsDto = { paths: string[] };
+export type UpdateProfilePictureResponseDto = {
+  profile_picture_path: string;
+};
 
 export type CreatedOrganizationReportDto = {
   id: number;
@@ -117,4 +120,14 @@ export type CreatedOrganizationReportDto = {
 export type CreatedScammerReportDto = {
   id: number;
   scammer_id: number;
+};
+
+export type CreatedAttachedScammerReportDto = {
+  id: number;
+  scammer_id: number;
+};
+
+export type CreatedAttachedOrganizationReportDto = {
+  id: number;
+  organization_id: number;
 };

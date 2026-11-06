@@ -153,7 +153,8 @@ function ReportHero({
   profilePicture,
   onProfilePictureChange,
 }: ReportHeroProps) {
-  const { storeTemporaryProfilePictureUseCase } = useDependencies();
+  const { storeTemporaryProfilePictureUseCase, updatePartyProfilePictureUseCase } =
+    useDependencies();
   const fileInputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const requestId = useRef(0);
@@ -197,9 +198,10 @@ function ReportHero({
     return () => {
       isMounted.current = false;
       storeTemporaryProfilePictureUseCase.cancel();
+      updatePartyProfilePictureUseCase.cancel();
       revokePendingPreview();
     };
-  }, [storeTemporaryProfilePictureUseCase]);
+  }, [storeTemporaryProfilePictureUseCase, updatePartyProfilePictureUseCase]);
 
   function openFileSelector() {
     fileInputRef.current?.click();
@@ -229,6 +231,9 @@ function ReportHero({
 
     void storeTemporaryProfilePictureUseCase
       .execute(nextFile)
+      .then(({ path }) =>
+        updatePartyProfilePictureUseCase.execute(id, partyType, path),
+      )
       .then(({ path, displayUrl }) => {
         if (currentRequestId !== requestId.current) {
           return;

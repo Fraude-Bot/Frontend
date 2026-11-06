@@ -56,7 +56,7 @@ npm run build                # Production build in dist/
 npm run test:e2e             # Chromium end-to-end tests
 ```
 
-Agent sessions may run ESLint on edited `src/` files when the agent stops; see `.cursor/hooks.json`.
+After agent edits, run the **execute-tests** subagent (`.cursor/agents/execute-tests.md`): it runs ESLint with `--max-warnings 0` on changed `src/**/*.ts(x)` files when applicable, then `npm run quality` and `npm run typecheck`.
 
 Playwright starts a production preview on port `4173`. Install its browser once with
 `npx playwright install chromium` if it is not already available. Docker-based end-to-end
