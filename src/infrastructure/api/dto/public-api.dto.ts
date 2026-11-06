@@ -121,3 +121,13 @@ export type CreatedScammerReportDto = {
   id: number;
   scammer_id: number;
 };
+
+export type CreatedAttachedScammerReportDto = {
+  id: number;
+  scammer_id: number;
+};
+
+export type CreatedAttachedOrganizationReportDto = {
+  id: number;
+  organization_id: number;
+};

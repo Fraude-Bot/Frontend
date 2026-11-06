@@ -4,7 +4,10 @@ import StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/s
 import StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
 import CreateScammerReportUsecase from "@/application/usecases/report/create-scammer-report.usecase";
 import CreateOrganizationReportUsecase from "@/application/usecases/report/create-organization-report.usecase";
+import CreateReportForScammerUsecase from "@/application/usecases/report/create-report-for-scammer.usecase";
+import CreateReportForOrganizationUsecase from "@/application/usecases/report/create-report-for-organization.usecase";
 import type {
+  CreateAttachedReportRequest,
   CreateOrganizationReportRequest,
   CreateScammerReportRequest,
 } from "@/core/domain/report/models/create-report.request";
@@ -95,6 +98,46 @@ describe("write and suggestion use cases", () => {
         organizationRequest,
       ),
     ).resolves.toEqual({ reportId: 3, organizationId: 4 });
+  });
+
+  it("delegates reports filed against an existing party", async () => {
+    const request: CreateAttachedReportRequest = {
+      email: "reporter@example.com",
+      title: "Reporte",
+      description: "Descripción",
+      products: ["Crypto"],
+      proofs: ["/storage/tmp/reports/proofs/a.jpg"],
+    };
+    const scammerApi = {
+      createReportForScammer: vi
+        .fn()
+        .mockResolvedValue({ reportId: 8, scammerId: 2 }),
+    };
+    const organizationApi = {
+      createReportForOrganization: vi
+        .fn()
+        .mockResolvedValue({ reportId: 9, organizationId: 4 }),
+    };
+
+    await expect(
+      new CreateReportForScammerUsecase(scammerApi).execute("2", request),
+    ).resolves.toEqual({ reportId: 8, scammerId: 2 });
+    await expect(
+      new CreateReportForOrganizationUsecase(organizationApi).execute(
+        "4",
+        request,
+      ),
+    ).resolves.toEqual({ reportId: 9, organizationId: 4 });
+    expect(scammerApi.createReportForScammer).toHaveBeenCalledWith(
+      "2",
+      request,
+      expect.any(AbortSignal),
+    );
+    expect(organizationApi.createReportForOrganization).toHaveBeenCalledWith(
+      "4",
+      request,
+      expect.any(AbortSignal),
+    );
   });
 
   it("aborts the delegated request when cancelled", async () => {

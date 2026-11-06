@@ -51,10 +51,7 @@ describe("ReportsTab", () => {
 
     expect(execute).toHaveBeenCalledWith("20", "scammer", 1);
     expect(screen.getByText("Historial de Reportes:")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Agregar +" })).toHaveAttribute(
-      "href",
-      "/reportar/estafadores/20",
-    );
+    expect(screen.getByRole("button", { name: "Agregar +" })).toBeInTheDocument();
     expect(screen.getByText("#1 - Título del reporte 1-0")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Título del reporte 1-0/ }),
@@ -85,10 +82,7 @@ describe("ReportsTab", () => {
       expect(screen.getByRole("button", { name: "Página 2" })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("link", { name: "Agregar +" })).toHaveAttribute(
-      "href",
-      "/reportar/empresas/20",
-    );
+    expect(screen.getByRole("button", { name: "Agregar +" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Página 2" }));
 
