@@ -199,15 +199,19 @@ function ReportsSearch() {
             </div>
           )}
 
-        {!isSearching && !errorMessage && totalPages > 1 && (
-          <PaginationNav
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            ariaLabel="Paginación de reportes"
-            className="mb-4 mt-2"
-          />
-        )}
+        {!isSearching &&
+          !errorMessage &&
+          hasSubmittedSearch &&
+          hasQuery &&
+          totalPages >= 1 && (
+            <PaginationNav
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              ariaLabel="Paginación de reportes"
+              className="mb-4 mt-2"
+            />
+          )}
 
         {!isSearching &&
           !errorMessage &&
