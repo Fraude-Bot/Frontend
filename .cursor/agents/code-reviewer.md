@@ -25,7 +25,6 @@ Before judging, read every file under `.cursor/rules/`. Apply a rule only when t
 - `clean-architecture.mdc` — layer boundaries, import direction, ports, DTOs in infrastructure, use cases via `useDependencies` in presentation.
 - `presentation-structure.mdc` — when the diff adds, moves, or shares presentation modules across pages; includes the import check and placement table.
 - `architecture-verification.mdc` — when changes touch architecture, API contract, SEO, or dependencies; note if expected verification commands were skipped (do not run long CI suites unless the user asked).
-- `pushing-changes-to-github.mdc` — only if commits or PR wording is part of the diff.
 
 If `.cursor/skills/` has a skill that clearly applies to the changed UI or flow (for example `modals`, `pagination`, `public-profile-seo`), read it and check the diff against that skill’s workflow—not stylistic preferences the skill does not require.
 

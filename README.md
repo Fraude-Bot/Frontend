@@ -58,6 +58,8 @@ npm run test:e2e             # Chromium end-to-end tests
 
 After agent edits, run the **execute-tests** subagent (`.cursor/agents/execute-tests.md`): it runs ESLint with `--max-warnings 0` on changed `src/**/*.ts(x)` files when applicable, then `npm run quality` and `npm run typecheck`.
 
+To publish: `/commit` (logical multi-commit + push, `.cursor/agents/commit.md`) then `/publish` (GitHub PR, default base `main`, `.cursor/agents/create-pr.md`).
+
 Playwright starts a production preview on port `4173`. Install its browser once with
 `npx playwright install chromium` if it is not already available. Docker-based end-to-end
 scripts are also available in `package.json`.
