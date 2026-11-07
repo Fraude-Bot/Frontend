@@ -85,6 +85,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
     useDependencies();
   const profileKey = `${type}:${id ?? ""}`;
   const [activeTab, setActiveTab] = useState<ReportTab>("General");
+  const [viewingReportId, setViewingReportId] = useState<string | null>(null);
   const [activeProfileKey, setActiveProfileKey] = useState(profileKey);
   const [profilePictureOverride, setProfilePictureOverride] =
     useState<ProfilePictureUploadResult | null>(null);
@@ -100,7 +101,13 @@ function Report({ type }: { type: "scammer" | "organization" }) {
     setActiveProfileKey(profileKey);
     setActiveTab("General");
     setProfilePictureOverride(null);
+    setViewingReportId(null);
   }
+
+  const handleTabChange = (tab: ReportTab) => {
+    setActiveTab(tab);
+    setViewingReportId(null);
+  };
 
   useLayoutEffect(() => {
     scrollViewToTop();
@@ -206,7 +213,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
           <ReportTabNavigation
             partyType={type}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
           />
         )}
 
@@ -262,11 +269,17 @@ function Report({ type }: { type: "scammer" | "organization" }) {
                   partyId={party.id}
                   partyType={type}
                   reports={party.reports}
-                  onNavigateTab={setActiveTab}
+                  onNavigateTab={handleTabChange}
                 />
               )}
               {activeTab === "Reportes" && (
-                <ReportsTab partyId={party.id} partyType={type} />
+                <ReportsTab
+                  partyId={party.id}
+                  partyType={type}
+                  selectedReportId={viewingReportId}
+                  onSelectReport={setViewingReportId}
+                  onBackFromReport={() => setViewingReportId(null)}
+                />
               )}
               {activeTab === "Contactos" && (
                 <ContactsTab partyId={party.id} partyType={type} />
@@ -274,7 +287,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
               {activeTab === "Métodos de pago" && (
                 <PaymentMethodsTab partyId={party.id} partyType={type} />
               )}
-              {(activeTab === "Empresas" || activeTab === "Estafadores") && (
+              {(activeTab === "Empresas" || activeTab === "Colaboradores") && (
                 <AssociationsTab
                   key={`${type}:${party.id}`}
                   partyId={party.id}

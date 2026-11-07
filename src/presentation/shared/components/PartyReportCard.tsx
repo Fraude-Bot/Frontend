@@ -28,13 +28,14 @@ function ExternalLinkIcon() {
   );
 }
 
-function PartyReportCard({ report }: { report: PartyReportEntity }) {
-  return (
-    <article>
-      <Link
-        to={reportDetailPath(report.id)}
-        className="block cursor-pointer rounded-md border border-gray-200 px-4 py-3 hover:bg-gray-50"
-      >
+interface PartyReportCardProps {
+  report: PartyReportEntity;
+  onSelect?: (report: PartyReportEntity) => void;
+}
+
+function PartyReportCard({ report, onSelect }: PartyReportCardProps) {
+  const cardBody = (
+    <>
         <div className="flex items-start justify-between gap-3">
           <h3 className="min-w-0 truncate text-sm font-extrabold text-gray-900">
             #{report.id} - {report.title}
@@ -44,13 +45,34 @@ function PartyReportCard({ report }: { report: PartyReportEntity }) {
           </span>
         </div>
 
-        <p
-          className="mt-2 truncate text-sm text-gray-600"
-          title={report.description}
+      <p
+        className="mt-2 truncate text-sm text-gray-600"
+        title={report.description}
+      >
+        {report.description}
+      </p>
+    </>
+  );
+
+  const cardClassName =
+    "block w-full cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-left hover:bg-gray-50";
+
+  return (
+    <article>
+      {onSelect ? (
+        <button
+          type="button"
+          onClick={() => onSelect(report)}
+          aria-label={`Ver reporte ${report.title}`}
+          className={cardClassName}
         >
-          {report.description}
-        </p>
-      </Link>
+          {cardBody}
+        </button>
+      ) : (
+        <Link to={reportDetailPath(report.id)} className={cardClassName}>
+          {cardBody}
+        </Link>
+      )}
     </article>
   );
 }
