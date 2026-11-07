@@ -51,7 +51,7 @@ function ReportTabNavigation({
     <div className="mx-auto flex max-w-5xl justify-center px-4 pt-6">
       <div
         role="tablist"
-        className="inline-flex w-fit max-w-full overflow-x-auto bg-gray-100"
+        className="inline-flex w-fit max-w-full overflow-x-auto bg-gray-100 [scrollbar-color:rgb(156_163_175)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-button]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-track]:bg-transparent"
         aria-label="Secciones del perfil"
       >
         {reportTabs.map((tab, index) => {
