@@ -316,7 +316,7 @@ function ReportHero({
               ref={fileInputRef}
               id={fileInputId}
               type="file"
-              accept="image/jpeg,image/png"
+              accept="image/jpeg,image/png,image/webp"
               tabIndex={-1}
               disabled={isUploading}
               aria-label="Cambiar foto de perfil"

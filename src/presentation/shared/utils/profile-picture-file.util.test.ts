@@ -4,16 +4,18 @@ import {
 } from "@/presentation/shared/utils/profile-picture-file.util";
 
 describe("validateProfilePicture", () => {
-  it("accepts jpeg and png files within the size limit", () => {
-    const file = new File(["x"], "photo.jpg", { type: "image/jpeg" });
+  it("accepts jpeg, png, and webp files within the size limit", () => {
+    const jpeg = new File(["x"], "photo.jpg", { type: "image/jpeg" });
+    const webp = new File(["x"], "photo.webp", { type: "image/webp" });
 
-    expect(validateProfilePicture(file)).toBeNull();
+    expect(validateProfilePicture(jpeg)).toBeNull();
+    expect(validateProfilePicture(webp)).toBeNull();
   });
 
   it("rejects unsupported formats", () => {
     const file = new File(["x"], "photo.gif", { type: "image/gif" });
 
-    expect(validateProfilePicture(file)).toBe("Usa una imagen JPG o PNG.");
+    expect(validateProfilePicture(file)).toBe("Usa una imagen JPG, PNG o WEBP.");
   });
 
   it("rejects files larger than 5 MB", () => {
