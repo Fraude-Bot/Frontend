@@ -72,14 +72,14 @@ const FORM_COPY: Record<
       "Los perfiles/números que haya utilizado el colaborador para contactarte",
   },
   organization: {
-    photoAdd: "Agregar foto de la organización",
-    photoChange: "Cambiar foto de la organización",
-    name: "Nombre de la organización",
+    photoAdd: "Agregar foto de la empresa",
+    photoChange: "Cambiar foto de la empresa",
+    name: "Nombre de la empresa",
     placeholder: "Ej. (Billions Trade Club, Globoshop)",
     payments:
-      "Los números de cuenta/bancos/wallets que esté utilizando la organización para captar fondos",
+      "Los números de cuenta/bancos/wallets que esté utilizando la empresa para captar fondos",
     contacts:
-      "Los perfiles/números que haya utilizado la organización para contactarte",
+      "Los perfiles/números que haya utilizado la empresa para contactarte",
   },
 };
 

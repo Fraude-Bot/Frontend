@@ -16,23 +16,27 @@ interface AssociationsTabProps {
 const copyByPartyType = {
   scammer: {
     title: "Empresas:",
-    description: "Organizaciones a las que pertenece este estafador.",
+    addButton: "Agregar Empresa +",
+    description: "Empresas a las que pertenece este estafador.",
     loading: "Cargando empresas...",
     empty: "No se encontraron empresas.",
     error:
       "No pudimos cargar las empresas. Revisa tu conexión e inténtalo de nuevo.",
     pagination: "Paginación de empresas",
     associationType: "organization",
+    associationKindLabel: "Empresa",
   },
   organization: {
-    title: "Estafadores:",
-    description: "Estafadores asociados a esta empresa.",
+    title: "Colaboradores:",
+    addButton: "Agregar Colaborador +",
+    description: "Colaboradores asociados a esta empresa.",
     loading: "Cargando estafadores...",
     empty: "No se encontraron estafadores.",
     error:
       "No pudimos cargar los estafadores. Revisa tu conexión e inténtalo de nuevo.",
     pagination: "Paginación de estafadores",
     associationType: "scammer",
+    associationKindLabel: "Colaborador",
   },
 } as const;
 
@@ -239,7 +243,7 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
           }}
           className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
         >
-          Agregar +
+          {copy.addButton}
         </button>
       </div>
       <p className="mt-4 text-base leading-6 text-gray-900">{copy.description}</p>
@@ -256,6 +260,7 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
             key={association.id}
             association={association}
             associationType={copy.associationType}
+            kindLabel={copy.associationKindLabel}
           />
         ))}
 
@@ -266,6 +271,7 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
               key={association.id}
               association={association}
               associationType={copy.associationType}
+              kindLabel={copy.associationKindLabel}
             />
           ))}
 
@@ -312,6 +318,7 @@ function AssociationsTab({ partyId, partyType }: AssociationsTabProps) {
       ) : null}
       {isAddAssociationOpen && partyType === "scammer" ? (
         <AddOrganizationModal
+          title="Agregar Empresa"
           onClose={closeAddAssociation}
           onCreate={handleCreateAssociation}
           errorMessage={createErrorMessage}

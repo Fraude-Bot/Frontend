@@ -8,6 +8,7 @@ type AddOrganizationModalProps = {
   ) => void | Promise<void>;
   errorMessage?: string | null;
   isSubmitting?: boolean;
+  title?: string;
 };
 
 function AddOrganizationModal({
@@ -15,10 +16,11 @@ function AddOrganizationModal({
   onCreate,
   errorMessage = null,
   isSubmitting = false,
+  title = "Agregar Empresa",
 }: AddOrganizationModalProps) {
   return (
     <CollaboratorFormModal
-      title="Agregar Organización"
+      title={title}
       submitLabel="Crear"
       variant="organization"
       initialName=""

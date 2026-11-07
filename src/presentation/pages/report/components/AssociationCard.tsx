@@ -3,7 +3,7 @@ import { organizationPath, scammerPath } from "@/common/app-routes";
 import PartyAssociationEntity from "@/core/domain/association/entities/party-association.entity";
 import { formatContactDate } from "@presentation/pages/report/components/contact-date.util";
 
-function ArrowIcon() {
+function ExternalLinkIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -12,7 +12,14 @@ function ArrowIcon() {
       className="h-4 w-4 shrink-0 text-gray-400"
     >
       <path
-        d="M5 12h14M13 6l6 6-6 6"
+        d="M14 4h6v6M20 4 10 14"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
@@ -25,15 +32,18 @@ function ArrowIcon() {
 function AssociationCard({
   association,
   associationType,
+  kindLabel: kindLabelOverride,
 }: {
   association: PartyAssociationEntity;
   associationType: "scammer" | "organization";
+  kindLabel?: string;
 }) {
   const isScammer = associationType === "scammer";
   const href = isScammer
     ? scammerPath(association.id)
     : organizationPath(association.id);
-  const kindLabel = isScammer ? "Estafador" : "Empresa";
+  const kindLabel =
+    kindLabelOverride ?? (isScammer ? "Estafador" : "Empresa");
   const formattedDate = formatContactDate(association.createdAt);
 
   return (
@@ -53,7 +63,7 @@ function AssociationCard({
             </h3>
           </div>
           <span aria-hidden className="shrink-0">
-            <ArrowIcon />
+            <ExternalLinkIcon />
           </span>
         </div>
         <p className="mt-2 text-sm text-gray-600">
