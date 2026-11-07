@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
 import type { CreateAttachedReportRequest } from "@/core/domain/report/models/create-report.request";
 import { useDependencies } from "@/presentation/providers/useDependencies";
@@ -51,18 +51,36 @@ function ReportsTab({
   const [isAddReportOpen, setIsAddReportOpen] = useState(false);
   const [isCreatingReport, setIsCreatingReport] = useState(false);
   const isCreatingReportRef = useRef(false);
+  const listScrollRef = useRef<HTMLDivElement>(null);
+  const savedListScrollTopRef = useRef(0);
+  const savedWindowScrollYRef = useRef(0);
+  const wasViewingReportRef = useRef(false);
+  const loadedRequestKeyRef = useRef<string | null>(null);
   const requestKey = `${partyId}:${partyType}:${currentPage}:${requestVersion}`;
   const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(
     null,
   );
+
+  const markRequestLoaded = (key: string) => {
+    loadedRequestKeyRef.current = key;
+    setLoadedRequestKey(key);
+  };
 
   const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
   const isLoading = loadedRequestKey !== requestKey;
 
   useEffect(() => {
     if (selectedReportId) {
+      wasViewingReportRef.current = true;
       return;
     }
+
+    if (wasViewingReportRef.current && loadedRequestKeyRef.current === requestKey) {
+      wasViewingReportRef.current = false;
+      return;
+    }
+
+    wasViewingReportRef.current = false;
 
     let ignore = false;
 
@@ -78,7 +96,7 @@ function ReportsTab({
         setTotalResults(result.total);
         setPageSize(result.count);
         setErrorMessage(null);
-        setLoadedRequestKey(requestKey);
+        markRequestLoaded(requestKey);
       })
       .catch((error) => {
         if (ignore || isCanceledError(error)) {
@@ -91,7 +109,7 @@ function ReportsTab({
         setErrorMessage(
           "No pudimos cargar los reportes. Revisa tu conexión e inténtalo de nuevo.",
         );
-        setLoadedRequestKey(requestKey);
+        markRequestLoaded(requestKey);
       });
 
     return () => {
@@ -108,6 +126,19 @@ function ReportsTab({
     selectedReportId,
   ]);
 
+  useLayoutEffect(() => {
+    if (selectedReportId) {
+      return;
+    }
+
+    window.scrollTo({ top: savedWindowScrollYRef.current, left: 0 });
+
+    const listElement = listScrollRef.current;
+    if (listElement) {
+      listElement.scrollTop = savedListScrollTopRef.current;
+    }
+  }, [selectedReportId]);
+
   useEffect(() => {
     return () => {
       createReportForOrganizationUseCase.cancel();
@@ -120,8 +151,15 @@ function ReportsTab({
       return;
     }
 
+    savedListScrollTopRef.current = 0;
     setCurrentPage(page);
   };
+
+  function handleSelectReport(report: PartyReportEntity) {
+    savedWindowScrollYRef.current = window.scrollY;
+    savedListScrollTopRef.current = listScrollRef.current?.scrollTop ?? 0;
+    onSelectReport?.(report.id);
+  }
 
   function closeAddReport() {
     isCreatingReportRef.current = false;
@@ -172,6 +210,7 @@ function ReportsTab({
   if (selectedReportId) {
     return (
       <ReportDetailPlaceholder
+        reportId={selectedReportId}
         onBack={() => onBackFromReport?.()}
       />
     );
@@ -192,7 +231,10 @@ function ReportsTab({
         </button>
       </div>
 
-      <div className="mt-6 max-h-[30rem] space-y-3 overflow-y-scroll pr-1">
+      <div
+        ref={listScrollRef}
+        className="mt-6 max-h-[30rem] space-y-3 overflow-y-scroll pr-1"
+      >
         {isLoading && (
           <p className="py-10 text-center text-sm text-gray-400">
             Cargando reportes...
@@ -205,11 +247,7 @@ function ReportsTab({
             <PartyReportCard
               key={report.id}
               report={report}
-              onSelect={
-                onSelectReport
-                  ? (selected) => onSelectReport(selected.id)
-                  : undefined
-              }
+              onSelect={onSelectReport ? handleSelectReport : undefined}
             />
           ))}
 
