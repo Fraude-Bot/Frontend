@@ -17,6 +17,7 @@ import type CreateScammerOrganizationUsecase from "@/application/usecases/associ
 import type FindAssociationsByPartyUsecase from "@/application/usecases/association/find-associations-by-party.usecase";
 import type FindReportsByPartyUsecase from "@/application/usecases/report/find-reports-by-party.usecase";
 import type SearchReportUsecase from "@/application/usecases/report/search-report.usecase";
+import type SearchReportsByTitleUsecase from "@/application/usecases/report/search-reports-by-title.usecase";
 import type SearchReportStubUsecase from "@/application/usecases/report/stub/search-report.stub";
 import type StoreTemporaryProfilePictureUsecase from "@/application/usecases/report/store-temporary-profile-picture.usecase";
 import type StoreTemporaryProofsUsecase from "@/application/usecases/report/store-temporary-proofs.usecase";
@@ -29,6 +30,7 @@ type PublicInterface<T> = Pick<T, keyof T>;
 
 export type Dependencies = {
   searchReportUseCase: PublicInterface<SearchReportUsecase>;
+  searchReportsByTitleUseCase: PublicInterface<SearchReportsByTitleUsecase>;
   findScammerSummaryByIdUseCase: PublicInterface<FindScammerSummaryByIdUsecase>;
   suggestScammerNamesUseCase: PublicInterface<SuggestScammerNamesUsecase>;
   findOrganizationSummaryByIdUseCase: PublicInterface<FindOrganizationSummaryByIdUsecase>;

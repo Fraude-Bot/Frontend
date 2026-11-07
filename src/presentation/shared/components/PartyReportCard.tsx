@@ -44,7 +44,10 @@ function PartyReportCard({ report }: { report: PartyReportEntity }) {
           </span>
         </div>
 
-        <p className="mt-2 truncate text-sm text-gray-600" title={report.description}>
+        <p
+          className="mt-2 truncate text-sm text-gray-600"
+          title={report.description}
+        >
           {report.description}
         </p>
       </Link>

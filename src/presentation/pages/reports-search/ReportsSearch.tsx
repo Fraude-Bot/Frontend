@@ -1,20 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { reportDetailPath } from "@/common/app-routes";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useDependencies } from "@/presentation/providers/useDependencies";
 import Footer from "@presentation/shared/components/Footer";
 import Header from "@presentation/shared/components/Header";
 import SearchContainer from "@presentation/pages/search/components/SearchContainer";
+import Loader from "@/presentation/pages/search/components/Loader";
 import NotFound from "@/presentation/pages/search/components/NotFound";
 import Formatter from "@/presentation/shared/utils/formatter";
 import { getValidPage } from "@/presentation/shared/utils/search-pagination.util";
+import { isCanceledError } from "@/common/utils/http-error.util";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
 import ReportTextSearchForm from "@/presentation/pages/reports-search/components/ReportTextSearchForm";
-import { MOCK_TEXT_REPORT_HITS } from "@/presentation/pages/reports-search/mock-reports";
-
-/** When the user has submitted a real query, paginate one hit per page (like /busqueda demos). */
-const SEARCH_PAGE_SIZE = 1;
-/** Sample / browse mode shows every mock card on one page. */
-const BROWSE_PAGE_SIZE = MOCK_TEXT_REPORT_HITS.length;
+import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
+import PartyReportCard from "@/presentation/shared/components/PartyReportCard";
 
 function ReportsSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,61 +20,111 @@ function ReportsSearch() {
   const formattedUrlQuery = Formatter.FormatInput(urlQuery);
   const [query, setQuery] = useState(formattedUrlQuery);
   const [syncedUrlQuery, setSyncedUrlQuery] = useState(urlQuery);
+  const [requestVersion, setRequestVersion] = useState(0);
+  const [fetched, setFetched] = useState<{
+    key: string;
+    reports: PartyReportEntity[];
+    currentPage: number;
+    totalResults: number;
+    pageSize: number;
+    errorMessage: string | null;
+  } | null>(null);
+
+  const activeSearchId = useRef(0);
+  const { searchReportsByTitleUseCase } = useDependencies();
+  const requestedPage = getValidPage(
+    searchParams.get("p") || searchParams.get("page"),
+  );
+  const hasSubmittedSearch = urlQuery.trim().length > 0;
+  const hasQuery = Formatter.toSearchQuery(formattedUrlQuery).length > 0;
+  const requestKey = `${formattedUrlQuery}:${requestedPage}:${requestVersion}`;
 
   if (urlQuery !== syncedUrlQuery) {
     setSyncedUrlQuery(urlQuery);
     setQuery(formattedUrlQuery);
   }
 
-  const requestedPage = getValidPage(
-    searchParams.get("p") || searchParams.get("page"),
-  );
-  const hasSubmittedSearch = urlQuery.trim().length > 0;
-  const normalizedQuery = Formatter.toSearchQuery(formattedUrlQuery);
-  const filterActive = hasSubmittedSearch && normalizedQuery.length > 0;
-
-  const matches = useMemo(() => {
-    if (!filterActive) {
-      return MOCK_TEXT_REPORT_HITS;
-    }
-
-    const q = normalizedQuery.toLowerCase();
-    return MOCK_TEXT_REPORT_HITS.filter((hit) => {
-      const haystack = `${hit.title} ${hit.snippet}`.toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [filterActive, normalizedQuery]);
-
-  const pageSize = filterActive ? SEARCH_PAGE_SIZE : BROWSE_PAGE_SIZE;
-  const totalResults = matches.length;
-  const totalPages =
-    pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
-  const currentPage =
-    totalPages > 0 ? Math.min(requestedPage, totalPages) : 1;
-
   useEffect(() => {
-    if (
-      filterActive &&
-      normalizedQuery &&
-      totalPages > 0 &&
-      requestedPage !== currentPage
-    ) {
-      setSearchParams(
-        `?${Formatter.buildSearchQueryString(urlQuery, currentPage)}`,
-        { replace: true },
-      );
+    if (!hasQuery) {
+      activeSearchId.current += 1;
+      return;
     }
+
+    const searchId = ++activeSearchId.current;
+
+    void searchReportsByTitleUseCase
+      .execute(Formatter.toSearchQuery(formattedUrlQuery), requestedPage)
+      .then((result) => {
+        if (searchId !== activeSearchId.current) {
+          return;
+        }
+
+        setFetched({
+          key: requestKey,
+          reports: result.data,
+          currentPage: result.page,
+          totalResults: result.total,
+          pageSize: result.count,
+          errorMessage: null,
+        });
+
+        if (result.page !== requestedPage) {
+          setSearchParams(
+            `?${Formatter.buildSearchQueryString(formattedUrlQuery, result.page)}`,
+            { replace: true },
+          );
+        }
+      })
+      .catch((error: unknown) => {
+        if (
+          searchId !== activeSearchId.current ||
+          isCanceledError(error)
+        ) {
+          return;
+        }
+
+        setFetched({
+          key: requestKey,
+          reports: [],
+          currentPage: 1,
+          totalResults: 0,
+          pageSize: 0,
+          errorMessage:
+            "No pudimos completar la búsqueda. Revisa tu conexión e inténtalo de nuevo.",
+        });
+      });
+
+    return () => {
+      searchReportsByTitleUseCase.cancel();
+    };
   }, [
-    currentPage,
-    filterActive,
-    normalizedQuery,
+    formattedUrlQuery,
+    hasQuery,
+    requestKey,
+    requestVersion,
     requestedPage,
+    searchReportsByTitleUseCase,
     setSearchParams,
-    totalPages,
-    urlQuery,
   ]);
-  const pageOffset = (currentPage - 1) * pageSize;
-  const pageResults = matches.slice(pageOffset, pageOffset + pageSize);
+
+  const activeResult =
+    !hasQuery || fetched?.key !== requestKey
+      ? null
+      : {
+          reports: fetched.reports,
+          currentPage: fetched.currentPage,
+          totalResults: fetched.totalResults,
+          pageSize: fetched.pageSize,
+          errorMessage: fetched.errorMessage,
+        };
+
+  const isSearching = hasQuery && fetched?.key !== requestKey;
+  const reports = activeResult?.reports ?? [];
+  const currentPage = activeResult?.currentPage ?? 1;
+  const totalResults = activeResult?.totalResults ?? 0;
+  const pageSize = activeResult?.pageSize ?? 0;
+  const errorMessage = activeResult?.errorMessage ?? null;
+  const totalPages = pageSize > 0 ? Math.ceil(totalResults / pageSize) : 0;
 
   const handleInputChange = (event: React.InputEvent<HTMLInputElement>) => {
     setQuery(Formatter.FormatInput(event.currentTarget.value));
@@ -88,7 +136,11 @@ function ReportsSearch() {
       ? `?${Formatter.buildSearchQueryString(formatted, 1)}`
       : "";
 
-    setSearchParams(nextSearch);
+    if (nextSearch === `?${searchParams.toString()}`) {
+      setRequestVersion((version) => version + 1);
+    } else {
+      setSearchParams(nextSearch);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -106,7 +158,6 @@ function ReportsSearch() {
       <Header />
 
       <SearchContainer>
-        {/* mt-28 clears the fixed header (h-20); matches /busqueda form offset */}
         <h1 className="mb-8 mt-28 px-4 text-center font-[Nunito] text-3xl font-extrabold text-gray-900 sm:text-4xl">
           Búsqueda de reportes
         </h1>
@@ -117,50 +168,38 @@ function ReportsSearch() {
           onSubmit={handleSubmit}
         />
 
-        {!filterActive && (
-          <p className="mb-6 max-w-3xl px-4 text-center text-sm font-[Nunito] text-gray-500">
-            Ejemplos de resultados. Usa el buscador para filtrar por palabras
-            clave.
-          </p>
+        {isSearching && <Loader />}
+
+        {!isSearching && errorMessage && (
+          <section
+            role="alert"
+            className="mx-4 mb-8 max-w-xl rounded-lg border border-red-200 bg-red-50 p-6 text-center font-[Nunito]"
+          >
+            <h2 className="text-lg font-extrabold text-red-900">
+              La búsqueda falló
+            </h2>
+            <p className="mt-2 text-red-800">{errorMessage}</p>
+            <button
+              type="button"
+              onClick={() => setRequestVersion((version) => version + 1)}
+              className="mt-4 rounded-md bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            >
+              Reintentar
+            </button>
+          </section>
         )}
 
-        {pageResults.length > 0 &&
-          pageResults.map((hit) => (
-            <Link
-              key={hit.id}
-              to={reportDetailPath(hit.id)}
-              className="mb-4 flex w-full max-w-3xl flex-col gap-2 border border-gray-200 bg-white p-5 font-[Nunito] shadow-sm transition-all duration-200 ease-in-out hover:border-gray-300 hover:bg-gray-50/50 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="min-w-0 flex-1 text-lg font-bold leading-snug text-gray-900">
-                  #{hit.displayId} - {hit.title}
-                </h2>
-                <span
-                  className="mt-0.5 shrink-0 text-gray-400"
-                  aria-hidden
-                >
-                  {/* Diagonal arrow only — avoids a square outline that can read like a checkbox */}
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M7 17L17 7M7 7h10v10"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <p className="text-sm font-medium text-gray-600">{hit.snippet}</p>
-            </Link>
-          ))}
+        {!isSearching &&
+          !errorMessage &&
+          reports.length > 0 && (
+            <div className="flex w-full max-w-3xl flex-col gap-4 px-4">
+              {reports.map((report) => (
+                <PartyReportCard key={report.id} report={report} />
+              ))}
+            </div>
+          )}
 
-        {filterActive && normalizedQuery && totalPages > 1 && (
+        {!isSearching && !errorMessage && totalPages > 1 && (
           <PaginationNav
             currentPage={currentPage}
             totalPages={totalPages}
@@ -170,11 +209,19 @@ function ReportsSearch() {
           />
         )}
 
-        {filterActive && normalizedQuery && totalResults === 0 && (
-          <NotFound />
+        {!isSearching &&
+          !errorMessage &&
+          hasSubmittedSearch &&
+          hasQuery &&
+          totalResults === 0 && <NotFound />}
+
+        {!hasSubmittedSearch && (
+          <p className="px-4 pb-16 text-center font-[Nunito] text-gray-600">
+            Ingresa palabras clave para explorar reportes de la comunidad.
+          </p>
         )}
 
-        {hasSubmittedSearch && !normalizedQuery && (
+        {hasSubmittedSearch && !hasQuery && (
           <p className="px-4 pb-16 text-center font-[Nunito] text-gray-600">
             Ingresa un término de búsqueda o revisa que no esté vacío.
           </p>

@@ -5,7 +5,7 @@ import { useDependencies } from "@/presentation/providers/useDependencies";
 import AddReportModal, {
   type AddReportDraft,
 } from "@presentation/pages/report/components/AddReportModal";
-import PartyReportCard from "@presentation/pages/report/components/PartyReportCard";
+import PartyReportCard from "@/presentation/shared/components/PartyReportCard";
 import { isCanceledError } from "@/common/utils/http-error.util";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
 
