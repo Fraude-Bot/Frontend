@@ -7,6 +7,7 @@ describe("PartyReportEntity.success", () => {
       "1354",
       "¡Me estafó $2,000 MXN y estoy enojada!",
       "Estoy super enojada, me ofreció un lote de ropa por $2,000 MXN.",
+      "2026-10-07",
     );
   }
 

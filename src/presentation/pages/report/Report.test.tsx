@@ -320,7 +320,7 @@ describe("Report page", () => {
       </DependencyProvider>,
     );
 
-    await user.click(await screen.findByRole("tab", { name: "Estafadores" }));
+    await user.click(await screen.findByRole("tab", { name: "Colaboradores" }));
     expect(
       await screen.findByRole("link", { name: /Ada Lovelace/ }),
     ).toBeInTheDocument();

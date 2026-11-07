@@ -9,7 +9,7 @@ function createReport(
   title: string,
   description: string,
 ): PartyReportEntity {
-  return new PartyReportEntity(id, title, description);
+  return new PartyReportEntity(id, title, description, "2026-11-01");
 }
 
 function createPage(page: number) {
@@ -51,7 +51,7 @@ describe("ReportsTab", () => {
 
     expect(execute).toHaveBeenCalledWith("20", "scammer", 1);
     expect(screen.getByText("Historial de Reportes:")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Agregar +" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Agregar Reporte +" })).toBeInTheDocument();
     expect(screen.getByText("#1 - Título del reporte 1-0")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Título del reporte 1-0/ }),
@@ -82,7 +82,7 @@ describe("ReportsTab", () => {
       expect(screen.getByRole("button", { name: "Página 2" })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: "Agregar +" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Agregar Reporte +" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Página 2" }));
 
@@ -158,5 +158,65 @@ describe("ReportsTab", () => {
     });
 
     expect(execute).toHaveBeenCalledTimes(2);
+  });
+
+  it("calls onSelectReport when a report card is clicked", async () => {
+    const execute = vi.fn().mockResolvedValue(createPage(1));
+    const onSelectReport = vi.fn();
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <ReportsTab
+        partyId="20"
+        partyType="scammer"
+        onSelectReport={onSelectReport}
+      />,
+      {
+        overrides: {
+          findReportsByPartyUseCase: {
+            execute,
+            cancel: vi.fn(),
+          },
+        },
+      },
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("article")).toHaveLength(10);
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: /Ver reporte Título del reporte 1-0/ }),
+    );
+
+    expect(onSelectReport).toHaveBeenCalledWith("1");
+  });
+
+  it("shows placeholder content when a report is selected", () => {
+    const execute = vi.fn().mockResolvedValue(createPage(1));
+
+    renderWithProviders(
+      <ReportsTab
+        partyId="20"
+        partyType="scammer"
+        selectedReportId="1"
+        onSelectReport={vi.fn()}
+        onBackFromReport={vi.fn()}
+      />,
+      {
+        overrides: {
+          findReportsByPartyUseCase: {
+            execute,
+            cancel: vi.fn(),
+          },
+        },
+      },
+    );
+
+    expect(screen.getByText("This is the report content")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Volver al listado/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Historial de Reportes:")).not.toBeInTheDocument();
   });
 });

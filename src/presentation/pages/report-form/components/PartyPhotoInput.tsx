@@ -31,14 +31,15 @@ function PartyPhotoInput({
   required = true,
 }: PartyPhotoInputProps) {
   const { storeTemporaryProfilePictureUseCase } = useDependencies();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const requestId = useRef(0);
   const isMounted = useRef(true);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const previewFile = pendingFile ?? file;
+  const displayPreviewUrl = previewFile ? previewUrl : null;
   const label = previewFile ? changeLabel : addLabel;
   const circleBorder = invalid ? "border-red-600" : "border-gray-400";
   const viewLabel = addLabel.replace(/^Agregar /, "Ver ");
@@ -56,11 +57,12 @@ function PartyPhotoInput({
 
   useEffect(() => {
     if (!previewFile) {
-      setPreviewUrl(null);
       return;
     }
 
     const nextUrl = URL.createObjectURL(previewFile);
+    // Blob preview URLs are created in an effect so the prior URL can be revoked.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- object URL lifecycle
     setPreviewUrl(nextUrl);
 
     return () => {
@@ -138,7 +140,7 @@ function PartyPhotoInput({
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
-        {previewUrl ? (
+        {displayPreviewUrl ? (
           <button
             type="button"
             onClick={() => setIsPreviewOpen(true)}
@@ -149,7 +151,7 @@ function PartyPhotoInput({
             className={`relative flex h-28 w-28 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed p-0 text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${circleBorder}`}
           >
             <img
-              src={previewUrl}
+              src={displayPreviewUrl}
               alt=""
               className="h-full w-full object-cover"
             />
@@ -171,7 +173,7 @@ function PartyPhotoInput({
         <input
           id={id}
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,image/webp"
           aria-label={label}
           aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
@@ -196,9 +198,9 @@ function PartyPhotoInput({
           </button>
         ) : null}
       </div>
-      {isPreviewOpen && previewUrl ? (
+      {isPreviewOpen && displayPreviewUrl ? (
         <ImageLightbox
-          src={previewUrl}
+          src={displayPreviewUrl}
           alt={viewLabel}
           onClose={closePreview}
         />

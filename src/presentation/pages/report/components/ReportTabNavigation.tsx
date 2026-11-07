@@ -17,7 +17,7 @@ const tabIcons: Record<ReportTab, string> = {
   Contactos: reportIcons.contactos,
   "Métodos de pago": reportIcons.paymentMethods,
   Empresas: reportIcons.asociaciones,
-  Estafadores: reportIcons.asociaciones,
+  Colaboradores: reportIcons.asociaciones,
   Mapa: reportIcons.mapa,
   Soporte: reportIcons.soporte,
 };

@@ -5,6 +5,7 @@ import { useDependencies } from "@/presentation/providers/useDependencies";
 import AddReportModal, {
   type AddReportDraft,
 } from "@presentation/pages/report/components/AddReportModal";
+import ReportDetailPlaceholder from "@presentation/pages/report/components/ReportDetailPlaceholder";
 import PartyReportCard from "@/presentation/shared/components/PartyReportCard";
 import { isCanceledError } from "@/common/utils/http-error.util";
 import PaginationNav from "@/presentation/shared/components/PaginationNav";
@@ -12,6 +13,9 @@ import PaginationNav from "@/presentation/shared/components/PaginationNav";
 interface ReportsTabProps {
   partyId: string;
   partyType: "scammer" | "organization";
+  selectedReportId?: string | null;
+  onSelectReport?: (reportId: string) => void;
+  onBackFromReport?: () => void;
 }
 
 function toAttachedReportRequest(
@@ -26,7 +30,13 @@ function toAttachedReportRequest(
   };
 }
 
-function ReportsTab({ partyId, partyType }: ReportsTabProps) {
+function ReportsTab({
+  partyId,
+  partyType,
+  selectedReportId = null,
+  onSelectReport,
+  onBackFromReport,
+}: ReportsTabProps) {
   const {
     findReportsByPartyUseCase,
     createReportForScammerUseCase,
@@ -50,6 +60,10 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
   const isLoading = loadedRequestKey !== requestKey;
 
   useEffect(() => {
+    if (selectedReportId) {
+      return;
+    }
+
     let ignore = false;
 
     findReportsByPartyUseCase
@@ -91,6 +105,7 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
     partyType,
     requestKey,
     requestVersion,
+    selectedReportId,
   ]);
 
   useEffect(() => {
@@ -154,6 +169,14 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
     }
   }
 
+  if (selectedReportId) {
+    return (
+      <ReportDetailPlaceholder
+        onBack={() => onBackFromReport?.()}
+      />
+    );
+  }
+
   return (
     <section className="border border-gray-200 bg-white p-6 sm:p-8">
       <div className="grid grid-cols-[1fr_auto] items-center gap-3">
@@ -165,7 +188,7 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
           onClick={() => setIsAddReportOpen(true)}
           className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
         >
-          Agregar +
+          Agregar Reporte +
         </button>
       </div>
 
@@ -179,7 +202,15 @@ function ReportsTab({ partyId, partyType }: ReportsTabProps) {
         {!isLoading &&
           !errorMessage &&
           reports.map((report) => (
-            <PartyReportCard key={report.id} report={report} />
+            <PartyReportCard
+              key={report.id}
+              report={report}
+              onSelect={
+                onSelectReport
+                  ? (selected) => onSelectReport(selected.id)
+                  : undefined
+              }
+            />
           ))}
 
         {!isLoading && errorMessage && (

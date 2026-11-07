@@ -3,6 +3,7 @@ class PartyReportEntity {
     private readonly _id: string,
     private readonly _title: string,
     private readonly _description: string,
+    private readonly _createdAt: string,
   ) {}
 
   public get id(): string {
@@ -15,6 +16,10 @@ class PartyReportEntity {
 
   public get description(): string {
     return this._description;
+  }
+
+  public get createdAt(): string {
+    return this._createdAt;
   }
 }
 

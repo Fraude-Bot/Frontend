@@ -44,7 +44,7 @@ const reportTabsAfterAssociations = ["Mapa", "Soporte"] as const;
 
 export const associationTabByParty = {
   scammer: "Empresas",
-  organization: "Estafadores",
+  organization: "Colaboradores",
 } as const;
 
 export type ReportTab =
