@@ -9,7 +9,7 @@ function createReport(
   title: string,
   description: string,
 ): PartyReportEntity {
-  return new PartyReportEntity(id, title, description);
+  return new PartyReportEntity(id, title, description, "2026-11-01");
 }
 
 function createPage(page: number) {
