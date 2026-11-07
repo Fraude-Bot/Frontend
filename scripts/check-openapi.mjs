@@ -6,6 +6,7 @@ if (!openApiUrl) {
 
 const requiredOperations = new Map([
   ["GET", "/public/reports/"],
+  ["GET", "/public/reports/{id}"],
   ["GET", "/public/reports/search-by-title"],
   ["POST", "/public/media/profiles"],
   ["PATCH", "/public/scammers/{id}/profiles"],

@@ -11,6 +11,7 @@ import type { CreateOrganizationPaymentMethodRequest } from "@/core/domain/payme
 import type { CreateScammerPaymentMethodRequest } from "@/core/domain/payment-method/models/create-scammer-payment-method.request";
 import type PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/payment-method-summary.entity";
 import type FindPaymentMethodsByPartyResult from "@/core/domain/payment-method/models/find-payment-methods-by-party.model";
+import type ReportDetailEntity from "@/core/domain/report/entities/report-detail.entity";
 import type FindReportsByPartyResult from "@/core/domain/report/models/find-reports-by-party.model";
 import type { CreateOrganizationScammerRequest } from "@/core/domain/association/models/create-organization-scammer.request";
 import type { CreateScammerOrganizationRequest } from "@/core/domain/association/models/create-scammer-organization.request";
@@ -118,6 +119,10 @@ export interface PublicApiPort {
     page: number,
     signal: AbortSignal,
   ): Promise<FindReportsByPartyResult>;
+  findReportById(
+    id: string,
+    signal: AbortSignal,
+  ): Promise<ReportDetailEntity>;
   findAssociationsByParty(
     id: string,
     type: PartyType,

@@ -15,6 +15,7 @@ import type FindMonthlyReportCountsUsecase from "@/application/usecases/report/f
 import type CreateOrganizationScammerUsecase from "@/application/usecases/association/create-organization-scammer.usecase";
 import type CreateScammerOrganizationUsecase from "@/application/usecases/association/create-scammer-organization.usecase";
 import type FindAssociationsByPartyUsecase from "@/application/usecases/association/find-associations-by-party.usecase";
+import type FindReportByIdUsecase from "@/application/usecases/report/find-report-by-id.usecase";
 import type FindReportsByPartyUsecase from "@/application/usecases/report/find-reports-by-party.usecase";
 import type SearchReportUsecase from "@/application/usecases/report/search-report.usecase";
 import type SearchReportsByTitleUsecase from "@/application/usecases/report/search-reports-by-title.usecase";
@@ -44,6 +45,7 @@ export type Dependencies = {
   createScammerPaymentMethodUseCase: PublicInterface<CreateScammerPaymentMethodUsecase>;
   createOrganizationPaymentMethodUseCase: PublicInterface<CreateOrganizationPaymentMethodUsecase>;
   findReportsByPartyUseCase: PublicInterface<FindReportsByPartyUsecase>;
+  findReportByIdUseCase: PublicInterface<FindReportByIdUsecase>;
   findAssociationsByPartyUseCase: PublicInterface<FindAssociationsByPartyUsecase>;
   createOrganizationScammerUseCase: PublicInterface<CreateOrganizationScammerUsecase>;
   createScammerOrganizationUseCase: PublicInterface<CreateScammerOrganizationUsecase>;

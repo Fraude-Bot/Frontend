@@ -60,6 +60,15 @@ export type PartyReportDto = {
 
 export type PartyReportsDto = PaginatedDto<PartyReportDto>;
 
+export type ReportDetailDto = {
+  title: string;
+  description: string | null;
+  is_active: boolean;
+  proofs: string[];
+  products: string[];
+  created_at: string;
+};
+
 export type PartyAssociationDto = {
   id: string | number;
   name: string;
