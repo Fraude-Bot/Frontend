@@ -24,6 +24,7 @@ import {
 import { useCancellableQuery } from "@/presentation/shared/hooks/useCancellableQuery";
 import { useRobotsDirective } from "@/presentation/shared/hooks/useRobotsDirective";
 import ProfileSeo from "@/presentation/shared/components/ProfileSeo";
+import { scrollViewToTop } from "@/presentation/shared/utils/scroll-view-to-top.util";
 import type { ProfilePictureUploadResult } from "@/presentation/pages/report/components/types";
 
 function GeneralPanelsSkeleton() {
@@ -78,12 +79,6 @@ function GeneralPanelsSkeleton() {
   );
 }
 
-function scrollReportToTop() {
-  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-}
-
 function Report({ type }: { type: "scammer" | "organization" }) {
   const { id } = useParams<{ id: string }>();
   const { findScammerSummaryByIdUseCase, findOrganizationSummaryByIdUseCase } =
@@ -108,7 +103,7 @@ function Report({ type }: { type: "scammer" | "organization" }) {
   }
 
   useLayoutEffect(() => {
-    scrollReportToTop();
+    scrollViewToTop();
   }, [profileKey]);
   const query = useCallback(() => {
     if (!id) {
