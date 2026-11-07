@@ -23,6 +23,7 @@ import type { FindRelationshipMapResult } from "@/core/domain/map/models/find-re
 import OrganizationSummaryEntity from "@/core/domain/organization/entities/organization-summary.entity";
 import MonthlyReportCountsEntity from "@/core/domain/report/entities/monthly-report-counts.entity";
 import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
+import ReportDetailEntity from "@/core/domain/report/entities/report-detail.entity";
 import ReportSummaryEntity from "@/core/domain/report/entities/report-summary.entity";
 import type {
   CreateAttachedReportRequest,
@@ -52,6 +53,7 @@ import type {
   PartyAssociationsDto,
   PartyReportsDto,
   PartySummaryDto,
+  ReportDetailDto,
   RelationshipMapDto,
   SearchReportsDto,
   StoredImagePathDto,
@@ -519,6 +521,32 @@ class PublicApiAdapter implements PublicApiPort {
       paymentTypeFromApi(data.type),
       data.created_at,
       Boolean(data.is_active),
+    );
+  }
+
+  public async findReportById(
+    id: string,
+    signal: AbortSignal,
+  ): Promise<ReportDetailEntity> {
+    const url = API_ROUTES.public.reports.findById.replace(
+      "{id}",
+      encodeURIComponent(id),
+    );
+    const { data, status } = await Http.get<ReportDetailDto>(url, { signal });
+    assertStatus(status, 200, "Report could not be loaded.");
+
+    const proofUrls = (data.proofs ?? [])
+      .map((path) => resolveCdnUrl(path))
+      .filter((proofUrl): proofUrl is string => Boolean(proofUrl));
+
+    return new ReportDetailEntity(
+      id,
+      data.title,
+      data.description ?? "",
+      data.created_at,
+      data.products ?? [],
+      proofUrls,
+      data.is_active,
     );
   }
 

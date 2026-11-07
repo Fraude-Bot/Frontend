@@ -91,6 +91,7 @@ const API_ROUTES = {
     },
     reports: {
       search: "/public/reports/",
+      findById: "/public/reports/{id}",
       searchByTitle: "/public/reports/search-by-title",
       proofs: "/public/reports/media/proofs",
       createOrganization: "/public/reports/organizations",

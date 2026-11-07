@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PartyReportEntity from "@/core/domain/report/entities/party-report.entity";
+import ReportDetailEntity from "@/core/domain/report/entities/report-detail.entity";
 import ReportsTab from "@presentation/pages/report/components/ReportsTab";
 import { renderWithProviders } from "@/test/test-utils";
 
@@ -10,6 +12,21 @@ function createReport(
   description: string,
 ): PartyReportEntity {
   return new PartyReportEntity(id, title, description, "2026-11-01");
+}
+
+function createReportDetail(
+  id: string,
+  title = "Me estafó 5000 dólares esta empresa",
+): ReportDetailEntity {
+  return new ReportDetailEntity(
+    id,
+    title,
+    "Hola quiero hacer un reporte de esta empresa que me estafó.",
+    "2026-10-07",
+    ["Inversiones", "Ponzi"],
+    ["https://example.com/proof.png"],
+    true,
+  );
 }
 
 function createPage(page: number) {
@@ -192,8 +209,9 @@ describe("ReportsTab", () => {
     expect(onSelectReport).toHaveBeenCalledWith("1");
   });
 
-  it("shows placeholder content when a report is selected", () => {
+  it("shows placeholder content when a report is selected", async () => {
     const execute = vi.fn().mockResolvedValue(createPage(1));
+    const findReportById = vi.fn().mockResolvedValue(createReportDetail("1"));
 
     renderWithProviders(
       <ReportsTab
@@ -209,14 +227,104 @@ describe("ReportsTab", () => {
             execute,
             cancel: vi.fn(),
           },
+          findReportByIdUseCase: {
+            execute: findReportById,
+            cancel: vi.fn(),
+          },
         },
       },
     );
 
-    expect(screen.getByText("This is the report content")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", {
+        name: "Me estafó 5000 dólares esta empresa",
+      }),
+    ).toBeInTheDocument();
+    expect(findReportById).toHaveBeenCalledWith("1");
     expect(
       screen.getByRole("button", { name: /Volver al listado/ }),
     ).toBeInTheDocument();
     expect(screen.queryByText("Historial de Reportes:")).not.toBeInTheDocument();
+  });
+
+  it("restores pagination and list scroll after returning from a report", async () => {
+    const execute = vi
+      .fn()
+      .mockResolvedValueOnce(createPage(1))
+      .mockResolvedValueOnce(createPage(2));
+    const findReportById = vi
+      .fn()
+      .mockResolvedValue(createReportDetail("11", "Título del reporte 2-0"));
+    const user = userEvent.setup();
+
+    function ReportsTabHarness() {
+      const [selectedReportId, setSelectedReportId] = useState<string | null>(
+        null,
+      );
+
+      return (
+        <ReportsTab
+          partyId="20"
+          partyType="scammer"
+          selectedReportId={selectedReportId}
+          onSelectReport={setSelectedReportId}
+          onBackFromReport={() => setSelectedReportId(null)}
+        />
+      );
+    }
+
+    renderWithProviders(<ReportsTabHarness />, {
+      overrides: {
+        findReportsByPartyUseCase: {
+          execute,
+          cancel: vi.fn(),
+        },
+        findReportByIdUseCase: {
+          execute: findReportById,
+          cancel: vi.fn(),
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Página 2" })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Página 2" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("#11 - Título del reporte 2-0")).toBeInTheDocument();
+    });
+
+    const list = screen
+      .getByText("#11 - Título del reporte 2-0")
+      .closest(".overflow-y-scroll") as HTMLDivElement;
+    list.scrollTop = 120;
+
+    await user.click(
+      screen.getByRole("button", { name: /Ver reporte Título del reporte 2-0/ }),
+    );
+
+    await screen.findByRole("heading", {
+      name: "Título del reporte 2-0",
+    });
+
+    await user.click(screen.getByRole("button", { name: /Volver al listado/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Historial de Reportes:")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("#11 - Título del reporte 2-0")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Página 2" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    const restoredList = screen
+      .getByText("#11 - Título del reporte 2-0")
+      .closest(".overflow-y-scroll") as HTMLDivElement;
+    expect(restoredList.scrollTop).toBe(120);
+    expect(execute).toHaveBeenCalledTimes(2);
   });
 });
