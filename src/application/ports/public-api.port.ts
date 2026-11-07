@@ -51,6 +51,11 @@ export interface PublicApiPort {
     page: number,
     signal: AbortSignal,
   ): Promise<SearchReportResult>;
+  searchReportsByTitle(
+    query: string,
+    page: number,
+    signal: AbortSignal,
+  ): Promise<FindReportsByPartyResult>;
   findScammerSummary(
     id: string,
     signal: AbortSignal,

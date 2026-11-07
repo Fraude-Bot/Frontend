@@ -219,6 +219,32 @@ class PublicApiAdapter implements PublicApiPort {
     };
   }
 
+  public async searchReportsByTitle(
+    query: string,
+    page: number,
+    signal: AbortSignal,
+  ): Promise<FindReportsByPartyResult> {
+    const { data, status } = await Http.get<PartyReportsDto>(
+      API_ROUTES.public.reports.searchByTitle,
+      { signal, params: { q: query, p: page } },
+    );
+    assertStatus(status, 200, "Reports could not be searched by title.");
+
+    return {
+      data: data.data.map(
+        (report) =>
+          new PartyReportEntity(
+            String(report.id),
+            report.title,
+            report.short_description ?? "",
+          ),
+      ),
+      total: data.total,
+      page: data.page,
+      count: data.count,
+    };
+  }
+
   public async findScammerSummary(
     id: string,
     signal: AbortSignal,

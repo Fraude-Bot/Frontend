@@ -1,4 +1,5 @@
 import SearchReportUsecase from "@/application/usecases/report/search-report.usecase";
+import SearchReportsByTitleUsecase from "@/application/usecases/report/search-reports-by-title.usecase";
 import FindMonthlyReportCountsUsecase from "@/application/usecases/report/find-monthly-report-counts.usecase";
 import CreateOrganizationScammerUsecase from "@/application/usecases/association/create-organization-scammer.usecase";
 import CreateScammerOrganizationUsecase from "@/application/usecases/association/create-scammer-organization.usecase";
@@ -32,6 +33,7 @@ export function createDependencies(): Dependencies {
 
   return {
     searchReportUseCase: new SearchReportUsecase(publicApi),
+    searchReportsByTitleUseCase: new SearchReportsByTitleUsecase(publicApi),
     findScammerSummaryByIdUseCase: new FindScammerSummaryByIdUsecase(publicApi),
     suggestScammerNamesUseCase: new SuggestScammerNamesUsecase(publicApi),
     findOrganizationSummaryByIdUseCase:
