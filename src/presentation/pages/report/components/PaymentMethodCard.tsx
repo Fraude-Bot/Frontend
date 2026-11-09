@@ -3,6 +3,7 @@ import PaymentMethodSummaryEntity from "@/core/domain/payment-method/entities/pa
 import { formatContactDate } from "@presentation/pages/report/components/contact-date.util";
 import { getPaymentIconSrc } from "@presentation/pages/report/components/payment-icons";
 import { getPaymentLabel } from "@presentation/pages/report/components/payment-method.util";
+import { copyTextToClipboard } from "@/presentation/shared/utils/copy-text-to-clipboard.util";
 
 const COPIED_VISIBLE_MS = 1800;
 
@@ -72,39 +73,6 @@ function CalendarIcon() {
       />
     </svg>
   );
-}
-
-function copyWithSelection(text: string) {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "fixed";
-  textarea.style.top = "0";
-  textarea.style.left = "0";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-  const copied = document.execCommand("copy");
-  document.body.removeChild(textarea);
-
-  if (!copied) {
-    throw new Error("Clipboard unavailable");
-  }
-}
-
-async function copyTextToClipboard(text: string) {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return;
-    } catch {
-      copyWithSelection(text);
-      return;
-    }
-  }
-
-  copyWithSelection(text);
 }
 
 function PaymentMethodCard({

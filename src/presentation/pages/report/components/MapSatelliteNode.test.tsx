@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import MapSatelliteNode from "@presentation/pages/report/components/MapSatelliteNode";
@@ -58,7 +59,13 @@ describe("MapSatelliteNode", () => {
     );
   });
 
-  it("renders searchable payment satellites as internal links", () => {
+  it("renders searchable payment satellites as copy controls", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
     renderSatelliteNode({
       kind: "payment_method",
       label: "CLABE",
@@ -66,12 +73,39 @@ describe("MapSatelliteNode", () => {
       paymentType: 2,
     });
 
-    const link = screen.getByRole("link", {
-      name: "Buscar CLABE: 3145914092",
+    const button = screen.getByRole("button", {
+      name: "Copiar CLABE: 3145914092",
     });
-    expect(link).toHaveAttribute("href", "/busqueda?q=3145914092");
-    expect(link).not.toHaveAttribute("target", "_blank");
+    expect(screen.queryByRole("link", { name: /CLABE/ })).not.toBeInTheDocument();
     expect(screen.getByText("3145914092")).toBeInTheDocument();
     expect(screen.getByText("CLABE")).toBeInTheDocument();
+
+    await userEvent.click(button);
+    expect(writeText).toHaveBeenCalledWith("3145914092");
+
+    await waitFor(() => {
+      expect(within(button).getAllByText("Copiado").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("copies card payment satellites on click", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    renderSatelliteNode({
+      kind: "payment_method",
+      label: "Tarjeta",
+      detail: "4152 3134 2132 3123",
+      paymentType: 1,
+    });
+
+    const button = screen.getByRole("button", {
+      name: "Copiar Tarjeta: 4152 3134 2132 3123",
+    });
+    await userEvent.click(button);
+    expect(writeText).toHaveBeenCalledWith("4152 3134 2132 3123");
   });
 });
